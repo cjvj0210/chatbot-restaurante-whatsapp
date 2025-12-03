@@ -1,11 +1,42 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import {
+  InsertUser,
+  users,
+  restaurantSettings,
+  whatsappSettings,
+  menuCategories,
+  menuItems,
+  customers,
+  orders,
+  reservations,
+  conversations,
+  messages,
+  feedback,
+  type RestaurantSettings,
+  type WhatsappSettings,
+  type MenuCategory,
+  type MenuItem,
+  type Customer,
+  type Order,
+  type Reservation,
+  type Conversation,
+  type Message,
+  type InsertCustomer,
+  type InsertOrder,
+  type InsertReservation,
+  type InsertConversation,
+  type InsertMessage,
+  type InsertFeedback,
+  type InsertRestaurantSettings,
+  type InsertWhatsappSettings,
+  type InsertMenuCategory,
+  type InsertMenuItem,
+} from "../drizzle/schema";
+import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -56,8 +87,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.role = user.role;
       updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
+      values.role = "admin";
+      updateSet.role = "admin";
     }
 
     if (!values.lastSignedIn) {
@@ -89,4 +120,309 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ===== Restaurant Settings =====
+
+export async function getRestaurantSettings(): Promise<RestaurantSettings | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(restaurantSettings).limit(1);
+  return result[0];
+}
+
+export async function upsertRestaurantSettings(settings: InsertRestaurantSettings): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getRestaurantSettings();
+  
+  if (existing) {
+    await db.update(restaurantSettings).set(settings).where(eq(restaurantSettings.id, existing.id));
+  } else {
+    await db.insert(restaurantSettings).values(settings);
+  }
+}
+
+// ===== WhatsApp Settings =====
+
+export async function getWhatsappSettings(): Promise<WhatsappSettings | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(whatsappSettings).limit(1);
+  return result[0];
+}
+
+export async function upsertWhatsappSettings(settings: InsertWhatsappSettings): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getWhatsappSettings();
+  
+  if (existing) {
+    await db.update(whatsappSettings).set(settings).where(eq(whatsappSettings.id, existing.id));
+  } else {
+    await db.insert(whatsappSettings).values(settings);
+  }
+}
+
+// ===== Menu Categories =====
+
+export async function getMenuCategories(): Promise<MenuCategory[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(menuCategories).where(eq(menuCategories.isActive, true)).orderBy(menuCategories.displayOrder);
+}
+
+export async function createMenuCategory(category: InsertMenuCategory): Promise<MenuCategory> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(menuCategories).values(category);
+  const inserted = await db.select().from(menuCategories).where(eq(menuCategories.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function updateMenuCategory(id: number, category: Partial<InsertMenuCategory>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(menuCategories).set(category).where(eq(menuCategories.id, id));
+}
+
+export async function deleteMenuCategory(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(menuCategories).set({ isActive: false }).where(eq(menuCategories.id, id));
+}
+
+// ===== Menu Items =====
+
+export async function getMenuItems(categoryId?: number): Promise<MenuItem[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  if (categoryId) {
+    return await db.select().from(menuItems).where(and(eq(menuItems.categoryId, categoryId), eq(menuItems.isAvailable, true)));
+  }
+  return await db.select().from(menuItems).where(eq(menuItems.isAvailable, true));
+}
+
+export async function getMenuItemById(id: number): Promise<MenuItem | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(menuItems).where(eq(menuItems.id, id)).limit(1);
+  return result[0];
+}
+
+export async function createMenuItem(item: InsertMenuItem): Promise<MenuItem> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(menuItems).values(item);
+  const inserted = await db.select().from(menuItems).where(eq(menuItems.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function updateMenuItem(id: number, item: Partial<InsertMenuItem>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(menuItems).set(item).where(eq(menuItems.id, id));
+}
+
+export async function deleteMenuItem(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(menuItems).set({ isAvailable: false }).where(eq(menuItems.id, id));
+}
+
+// ===== Customers =====
+
+export async function getCustomerByWhatsappId(whatsappId: string): Promise<Customer | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(customers).where(eq(customers.whatsappId, whatsappId)).limit(1);
+  return result[0];
+}
+
+export async function createCustomer(customer: InsertCustomer): Promise<Customer> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(customers).values(customer);
+  const inserted = await db.select().from(customers).where(eq(customers.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(customers).set(customer).where(eq(customers.id, id));
+}
+
+export async function getAllCustomers(): Promise<Customer[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(customers).orderBy(desc(customers.createdAt));
+}
+
+// ===== Orders =====
+
+export async function createOrder(order: InsertOrder): Promise<Order> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(orders).values(order);
+  const inserted = await db.select().from(orders).where(eq(orders.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function getOrderById(id: number): Promise<Order | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getOrdersByCustomer(customerId: number): Promise<Order[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(orders).where(eq(orders.customerId, customerId)).orderBy(desc(orders.createdAt));
+}
+
+export async function getAllOrders(): Promise<Order[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(orders).orderBy(desc(orders.createdAt));
+}
+
+export async function updateOrderStatus(id: number, status: Order["status"]): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(orders).set({ status }).where(eq(orders.id, id));
+}
+
+// ===== Reservations =====
+
+export async function createReservation(reservation: InsertReservation): Promise<Reservation> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(reservations).values(reservation);
+  const inserted = await db.select().from(reservations).where(eq(reservations.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function getReservationById(id: number): Promise<Reservation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(reservations).where(eq(reservations.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getReservationsByCustomer(customerId: number): Promise<Reservation[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(reservations).where(eq(reservations.customerId, customerId)).orderBy(desc(reservations.date));
+}
+
+export async function getAllReservations(): Promise<Reservation[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(reservations).orderBy(desc(reservations.date));
+}
+
+export async function updateReservationStatus(id: number, status: Reservation["status"]): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(reservations).set({ status }).where(eq(reservations.id, id));
+}
+
+// ===== Conversations =====
+
+export async function getActiveConversation(customerId: number): Promise<Conversation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.customerId, customerId), eq(conversations.isActive, true)))
+    .orderBy(desc(conversations.updatedAt))
+    .limit(1);
+  
+  return result[0];
+}
+
+export async function createConversation(conversation: InsertConversation): Promise<Conversation> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(conversations).values(conversation);
+  const inserted = await db.select().from(conversations).where(eq(conversations.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function updateConversation(id: number, conversation: Partial<InsertConversation>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(conversations).set(conversation).where(eq(conversations.id, id));
+}
+
+export async function closeConversation(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(conversations).set({ isActive: false }).where(eq(conversations.id, id));
+}
+
+// ===== Messages =====
+
+export async function createMessage(message: InsertMessage): Promise<Message> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(messages).values(message);
+  const inserted = await db.select().from(messages).where(eq(messages.id, Number(result[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function getMessagesByConversation(conversationId: number): Promise<Message[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
+}
+
+// ===== Feedback =====
+
+export async function createFeedback(feedbackData: InsertFeedback): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(feedback).values(feedbackData);
+}
+
+export async function getAllFeedback(): Promise<typeof feedback.$inferSelect[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+}

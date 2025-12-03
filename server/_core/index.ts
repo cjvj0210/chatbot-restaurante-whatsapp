@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +36,11 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // WhatsApp Webhook
+  app.get("/api/webhook/whatsapp", handleWebhookVerification);
+  app.post("/api/webhook/whatsapp", handleWebhookMessage);
+  
   // tRPC API
   app.use(
     "/api/trpc",
