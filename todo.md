@@ -60,3 +60,37 @@
 - [ ] Guia de configuração do painel admin
 - [ ] Documentação de fluxos de conversa
 - [ ] README com instruções de deploy
+
+
+## Customização Churrascaria Estrela do Sul
+- [x] Configurar informações reais do restaurante no banco de dados
+- [ ] Criar cardápio completo de delivery (marmitex, pratos executivos, kits) - AGUARDANDO USUÁRIO
+- [x] Configurar valores do rodízio
+- [ ] Implementar lógica de horários de funcionamento específicos
+- [ ] Configurar taxas de entrega e pedido mínimo
+- [ ] Implementar cálculo de tempo de entrega por dia/período
+- [ ] Customizar tom de voz (formal, empático, humanista)
+- [ ] Adicionar tratamento de observações especiais nos pedidos
+- [ ] Implementar sistema de transferência para atendente humano
+- [ ] Criar FAQ com dúvidas comuns
+- [ ] Implementar coleta de feedback periódica
+
+## Simulador de Conversa para Testes
+- [x] Criar interface de chat simulado no painel admin
+- [x] Implementar fluxo de pedido de delivery completo
+- [x] Implementar fluxo de reserva completo
+- [x] Implementar fluxo de informações gerais
+- [x] Testar observações especiais em pedidos
+- [x] Testar transferência para atendente humano
+
+## Integrações com Sistemas Existentes
+- [ ] Pesquisar API do Colibri POS
+- [ ] Implementar integração com Colibri (ou exportação manual)
+- [ ] Pesquisar API do Get-In (reservas)
+- [ ] Implementar integração com Get-In (ou exportação manual)
+- [ ] Sistema de notificação para equipe quando houver novo pedido
+
+## Identidade Visual
+- [x] Aplicar cores da logo (vermelho, preto, branco) no painel
+- [x] Adicionar logo da Churrascaria no painel
+- [x] Customizar tema do painel administrativo
