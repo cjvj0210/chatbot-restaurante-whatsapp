@@ -73,3 +73,12 @@
 - [ ] Analisar conversas exportadas e extrair padrões
 - [ ] Treinar IA com exemplos reais de atendimento
 - [ ] Ajustar tom de voz baseado em conversas reais
+
+
+## Atualização com Dados Reais do Vídeo/Catálogo
+- [x] Extrair todas as informações do vídeo WhatsApp
+- [x] Documentar valores corretos do rodízio infantil
+- [x] Documentar estrutura de pedidos (nome, endereço, forma pagamento)
+- [x] Atualizar system prompt com tom de voz real
+- [x] Atualizar banco de dados com valores corretos
+- [x] Testar IA com informações atualizadas
