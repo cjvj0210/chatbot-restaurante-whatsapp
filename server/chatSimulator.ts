@@ -91,11 +91,60 @@ export const chatSimulatorRouter = router({
 
 ## 🚚 DELIVERY
 
-**Oferecemos:**
-- Marmitex de churrasco
-- Pratos executivos
-- Kits de carne
-- Guarnições
+**CARDÁPIO COMPLETO:**
+
+**📦 MARMITEX:**
+✅ Marmitex G (2 pessoas, 950g): R$ 34,00 - Arroz, feijão, farofa, vinagrete, 1 frango, 1 linguiça, carne bovina
+✅ Marmitex M (1-2 pessoas, 880g): R$ 30,00 - Arroz, feijão, farofa, vinagrete e maionese
+✅ Marmitex P (1 pessoa, 720g): R$ 26,00 - Arroz, feijão, farofa, vinagrete, batata frita, 1 frango, 1 linguiça, carne
+✅ Marmitex Econômico (1 pessoa, 650g): R$ 20,00 - Arroz, feijão, farofa, maionese e vinagrete
+
+**🍚 MARMITAS SIMPLES:**
+✅ Marmita de Arroz e Feijão: R$ 17,00
+✅ Marmita só de Arroz: R$ 17,00
+✅ Marmita só de Feijão: R$ 17,00
+
+**🍟 GUARNIÇÕES:**
+✅ Mandioca Frita Grande: R$ 21,90 | Pequena: R$ 10,90
+✅ Batata Chips Grande: R$ 21,90 | Pequena: R$ 9,90
+✅ Nuggets de Frango Grande: R$ 21,90 | Pequeno: R$ 10,90
+✅ Anéis de Cebola Grande: R$ 24,90 | Pequena: R$ 11,90
+
+**🥟 SALGADOS:**
+✅ Mini Pastéis 10un (carne, catupiry, queijo ou romeu e julieta): R$ 21,90
+✅ Mini Pastéis 4un: R$ 13,90
+✅ Banana Empanada 8un: R$ 25,90 | 2un: R$ 8,50
+
+**🥩 MIX E KITS DE CHURRASCO:**
+✅ Mix Churrasco Tradicional (600g, 2-3 pessoas): R$ 75,00 - 4 opções de churrasco + vinagrete + farofa
+✅ Mix Churrasco Nobre (2-3 pessoas): R$ 115,00 - Escolha 4 carnes nobres (Javali, Picanha, Maminha, Queijinho, Bife Ancho, Filé Mignon, Carré de Carneiro, Linguiça Cuiabana)
+✅ Kit Churrasco Tradicional p/3 pessoas (1kg): R$ 169,90
+✅ Kit Churrasco Tradicional p/5 pessoas (1,5kg): R$ 239,90
+✅ Kit Churrasco Nobre p/3 pessoas (1kg): R$ 214,90
+✅ Kit Churrasco Nobre p/5 pessoas (1,5kg): R$ 294,90
+
+**🍽️ PRATOS EXECUTIVOS:**
+✅ Executivo Estrelinha: R$ 29,90 - Polenta/Batata Frita + Estrogonoff
+✅ Executivo Peãozinho: R$ 29,90 - Batata Sorriso/Chips + Nuggets/Frango Empanado
+✅ Executivo Tropeiro: R$ 40,90 - Costela/Cupim + Arroz biro biro + Feijão tropeiro
+✅ Executivo Cowboy: R$ 40,90 - Fraldinha/Maminha/Cupim + Arroz + Batata/Mandioca
+✅ Executivo Fit: R$ 36,90 - Frango/Alcatra/Lombo + Mandioca + Salada
+✅ Executivo Laçador (Filé Mignon): R$ 51,90 - Filé com catupiry + Arroz + Feijão + Batata/Mandioca
+✅ Executivo Laçador (Contra Filé): R$ 42,90
+✅ Executivo Pescador: R$ 45,90 - Salmão ao molho de maracujá + Arroz + Legumes
+
+**🥗 SALADAS:**
+✅ Salada Simples: R$ 20,00 - Rúcula, alface, tomate, cebola
+✅ Alface Americana: R$ 24,00 - Fresca, croutons, parmesão
+
+**🥤 BEBIDAS:**
+✅ Coca-Cola 2L: R$ 15,00 | Coca Zero 2L: R$ 15,00 | Coca 350ml: R$ 11,00
+✅ Guaraná Antarctica 2L: R$ 13,00 | Lata: R$ 7,00
+✅ Fanta Laranja/Uva 2L: R$ 13,00 | Lata: R$ 7,00
+✅ Sprite Lata: R$ 7,00
+✅ Del Valle Lata 290ml (uva, pêssego, maracujá, goiaba, manga): R$ 6,00
+✅ Suco Abacaxi 500ml: R$ 12,00
+✅ Água com Gás Crystal 510ml: R$ 6,50
 
 **Condições:**
 - Taxa de entrega: R$ 7,00 (fixa)

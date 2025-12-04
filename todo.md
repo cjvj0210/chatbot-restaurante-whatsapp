@@ -82,3 +82,12 @@
 - [x] Atualizar system prompt com tom de voz real
 - [x] Atualizar banco de dados com valores corretos
 - [x] Testar IA com informações atualizadas
+
+
+## Extração do Catálogo Delivery (Vídeo)
+- [x] Extrair todos os frames do vídeo do catálogo
+- [x] Documentar todos os itens de marmitex com preços
+- [x] Documentar pratos executivos e kits
+- [x] Documentar bebidas e adicionais
+- [x] Cadastrar itens no banco de dados
+- [x] Atualizar IA com cardápio completo
