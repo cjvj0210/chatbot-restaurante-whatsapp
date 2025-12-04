@@ -6,9 +6,11 @@ import { z } from "zod";
 import * as db from "./db";
 import { verifyWebhook } from "./whatsapp";
 import { processIncomingMessage } from "./chatbot";
+import { chatSimulatorRouter } from "./chatSimulator";
 
 export const appRouter = router({
   system: systemRouter,
+  chatSimulator: chatSimulatorRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

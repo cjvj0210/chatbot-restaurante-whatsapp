@@ -174,7 +174,9 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <img src="/logo.png" alt="Estrela do Sul" className="h-8 w-auto" />
+                  <span className="font-semibold tracking-tight truncate">
+                    Navigation
+                  </span>
                 </div>
               ) : null}
             </div>

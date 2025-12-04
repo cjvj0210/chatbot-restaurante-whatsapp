@@ -62,35 +62,14 @@
 - [ ] README com instruções de deploy
 
 
-## Customização Churrascaria Estrela do Sul
-- [x] Configurar informações reais do restaurante no banco de dados
-- [ ] Criar cardápio completo de delivery (marmitex, pratos executivos, kits) - AGUARDANDO USUÁRIO
-- [x] Configurar valores do rodízio
-- [ ] Implementar lógica de horários de funcionamento específicos
-- [ ] Configurar taxas de entrega e pedido mínimo
-- [ ] Implementar cálculo de tempo de entrega por dia/período
-- [ ] Customizar tom de voz (formal, empático, humanista)
-- [ ] Adicionar tratamento de observações especiais nos pedidos
-- [ ] Implementar sistema de transferência para atendente humano
-- [ ] Criar FAQ com dúvidas comuns
-- [ ] Implementar coleta de feedback periódica
-
-## Simulador de Conversa para Testes
-- [x] Criar interface de chat simulado no painel admin
-- [x] Implementar fluxo de pedido de delivery completo
-- [x] Implementar fluxo de reserva completo
-- [x] Implementar fluxo de informações gerais
-- [x] Testar observações especiais em pedidos
-- [x] Testar transferência para atendente humano
-
-## Integrações com Sistemas Existentes
-- [ ] Pesquisar API do Colibri POS
-- [ ] Implementar integração com Colibri (ou exportação manual)
-- [ ] Pesquisar API do Get-In (reservas)
-- [ ] Implementar integração com Get-In (ou exportação manual)
-- [ ] Sistema de notificação para equipe quando houver novo pedido
-
-## Identidade Visual
-- [x] Aplicar cores da logo (vermelho, preto, branco) no painel
-- [x] Adicionar logo da Churrascaria no painel
-- [x] Customizar tema do painel administrativo
+## Melhorias no Simulador de Chat
+- [x] Substituir respostas pré-programadas por IA conversacional real (GPT-4)
+- [x] Implementar contexto de conversa (memória de mensagens anteriores)
+- [x] Criar sistema prompt com tom de voz da Churrascaria
+- [x] Integrar simulador com backend tRPC
+- [x] Adicionar informações do restaurante no contexto da IA
+- [ ] Testar respostas naturais e contextualizadas
+- [ ] Aguardar conversas reais do WhatsApp para análise
+- [ ] Analisar conversas exportadas e extrair padrões
+- [ ] Treinar IA com exemplos reais de atendimento
+- [ ] Ajustar tom de voz baseado em conversas reais
