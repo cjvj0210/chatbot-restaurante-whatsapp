@@ -91,3 +91,14 @@
 - [x] Documentar bebidas e adicionais
 - [x] Cadastrar itens no banco de dados
 - [x] Atualizar IA com cardápio completo
+
+
+## Análise de Conversas Reais do WhatsApp
+- [x] Extrair conversas dos 7 arquivos ZIP
+- [x] Analisar tom de voz real da equipe
+- [x] Identificar padrões de atendimento e fluxos
+- [x] Extrair dúvidas frequentes dos clientes
+- [x] Identificar informações faltantes no sistema
+- [x] Documentar correções necessárias
+- [x] Atualizar system prompt da IA com aprendizados
+- [x] Testar IA com cenários reais das conversas
