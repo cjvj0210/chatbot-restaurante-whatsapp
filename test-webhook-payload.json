@@ -1,0 +1,31 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [{
+    "id": "856383997122068",
+    "changes": [{
+      "field": "messages",
+      "value": {
+        "messaging_product": "whatsapp",
+        "metadata": {
+          "display_phone_number": "15551642550",
+          "phone_number_id": "874312709104071"
+        },
+        "contacts": [{
+          "profile": {
+            "name": "Cliente Teste"
+          },
+          "wa_id": "5517988112791"
+        }],
+        "messages": [{
+          "from": "5517988112791",
+          "id": "wamid.test123456",
+          "timestamp": "1704398400",
+          "type": "text",
+          "text": {
+            "body": "Olá, gostaria de fazer um pedido de delivery"
+          }
+        }]
+      }
+    }]
+  }]
+}

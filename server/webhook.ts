@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { getWhatsappSettings } from "./db";
 import { processIncomingMessage } from "./chatbot";
 import { markMessageAsRead } from "./whatsapp";
+import { logWebhookRequest } from "./debug";
 
 interface WhatsAppWebhookEntry {
   id: string;
@@ -59,11 +60,22 @@ interface WhatsAppWebhookPayload {
  * Webhook GET - Verificação do WhatsApp
  */
 export async function handleWebhookVerification(req: Request, res: Response): Promise<void> {
+  logWebhookRequest(req);
+  console.log("[Webhook] GET request received:", {
+    query: req.query,
+    headers: req.headers
+  });
+  
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
   const settings = await getWhatsappSettings();
+  console.log("[Webhook] Settings loaded:", {
+    hasSettings: !!settings,
+    isActive: settings?.isActive,
+    hasToken: !!settings?.webhookVerifyToken
+  });
   
   if (!settings) {
     console.error("[Webhook] WhatsApp settings not configured");
@@ -84,11 +96,18 @@ export async function handleWebhookVerification(req: Request, res: Response): Pr
  * Webhook POST - Recebimento de mensagens
  */
 export async function handleWebhookMessage(req: Request, res: Response): Promise<void> {
+  logWebhookRequest(req);
+  console.log("[Webhook] POST request received:", {
+    body: JSON.stringify(req.body, null, 2),
+    headers: req.headers
+  });
+  
   try {
     const body = req.body as WhatsAppWebhookPayload;
 
     // Responder imediatamente ao WhatsApp
     res.status(200).send("EVENT_RECEIVED");
+    console.log("[Webhook] Responded with EVENT_RECEIVED");
 
     // Processar mensagens de forma assíncrona
     if (body.object === "whatsapp_business_account") {
@@ -116,11 +135,17 @@ export async function handleWebhookMessage(req: Request, res: Response): Promise
                 }
 
                 if (messageText) {
+                  console.log(`[Webhook] Processing message from ${from}: "${messageText}"`);
+                  
                   // Marcar como lida
                   await markMessageAsRead(messageId);
+                  console.log(`[Webhook] Message ${messageId} marked as read`);
 
                   // Processar mensagem
                   await processIncomingMessage(from, from, messageText, messageId);
+                  console.log(`[Webhook] Message processed successfully`);
+                } else {
+                  console.log(`[Webhook] Message type ${message.type} not supported or empty`);
                 }
               }
             }

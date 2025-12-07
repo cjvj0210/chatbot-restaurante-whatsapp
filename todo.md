@@ -102,3 +102,12 @@
 - [x] Documentar correções necessárias
 - [x] Atualizar system prompt da IA com aprendizados
 - [x] Testar IA com cenários reais das conversas
+
+
+## Simulador de Conversas WhatsApp
+- [x] Criar interface de chat simulando WhatsApp
+- [x] Integrar simulador com lógica do chatbot
+- [x] Adicionar histórico de conversas de teste
+- [x] Permitir reset de conversa
+- [x] Adicionar indicador de digitação
+- [ ] Testar todos os fluxos (pedido, reserva, informações)

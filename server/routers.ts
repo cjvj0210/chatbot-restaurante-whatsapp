@@ -7,10 +7,22 @@ import * as db from "./db";
 import { verifyWebhook } from "./whatsapp";
 import { processIncomingMessage } from "./chatbot";
 import { chatSimulatorRouter } from "./chatSimulator";
+import { getWebhookLogs, clearWebhookLogs } from "./debug";
 
 export const appRouter = router({
   system: systemRouter,
   chatSimulator: chatSimulatorRouter,
+  
+  // Debug - Monitoramento de Webhooks
+  debug: router({
+    getWebhookLogs: protectedProcedure.query(async () => {
+      return getWebhookLogs();
+    }),
+    clearWebhookLogs: protectedProcedure.mutation(async () => {
+      clearWebhookLogs();
+      return { success: true };
+    }),
+  }),
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
