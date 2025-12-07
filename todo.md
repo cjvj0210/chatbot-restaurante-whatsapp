@@ -142,3 +142,16 @@
 - [x] Adicionar carta de vinhos (brancos, tintos, espumantes, exóticos)
 - [x] Remover menção de "não entrega sábado" (só mencionar se for sábado)
 - [x] Testar oferecimento de pratos com nomes corretos
+
+
+## Restaurar Pratos Executivos
+- [x] Extrair ingredientes detalhados de todos os pratos executivos do PDF
+- [x] Adicionar Executivo Estrelinha com descrição completa
+- [x] Adicionar Executivo Peãozinho com descrição completa
+- [x] Adicionar Executivo Tropeiro com descrição completa
+- [x] Adicionar Executivo Cowboy com descrição completa
+- [x] Adicionar Executivo Fit com descrição completa
+- [x] Adicionar Executivo Laçador (Filé Mignon e Contra Filé) com descrição completa
+- [x] Adicionar Executivo Pescador com descrição completa
+- [x] Atualizar Kit Churrasco com carnes à moda corretas
+- [x] Testar oferecimento de pratos executivos no simulador
