@@ -124,3 +124,10 @@
 - [x] Regra: 80% das pessoas devem chegar no horário da reserva
 - [x] Adicionar suporte a transcrição de áudios WhatsApp
 - [ ] Testar todos os cenários no simulador
+
+
+## Ajustes Finais do Bot
+- [x] Mudar nome do bot para "Gaúcho"
+- [x] Adicionar contexto de data atual (não perguntar que dia é)
+- [x] Observação sobre documento com foto para preços infantis
+- [x] Política de aniversário: petit gateau grátis com documento, sem outros descontos
