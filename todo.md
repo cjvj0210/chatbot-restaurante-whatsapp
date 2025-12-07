@@ -131,3 +131,14 @@
 - [x] Adicionar contexto de data atual (não perguntar que dia é)
 - [x] Observação sobre documento com foto para preços infantis
 - [x] Política de aniversário: petit gateau grátis com documento, sem outros descontos
+
+
+## Atualização Completa de Cardápio Delivery
+- [x] Extrair ingredientes exatos de todos os pratos executivos
+- [x] Adicionar descrições detalhadas de marmitex (G, M, P, Econômico)
+- [x] Incluir mix de churrasco (Tradicional e Nobre) com quantidades
+- [x] Adicionar guarnições e salgados com variações
+- [x] Incluir carta de drinks (caipirinhas, batidas, doses, assinaturas)
+- [x] Adicionar carta de vinhos (brancos, tintos, espumantes, exóticos)
+- [x] Remover menção de "não entrega sábado" (só mencionar se for sábado)
+- [x] Testar oferecimento de pratos com nomes corretos

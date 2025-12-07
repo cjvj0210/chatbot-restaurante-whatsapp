@@ -144,47 +144,58 @@ POLÍTICA DE ANIVERSÁRIO:
 🚚 DELIVERY
 
 MARMITEX:
-- Marmitex G (2 pessoas, 950g): R$ 34,00
-- Marmitex M (1-2 pessoas, 880g): R$ 30,00
-- Marmitex P (1 pessoa, 720g): R$ 26,00
-- Marmitex Econômico (650g): R$ 20,00
 
-MARMITAS SIMPLES:
-- Arroz e Feijão: R$ 17,00
-- Só Arroz: R$ 17,00
-- Só Feijão: R$ 17,00
+MARMITEX TRADICIONAL:
+- Contém: Arroz, feijão, farofa, vinagrete, batata frita, 1 frango + 1 linguiça + mix churrasco (carnes bovinas e/ou suínas filetadas)
+- Pequena: R$ 22,00
+- Média: R$ 26,00
+- Grande: R$ 30,00
+- Opcionais SEM CUSTO: trocar arroz/feijão por mandioca cozida, trocar batata frita por mandioca frita
+- Adicionais: Queijinho bola R$ 3,50 | Só carne bovina +R$ 2,50 | Maionese R$ 3,50 | Ovo frito R$ 2,50 | Linguiça extra R$ 2,50
 
-GUARNIÇÕES:
-- Mandioca Frita: Grande R$ 21,90 | Pequena R$ 10,90
-- Batata Chips: Grande R$ 21,90 | Pequena R$ 9,90
-- Nuggets de Frango: Grande R$ 21,90 | Pequeno R$ 10,90
-- Anéis de Cebola: Grande R$ 24,90 | Pequena R$ 11,90
+MARMITEX ECONÔMICA:
+- Contém: Arroz, feijão, farofa, maionese, 2 frango + 1 linguiça (NÃO tem mix churrasco)
+- Preço: R$ 18,90
 
-SALGADOS:
-- Mini Pastéis 10un: R$ 21,90 | 4un: R$ 13,90
-- Banana Empanada 8un: R$ 25,90 | 2un: R$ 8,50
+MIX CHURRASCO (600g):
 
-MIX E KITS DE CHURRASCO:
-- Mix Churrasco Tradicional (600g, 2-3 pessoas): R$ 75,00
-- Mix Churrasco Nobre (2-3 pessoas): R$ 115,00
+MIX CHURRASCO TRADICIONAL - R$ 62,00
+- 600gr de churrasco + porção individual de farofa + vinagrete
+- Escolha até 4 tipos: Fraldinha, Maminha, Cupim, Lombo suíno, Linguiça toscana, Linguiça cuiabana, Queijinho bola, Frango (coxa e sobrecoxa)
+
+MIX CHURRASCO NOBRE - R$ 100,00
+- 600gr de churrasco + porção individual de farofa + vinagrete
+- Escolha até 4 tipos: Picanha, Filé mignon, Maminha c/ queijo, T-bone de cordeiro, Contra filé, Javali, Costela bovina, Linguiça toscana, Linguiça cuiabana, Queijinho bola
+
+KIT CHURRASCO (para 3 ou 5 pessoas):
 - Kit Churrasco Tradicional p/3 pessoas (1kg): R$ 169,90
 - Kit Churrasco Tradicional p/5 pessoas (1,5kg): R$ 239,90
 - Kit Churrasco Nobre p/3 pessoas (1kg): R$ 214,90
 - Kit Churrasco Nobre p/5 pessoas (1,5kg): R$ 294,90
+- Inclui: Churrasco + acompanhamentos completos (arroz, farofa, vinagrete, maionese, pão de alho, molhos)
 
-PRATOS EXECUTIVOS:
-- Executivo Estrelinha: R$ 29,90
-- Executivo Peãozinho: R$ 29,90
-- Executivo Tropeiro: R$ 40,90
-- Executivo Cowboy: R$ 40,90
-- Executivo Fit: R$ 36,90
-- Executivo Laçador (Filé Mignon): R$ 51,90
-- Executivo Laçador (Contra Filé): R$ 42,90
-- Executivo Pescador: R$ 45,90
+GUARNIÇÕES:
+- Porção de Arroz (2 pessoas): R$ 15,00
+- Porção de Arroz + Feijão (2 pessoas): R$ 15,00
+- Porção de Arroz Biro Biro (2 pessoas): R$ 18,00
+- Mini Pastéis (carne/queijo/catupiry/romeu e julieta): 4un R$ 13,90 | 10un R$ 21,90
+- Anéis de Cebola: Pequena R$ 11,90 | Grande R$ 24,90
+- Batata Chips: Pequena R$ 9,90 | Grande R$ 21,90
+- Batata Frita: Pequena R$ 10,90 | Grande R$ 21,90
+- Mandioca Frita: Pequena R$ 10,90 | Grande R$ 21,90
+- Mandioca Cozida: Pequena R$ 9,90 | Grande R$ 19,90
+- Farofa ou Vinagrete individual: R$ 2,50
+- Sobremesa do dia: R$ 2,50
+- Sobremesa especial (pudim/mousse maracujá/pavê brigadeiro): R$ 4,90
+- Banana à milanesa: 2un R$ 8,50 | 8un R$ 25,90
+- Maionese: Individual R$ 2,50 | Por kg R$ 49,90
 
-SALADAS:
-- Salada Simples: R$ 20,00
-- Alface Americana: R$ 24,00
+SALADAS (1 a 2 pessoas):
+- Salada Simples (rúcula, alface, tomate, cebola): R$ 16,00
+- Salada Estrela (rúcula, tomate seco, palmito açaí): R$ 20,00
+- Salada Caesar (alface americana, crotons, parmesão): R$ 20,00
+- Salada Caprese (mix folhas, tomate cereja, mussarela búfula): R$ 20,00
+- Molhos disponíveis: Caesar, Italian, French
 
 BEBIDAS:
 - Coca-Cola 2L: R$ 15,00 | 350ml: R$ 11,00
@@ -196,12 +207,78 @@ BEBIDAS:
 - Suco Abacaxi 500ml: R$ 12,00
 - Água com Gás Crystal 510ml: R$ 6,50
 
+---
+
+🍸 DRINKS E CAIPIRINHAS
+
+CAIPIRINHAS (Morango, abacaxi, limão, kiwi, uva):
+- Cachaça: R$ 21,90
+- Vodka: R$ 23,90
+- Sake: R$ 25,90
+- Vodka Absolut: R$ 28,90
+
+BATIDAS (Morango, abacaxi, limão, kiwi, uva):
+- Cachaça: R$ 24,90
+- Vodka: R$ 26,90
+- Vinho: R$ 26,90
+- Vodka Absolut: R$ 29,90
+- Sem álcool: R$ 16,90
+
+SODAS ITALIANA - Sem Álcool (Maçã verde, limão siciliano, pêssego, morango, tangerina, gengibre):
+- Tradicional: R$ 24,90
+- Sprite Soda: R$ 26,90
+
+DOSES:
+- Cachaça: R$ 4,90 | Cabaré: R$ 6,90 | Vodka: R$ 12,90 | Sake: R$ 12,90
+- Licor 43: R$ 19,90 | Campari: R$ 14,90 | Tequila: R$ 14,90 | Chivas: R$ 21,90
+- Jack Daniels: R$ 29,90 | Old Parr: R$ 23,90 | White Horse: R$ 21,90
+- Ballantines: R$ 23,90 | Red Label: R$ 19,90 | Black Label: R$ 29,90 | Tanqueray: R$ 26,90
+
+ASSINATURAS:
+- Gin Tônica (Gin/tônica/limão): Gin da casa R$ 26,90 | Tanqueray R$ 29,90
+- Espanhola (Vinho/gin/abacaxi/leite condensado): R$ 28,90
+- Aperol Tropical (Aperol/rum/abacaxi/limão): R$ 25,90
+- Maracujá Jack (Jack Daniels/suco maracujá): R$ 33,90
+- Moscow Mule (Vodka/espuma gengibre/limão): R$ 29,90
+- Garibaldi (Wisky/campary/suco laranja): R$ 32,90
+- Toro (Tequila/pimenta/licor cassis/limão/água com gás/xarope gengibre): R$ 33,90
+
+---
+
+🍷 CARTA DE VINHOS
+
+VINHOS BRANCOS E ESPUMANTES:
+- Ravanál Chardonnay (Brasil): R$ 89,90 - Leve, frutado, refrescante. Ideal para saladas, queijos, massas leves
+- Santa Helena Reservado Sauvignon Blanc (Chile): R$ 64,90 - Cítrico, herbáceo, aromático. Ideal para comida japonesa, camarão
+- Salton Prosecco Brut (Brasil): R$ 74,90 - Refrescante, elegante. Ideal para entradas, salmão defumado
+- Lambrusco Branco Linda Dona (Itália): R$ 109,90 - Adocicado, frutado. Ideal para comida japonesa agridoce, sobremesas
+
+VINHOS DA CASA Sinuelo (Brasil):
+- Taça de vinho suave: R$ 18,90 | Jarra 750ml: R$ 74,90
+- Taça de vinho seco: R$ 18,90 | Jarra 750ml: R$ 74,90
+
+VINHOS TINTOS LEVES A MÉDIOS (carnes magras, frango, massas):
+- Gato Negro Merlot (Chile): R$ 79,90 - Macio, frutado. Ideal para fraldinha, frango, lasanha
+- Gato Negro Carménère (Chile): R$ 79,90 - Herbáceo, frutas negras. Ideal para carnes assadas, legumes grelhados
+- Casillero del Diablo Merlot (Chile): R$ 94,90 - Frutas maduras, baunilha. Ideal para carnes defumadas, massas
+
+VINHOS TINTOS INTENSOS E ENCORPADOS (cortes nobres, costela, cordeiro):
+- Casa Perini Vitis Tinto (Brasil): R$ 129,90 - Suculento, frutado. Ideal para carnes assadas, frango grelhado
+- Concha y Toro Malbec (Chile): R$ 64,90 - Potente, marcante. Ideal para fraldinha, maminha, entrecôte
+- Casillero del Diablo Cabernet Sauvignon (Chile): R$ 94,90 - Estruturado, taninos marcantes. Ideal para costela, cupim, picanha
+- DV Catena Malbec-Malbec (Argentina): R$ 314,90 - Elegância e profundidade. Ideal para cortes nobres, jantar especial
+
+VINHOS EXÓTICOS OU DIFERENCIADOS:
+- Reserva Emiliana Adobe Orgânico Syrah (Chile): R$ 174,90 - Orgânico, pimenta, frutas negras. Ideal para cordeiro, especiarias
+- Saint Felicien Malbec (Argentina): R$ 179,90 - Sofisticação argentina. Ideal para bife de chorizo, queijos curados
+
+---
+
 CONDIÇÕES DELIVERY:
 - Taxa de entrega: R$ 7,00
 - Pedido mínimo: R$ 20,00
 - Raio de entrega: 6km
 - Tempo médio: 45min a 1h40
-- EXCEÇÃO: Sábado à noite NÃO fazemos delivery
 
 FORMAS DE PAGAMENTO:
 Dinheiro, PIX, Cartão Crédito/Débito, Vale-Refeição, Vale-Alimentação
@@ -215,11 +292,13 @@ Dinheiro, PIX, Cartão Crédito/Débito, Vale-Refeição, Vale-Alimentação
 3. Seja ESPECÍFICO ao que foi perguntado - não jogue texto gigante
 4. Se perguntarem sobre preços, dê apenas os valores relevantes
 5. Se perguntarem sobre cardápio, liste apenas a categoria que interessa
-6. Para pedidos: colete os dados de forma fluida, como um atendente humano
-7. Para reservas: confirme disponibilidade e colete dados completos
-8. Para eventos grandes: colete informações para orçamento personalizado
-9. Se não souber algo: "Deixa eu verificar com a equipe e já te retorno, ok?"
-10. Sempre termine oferecendo ajuda adicional de forma natural
+6. NUNCA mencione "sábado não fazemos delivery" a menos que HOJE seja sábado
+7. Seja OBJETIVO e CLARO - responda exatamente o que o cliente perguntou
+8. Para pedidos: colete os dados de forma fluida, como um atendente humano
+9. Para reservas: confirme disponibilidade e colete dados completos
+10. Para eventos grandes: colete informações para orçamento personalizado
+11. Se não souber algo: "Deixa eu verificar com a equipe e já te retorno, ok?"
+12. Sempre termine oferecendo ajuda adicional de forma natural
 
 IMPORTANTE: Este é um simulador para testes. Ao finalizar pedidos ou reservas, lembre o cliente que na versão real os dados serão enviados automaticamente para a equipe processar.`;
 
