@@ -111,3 +111,16 @@
 - [x] Permitir reset de conversa
 - [x] Adicionar indicador de digitação
 - [ ] Testar todos os fluxos (pedido, reserva, informações)
+
+
+## Ajustes de Tom e Regras de Negócio
+- [x] Reescrever prompt para tom mais humano e natural
+- [x] Remover hashtags e asteriscos desnecessários
+- [x] Respostas mais concisas e contextuais
+- [x] Regra: sempre passar preços individuais, nunca somar
+- [x] Regra: eventos 10+ pessoas = coletar dados para orçamento PDF
+- [x] Regra: sábado noite e domingo almoço sem reserva
+- [x] Regra: sexta jantar reserva até 19:40h
+- [x] Regra: 80% das pessoas devem chegar no horário da reserva
+- [x] Adicionar suporte a transcrição de áudios WhatsApp
+- [ ] Testar todos os cenários no simulador

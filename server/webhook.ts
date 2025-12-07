@@ -23,9 +23,17 @@ interface WhatsAppWebhookEntry {
         from: string;
         id: string;
         timestamp: string;
-        type: "text" | "image" | "audio" | "interactive";
+        type: "text" | "image" | "audio" | "interactive" | "voice";
         text?: {
           body: string;
+        };
+        audio?: {
+          id: string;
+          mime_type: string;
+        };
+        voice?: {
+          id: string;
+          mime_type: string;
         };
         interactive?: {
           type: string;
@@ -131,6 +139,22 @@ export async function handleWebhookMessage(req: Request, res: Response): Promise
                     messageText = message.interactive.button_reply.title;
                   } else if (message.interactive.list_reply) {
                     messageText = message.interactive.list_reply.title;
+                  }
+                } else if ((message.type === "audio" || message.type === "voice") && (message.audio || message.voice)) {
+                  // Processar áudio: baixar, transcrever e processar
+                  const audioId = message.audio?.id || message.voice?.id;
+                  if (audioId) {
+                    console.log(`[Webhook] Audio message received: ${audioId}`);
+                    // Importar função de transcrição
+                    const { transcribeWhatsAppAudio } = await import("./audioTranscription");
+                    const transcription = await transcribeWhatsAppAudio(audioId);
+                    if (transcription) {
+                      messageText = transcription;
+                      console.log(`[Webhook] Audio transcribed: "${messageText}"`);
+                    } else {
+                      console.log(`[Webhook] Failed to transcribe audio`);
+                      messageText = "[Mensagem de áudio - não foi possível transcrever]";
+                    }
                   }
                 }
 
