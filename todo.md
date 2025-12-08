@@ -197,3 +197,14 @@
 - [x] Implementar gerador real de imagem PNG (backend)
 - [x] Testar fluxo completo de escalação
 - [x] Testar geração e envio de PNG
+
+
+## Correção Final de Formatação
+- [x] Reforçar proibição de hashtags (###) e asteriscos duplos (**)
+- [x] Adicionar exemplos práticos de respostas corretas
+- [x] Garantir uso adequado de emojis (2-4 por mensagem)
+- [x] Eliminar asteriscos simples (*) de listas
+- [x] Adicionar emojis contextuais em todas as listas (🥩 🍖 🍗 🐟 🥗 🍚 🍟)
+- [x] Validar tom educado e cordial em todas as respostas
+- [x] Testar múltiplas interações para validar
+- [x] Confirmar ZERO hashtags, ZERO asteriscos, emojis contextuais em TODAS as listas
