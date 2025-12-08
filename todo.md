@@ -176,3 +176,13 @@
 - [x] Extrair vinhos da casa com preços atualizados
 - [x] Atualizar prompt do bot com carta de vinhos completa
 - [x] Testar conhecimento de vinhos no simulador
+
+
+## Correções de Tom e Comportamento do Bot
+- [x] Analisar conversa do simulador e documentar problemas
+- [x] Tornar bot MUITO mais educado e cordial
+- [x] Aumentar uso de emojis (manter moderação mas ser mais caloroso)
+- [x] Listar ingredientes completos ao falar de pratos delivery
+- [x] Melhorar saudações e despedidas
+- [x] Adicionar mais empatia nas respostas
+- [x] Testar nova versão no simulador
