@@ -166,3 +166,13 @@
 - [x] Identificar como lidar com solicitações especiais
 - [x] Atualizar prompt do bot com aprendizados
 - [x] Documentar todos os insights extraídos
+
+
+## Atualização Carta de Vinhos Atual
+- [x] Extrair vinhos brancos e espumantes com preços atualizados
+- [x] Extrair vinhos tintos intensos e encorpados com preços atualizados
+- [x] Extrair vinhos exóticos ou diferenciados com preços atualizados
+- [x] Extrair vinhos tintos leves a médios com preços atualizados
+- [x] Extrair vinhos da casa com preços atualizados
+- [x] Atualizar prompt do bot com carta de vinhos completa
+- [x] Testar conhecimento de vinhos no simulador

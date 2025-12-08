@@ -290,32 +290,32 @@ ASSINATURAS:
 
 ---
 
-🍷 CARTA DE VINHOS
+🍷 CARTA DE VINHOS (RODÍZIO)
 
-VINHOS BRANCOS E ESPUMANTES:
-- Ravanál Chardonnay (Brasil): R$ 89,90 - Leve, frutado, refrescante. Ideal para saladas, queijos, massas leves
-- Santa Helena Reservado Sauvignon Blanc (Chile): R$ 64,90 - Cítrico, herbáceo, aromático. Ideal para comida japonesa, camarão
-- Salton Prosecco Brut (Brasil): R$ 74,90 - Refrescante, elegante. Ideal para entradas, salmão defumado
-- Lambrusco Branco Linda Dona (Itália): R$ 109,90 - Adocicado, frutado. Ideal para comida japonesa agridoce, sobremesas
+VINHOS BRANCOS E ESPUMANTES (entradas, queijos, saladas, frutos do mar):
+- Ravanal Chardonnay (Brasil): R$ 89,90 - Leve, frutado, refrescante. Notas tropicais, acidez delicada
+- Santa Helena Sauvignon Blanc (Chile): R$ 64,90 - Cítrico, herbáceo, aromático. Aromas limão e maracujá
+- Salton Prosecco Brut (Brasil): R$ 74,90 - Espumante vibrante, bolhas finas, toque floral
+- Lambrusco Branco Linda Dona (Itália): R$ 109,90 - Frisante, notas pera e melão, levemente adocicado
 
 VINHOS DA CASA Sinuelo (Brasil):
-- Taça de vinho suave: R$ 18,90 | Jarra 750ml: R$ 74,90
-- Taça de vinho seco: R$ 18,90 | Jarra 750ml: R$ 74,90
+- Taça vinho suave: R$ 18,90 | Jarra 750ml: R$ 74,90
+- Taça vinho seco: R$ 18,90 | Jarra 750ml: R$ 74,90
 
 VINHOS TINTOS LEVES A MÉDIOS (carnes magras, frango, massas):
-- Gato Negro Merlot (Chile): R$ 79,90 - Macio, frutado. Ideal para fraldinha, frango, lasanha
-- Gato Negro Carménère (Chile): R$ 79,90 - Herbáceo, frutas negras. Ideal para carnes assadas, legumes grelhados
-- Casillero del Diablo Merlot (Chile): R$ 94,90 - Frutas maduras, baunilha. Ideal para carnes defumadas, massas
+- Gato Negro Merlot (Chile): R$ 79,90 - Macio, frutado, taninos suaves, corpo médio
+- Gato Negro Carménère (Chile): R$ 79,90 - Notas herbáceas, frutas negras, toque especiado
+- Casillero del Diablo Merlot (Chile): R$ 94,90 - Frutas maduras, toque baunilha, taninos elegantes
 
 VINHOS TINTOS INTENSOS E ENCORPADOS (cortes nobres, costela, cordeiro):
-- Casa Perini Vitis Tinto (Brasil): R$ 129,90 - Suculento, frutado. Ideal para carnes assadas, frango grelhado
-- Concha y Toro Malbec (Chile): R$ 64,90 - Potente, marcante. Ideal para fraldinha, maminha, entrecôte
-- Casillero del Diablo Cabernet Sauvignon (Chile): R$ 94,90 - Estruturado, taninos marcantes. Ideal para costela, cupim, picanha
-- DV Catena Malbec-Malbec (Argentina): R$ 314,90 - Elegância e profundidade. Ideal para cortes nobres, jantar especial
+- Casa Perini Vitis Tinto (Brasil): R$ 129,90 - Uvas Serra Gaúcha, frutas vermelhas maduras, taninos sedosos
+- Concha y Toro Malbec (Chile): R$ 64,90 - Potente, frutado, final marcante, excelente custo-benefício
+- Casillero del Diablo Cabernet Sauvignon (Chile): R$ 94,90 - Estruturado, taninos marcantes, notas madeira
+- DV Catena Malbec-Malbec (Argentina): R$ 314,90 - Duas expressões Malbec, toques violeta/cacau/frutas negras
 
 VINHOS EXÓTICOS OU DIFERENCIADOS:
-- Reserva Emiliana Adobe Orgânico Syrah (Chile): R$ 174,90 - Orgânico, pimenta, frutas negras. Ideal para cordeiro, especiarias
-- Saint Felicien Malbec (Argentina): R$ 179,90 - Sofisticação argentina. Ideal para bife de chorizo, queijos curados
+- Reserva Emiliana Adobe Orgânico Syrah (Chile): R$ 174,90 - Orgânico, sustentável, toques pimenta/frutas negras/terroso
+- Saint Felicien Malbec (Argentina): R$ 179,90 - Malbec refinado Catena Zapata, corpo médio, final persistente
 
 ---
 
