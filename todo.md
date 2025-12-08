@@ -155,3 +155,14 @@
 - [x] Adicionar Executivo Pescador com descrição completa
 - [x] Atualizar Kit Churrasco com carnes à moda corretas
 - [x] Testar oferecimento de pratos executivos no simulador
+
+
+## Análise de Conversas Reais do WhatsApp Business
+- [x] Descompactar todos os 15 arquivos ZIP de conversas
+- [x] Analisar tom de voz e padrões de resposta
+- [x] Identificar palavras e expressões comuns da marca
+- [x] Mapear uso de emojis e formatação
+- [x] Extrair valores atualizados (out/2025 em diante)
+- [x] Identificar como lidar com solicitações especiais
+- [x] Atualizar prompt do bot com aprendizados
+- [x] Documentar todos os insights extraídos
