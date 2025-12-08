@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, RotateCcw, Smartphone } from "lucide-react";
+import { Send, RotateCcw, Smartphone, Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -23,7 +23,11 @@ export default function Simulator() {
   ]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingAudio, setIsProcessingAudio] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const [sessionId] = useState(() => `session-${Date.now()}`);
 
@@ -55,6 +59,35 @@ export default function Simulator() {
   });
 
   const resetMutation = trpc.chatSimulator.resetConversation.useMutation();
+
+  const sendAudioMutation = trpc.chatSimulator.sendAudio.useMutation({
+    onSuccess: (response: { message: string; transcription: string; timestamp: Date }) => {
+      setIsProcessingAudio(false);
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text: response.message,
+          sender: "bot",
+          timestamp: new Date(response.timestamp),
+        },
+      ]);
+    },
+    onError: (error: any) => {
+      setIsProcessingAudio(false);
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text: `❌ Erro ao processar áudio: ${error.message}`,
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -102,6 +135,78 @@ export default function Simulator() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Adicionar mensagem de áudio do usuário
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            text: "🎤 Áudio gravado (processando...)",
+            sender: "user",
+            timestamp: new Date(),
+          },
+        ]);
+
+        setIsProcessingAudio(true);
+        setIsTyping(true);
+
+        // Converter para base64
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          const base64Audio = (reader.result as string).split(',')[1];
+          
+          // Enviar para o backend
+          sendAudioMutation.mutate({
+            sessionId,
+            audioBase64: base64Audio,
+            mimeType: 'audio/webm',
+          });
+        };
+
+        // Parar stream
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Erro ao acessar microfone:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text: "❌ Erro ao acessar microfone. Verifique as permissões.",
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
     }
   };
 
@@ -183,17 +288,29 @@ export default function Simulator() {
         {/* Input */}
         <div className="bg-[#f0f0f0] dark:bg-[#202c33] p-3 rounded-b-lg">
           <div className="flex gap-2">
+            <Button
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isTyping || isProcessingAudio}
+              className={`${
+                isRecording 
+                  ? "bg-red-600 hover:bg-red-700 animate-pulse" 
+                  : "bg-[#075e54] hover:bg-[#064e47]"
+              } text-white`}
+              title={isRecording ? "Parar gravação" : "Gravar áudio"}
+            >
+              {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </Button>
             <Input
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Digite uma mensagem..."
               className="flex-1 bg-white dark:bg-[#2a3942] border-none"
-              disabled={isTyping}
+              disabled={isTyping || isRecording}
             />
             <Button
               onClick={handleSend}
-              disabled={!inputText.trim() || isTyping}
+              disabled={!inputText.trim() || isTyping || isRecording}
               className="bg-[#075e54] hover:bg-[#064e47] text-white"
             >
               <Send className="w-4 h-4" />
@@ -209,6 +326,7 @@ export default function Simulator() {
           <li>• Experimente perguntar "Qual o cardápio?" ou "Quero fazer um pedido"</li>
           <li>• Teste fazer uma reserva: "Gostaria de reservar uma mesa"</li>
           <li>• Pergunte sobre horários: "Qual o horário de funcionamento?"</li>
+          <li>• <strong>🎤 Clique no botão de microfone para gravar áudio e testar transcrição!</strong></li>
           <li>• Teste o tom de voz e naturalidade das respostas</li>
           <li>• Use o botão "Reiniciar" para começar uma nova conversa do zero</li>
         </ul>

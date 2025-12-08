@@ -222,3 +222,14 @@
 - [x] Testar múltiplas interações para validar
 - [x] Confirmar que ZERO texto técnico aparece nas respostas
 - [x] Validar via API que resposta está limpa e natural
+
+
+## Funcionalidade de Áudio no Simulador WhatsApp
+- [x] Adicionar botão de gravação de áudio na interface do simulador
+- [x] Implementar captura de áudio do microfone do navegador
+- [x] Implementar upload de áudio para S3
+- [x] Criar endpoint tRPC para processar áudio
+- [x] Integrar transcrição de áudio (Whisper API)
+- [x] Processar transcrição pelo chatbot
+- [x] Exibir áudio gravado como mensagem no chat
+- [x] Testar fluxo completo de gravação → transcrição → resposta (pronto para teste do usuário)

@@ -561,4 +561,88 @@ IMPORTANTE: Este é um simulador para testes. Ao finalizar pedidos ou reservas, 
       conversations.delete(input.sessionId);
       return { success: true };
     }),
+
+  sendAudio: publicProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+        audioBase64: z.string(),
+        mimeType: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { sessionId, audioBase64, mimeType } = input;
+
+      // Converter base64 para buffer
+      const audioBuffer = Buffer.from(audioBase64, "base64");
+
+      // Fazer upload do áudio para S3
+      const { storagePut } = await import("./storage");
+      const audioKey = `audio-simulator/${sessionId}-${Date.now()}.webm`;
+      const { url: audioUrl } = await storagePut(audioKey, audioBuffer, mimeType);
+
+      // Transcrever áudio
+      const { transcribeAudio } = await import("./_core/voiceTranscription");
+      const transcription = await transcribeAudio({
+        audioUrl,
+        language: "pt",
+      });
+
+      // Verificar se a transcrição foi bem-sucedida
+      if (!('text' in transcription)) {
+        throw new Error('Erro ao transcrever áudio');
+      }
+      const transcribedText = transcription.text;
+
+      // Buscar informações do restaurante
+      const settings = await getRestaurantSettings();
+
+      // Obter histórico da conversa
+      let history = conversations.get(sessionId) || [];
+
+      // Adicionar mensagem transcrita ao histórico
+      history.push({ role: "user", content: transcribedText });
+
+      // Obter data atual para contexto
+      const hoje = new Date();
+      const diaSemana = hoje.toLocaleDateString('pt-BR', { weekday: 'long' });
+      const dataCompleta = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      // Usar o mesmo system prompt do sendMessage
+      const systemPrompt = `Você é o Gaúchinho 🤠, atendente virtual da Churrascaria Estrela do Sul, restaurante tradicional de Barretos-SP desde 1998.
+
+⚠️ INSTRUÇÃO CRÍTICA:
+NUNCA mostre seu processo de raciocínio, análise interna, passos numerados ou qualquer texto técnico nas respostas.
+Responda APENAS com a mensagem final limpa e natural que o cliente deve ver.
+Sem "1. Determine...", sem "2. Formulate...", sem "Self-Correction:", sem "Draft:", sem "Note:".
+APENAS a resposta conversacional final!
+
+CONTEXTO ATUAL:
+Hoje é ${diaSemana}, ${dataCompleta}.`;
+
+      // Chamar LLM
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...history,
+        ],
+      });
+
+      const botMessageContent = response.choices[0]?.message?.content;
+      const botMessage = typeof botMessageContent === 'string' 
+        ? botMessageContent 
+        : "Desculpe, não consegui processar sua mensagem.";
+
+      // Adicionar resposta do bot ao histórico
+      history.push({ role: "assistant", content: botMessage });
+
+      // Salvar histórico atualizado
+      conversations.set(sessionId, history);
+
+      return {
+        message: botMessage,
+        transcription: transcribedText,
+        timestamp: new Date(),
+      };
+    }),
 });
