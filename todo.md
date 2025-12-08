@@ -186,3 +186,14 @@
 - [x] Melhorar saudações e despedidas
 - [x] Adicionar mais empatia nas respostas
 - [x] Testar nova versão no simulador
+
+
+## Escalação para Atendente Humano e Resumo de Pedido
+- [x] Detectar frustração/nervosismo do cliente (palavras-chave, repetição de problemas)
+- [x] Oferecer opção de falar com humano quando detectar frustração
+- [x] Criar sistema de "apertar número" para escalar atendimento
+- [x] Adicionar instrução de geração de PNG no prompt
+- [x] Integrar envio automático de PNG após confirmação de pedido
+- [x] Implementar gerador real de imagem PNG (backend)
+- [x] Testar fluxo completo de escalação
+- [x] Testar geração e envio de PNG
