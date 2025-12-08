@@ -208,3 +208,9 @@
 - [x] Validar tom educado e cordial em todas as respostas
 - [x] Testar múltiplas interações para validar
 - [x] Confirmar ZERO hashtags, ZERO asteriscos, emojis contextuais em TODAS as listas
+
+
+## Troca de Nome do Bot
+- [x] Trocar "Gaúcho" para "Gaúchinho 🤠" em todas as ocorrências
+- [x] Testar apresentação no simulador
+- [x] Validar que emoji aparece corretamente
