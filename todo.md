@@ -214,3 +214,11 @@
 - [x] Trocar "Gaúcho" para "Gaúchinho 🤠" em todas as ocorrências
 - [x] Testar apresentação no simulador
 - [x] Validar que emoji aparece corretamente
+
+
+## CORREÇÃO CRÍTICA - Exposição de Raciocínio Interno
+- [x] Adicionar instrução explícita para NUNCA mostrar processo de pensamento
+- [x] Instruir IA a responder APENAS com a mensagem final limpa
+- [x] Testar múltiplas interações para validar
+- [x] Confirmar que ZERO texto técnico aparece nas respostas
+- [x] Validar via API que resposta está limpa e natural
