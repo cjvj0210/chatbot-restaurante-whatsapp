@@ -83,7 +83,7 @@ Telefones: (17) 3325-8628 | WhatsApp: (17) 98222-2790
 
 HORÁRIO:
 • Almoço: 11h às 15h (todos os dias)
-• Jantar: 19h às 22h45 (terça a domingo)
+• Jantar: 19h às 22h30 (terça a domingo)
 • Segunda à noite: FECHADO
 
 ---
@@ -138,22 +138,22 @@ REGRAS DE RESERVAS:
 
 🚚 DELIVERY
 
-Taxa: R$ 8,00 | Pedido mínimo: R$ 30,00
+Taxa: R$ 7,00 | Pedido mínimo: R$ 30,00
 Pagamento: Dinheiro, Cartão, PIX
 
 MARMITEX TRADICIONAL:
 - Contém: Arroz, feijão, farofa, vinagrete, batata frita, 1 frango + 1 linguiça + mix churrasco
-- Pequena: R$ 22,00
-- Média: R$ 26,00
-- Grande: R$ 30,00
+- Pequena: R$ 26,00
+- Média: R$ 30,00
+- Grande: R$ 34,00
 
 MARMITEX ECONÔMICA:
 - Contém: Arroz, feijão, farofa, maionese, 2 frango + 1 linguiça (SEM mix churrasco)
 - Preço: R$ 18,90
 
 ADICIONAIS MARMITEX:
-- Queijinho bola unidade: R$ 3,50
-- Só carne bovina: R$ 2,50 (acrescenta na marmitex escolhida)
+- Queijinho bola unidade: R$ 4,00
+- Só carne bovina: R$ 4,00 (acrescenta na marmitex escolhida)
 - Maionese individual: R$ 3,50
 - Ovo frito unidade: R$ 2,50
 - Linguiça extra unidade: R$ 2,50
@@ -164,11 +164,11 @@ OPCIONAIS (sem custo):
 
 MIX CHURRASCO (600g) - DELIVERY:
 
-MIX TRADICIONAL - R$ 62,00
+MIX TRADICIONAL - R$ 75,00
 - 600g de churrasco + farofa + vinagrete
 - Escolha até 4 tipos: Fraldinha, Maminha, Cupim, Lombo suíno, Linguiça toscana, Linguiça cuiabana, Queijinho bola, Frango
 
-MIX NOBRE - R$ 100,00
+MIX NOBRE - R$ 115,00
 - 600g de churrasco + farofa + vinagrete
 - Escolha até 4 tipos: Picanha, Filé mignon, Maminha c/ queijo, T-bone cordeiro, Contra filé, Javali, Costela bovina, Linguiça toscana, Linguiça cuiabana, Queijinho bola
 
@@ -176,30 +176,30 @@ MIX NOBRE - R$ 100,00
 
 🍽️ PRATOS EXECUTIVOS (PRESENCIAL - NÃO DELIVERY)
 
-EXECUTIVO COWBOY - R$ 33,90
+EXECUTIVO COWBOY - R$ 40,90
 - Escolha 2 carnes: Fraldinha OU Maminha OU Cupim
 - Acompanhamentos: Batata/mandioca frita + Farofa/maionese + Arroz biro biro
 
-EXECUTIVO FIT - R$ 29,90
+EXECUTIVO FIT - R$ 36,90
 - Escolha 2 carnes: Frango OU Alcatra OU Lombo suíno
 - Acompanhamentos: Mandioca cozida/arroz biro biro + Farofa/batata chips + Salada simples
 
-EXECUTIVO TROPEIRO - R$ 33,90
+EXECUTIVO TROPEIRO - R$ 40,90
 - Escolha 1: Costela no bafo OU Cupim filetado
 - Acompanhamentos: Arroz biro biro + Feijão tropeiro + Maionese
 
 EXECUTIVO LAÇADOR
 - Filé bovino ao molho de catupiry
 - Acompanhamentos: Arroz + Feijão + Batata chips/fritas
-- Contra filé: R$ 35,90 | Filé mignon: R$ 45,90
+- Contra filé: R$ 42,90 | Filé mignon: R$ 51,90
 
-EXECUTIVO PESCADOR - R$ 37,90
+EXECUTIVO PESCADOR - R$ 45,90
 - Salmão grelhado com molho de maracujá
 - Acompanhamentos: Arroz + Batata chips + Legumes salteados
 
 EXECUTIVOS KIDS:
-- ESTRELINHA (R$ 24,90): Arroz/purê + Salada/legumes + Polenta/batata frita + Strogonoff/isca frango
-- PEÃOZINHO (R$ 25,90): Batata sorriso/chips + Legumes/salada + Mac cheese/nhoque + Nuggets/fraldinha
+- ESTRELINHA (R$ 29,90): Arroz/purê + Salada/legumes + Polenta/batata frita + Strogonoff/isca frango
+- PEÃOZINHO (R$ 29,90): Batata sorriso/chips + Legumes/salada + Mac cheese/nhoque + Nuggets/fraldinha
 
 OBS: Arroz biro biro = Arroz temperado com tomate, cenoura, bacon, batata palha e ovo mexido
 
@@ -208,16 +208,16 @@ OBS: Arroz biro biro = Arroz temperado com tomate, cenoura, bacon, batata palha 
 🥩 KITS CHURRASCO (PRESENCIAL - NÃO DELIVERY)
 
 KIT TRADICIONAL:
-- 3 pessoas (1kg): R$ 145,90
-- 5 pessoas (1,5kg): R$ 214,90
+- 3 pessoas (1kg): R$ 169,90
+- 5 pessoas (1,5kg): R$ 239,90
 - Carnes: Costelão bovino, cupim, maminha c/ queijo, fraldinha, linguiça cuiabana, coraçãozinho, frango
 - Acompanhamentos: Arroz, mandioca cozida, banana à milanesa, farofa, vinagrete, alho frito, molho barbecue, chimichurri
 
 KIT NOBRE:
-- 3 pessoas (1kg): R$ 189,90
-- 5 pessoas (1,5kg): R$ 269,90
+- 3 pessoas (1kg): R$ 214,90
+- 5 pessoas (1,5kg): R$ 294,90
 - Carnes: Picanha, filé mignon, ancho argentino, T-bone cordeiro, linguiça cuiabana, baby beef, javali
-- Acompanhamentos: Arroz, mandioca cozida, banana à milanesa, farofa, vinagrete, alho frito, molho barbecue, chimichurri
+- Acompanhamentos: Porção de arroz, mandioca cozida, banana à milanesa, farofa, vinagrete, alho frito, molho barbecue, chimichurri
 
 ---
 

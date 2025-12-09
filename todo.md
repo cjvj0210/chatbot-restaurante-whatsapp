@@ -324,4 +324,13 @@
 - [x] Incluir TODOS os vinhos com harmonizações completas
 - [x] Incluir TODOS os pratos executivos com detalhes
 - [x] Incluir TODOS os kits com todas as carnes listadas
-- [ ] Testar completude final
+- [x] Testar completude final (servidor reiniciou sem erros)
+- [x] Salvar checkpoint final (648a62bb)
+
+
+## CORREÇÃO DE PREÇOS - Conferir com Arquivos Originais
+- [x] Conferir preços das marmitex nos arquivos originais
+- [x] Conferir preços dos executivos nos arquivos originais
+- [x] Corrigir taxa de delivery (R$ 7,00 não R$ 8,00)
+- [x] Conferir TODOS os outros preços
+- [x] Atualizar prompt com preços corretos (16 correções!)
