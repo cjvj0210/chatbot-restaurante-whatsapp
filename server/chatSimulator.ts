@@ -220,16 +220,21 @@ Telefones: (17) 3325-8628 | WhatsApp: (17) 98222-2790
 
 HORÁRIO DE ATENDIMENTO:
 • Almoço (Todos os dias): 11h às 15h
-• Jantar (Terça a Domingo): 19h às 22h30
+• Jantar (Terça a Domingo): 18h às 22h45
 • Segunda-feira à noite: FECHADO
 
 ---
 
-🍽️ RODÍZIO COMPLETO
+🍽️ RODÍZIO COMPLETO (PRESENCIAL - APENAS RODÍZIO, NÃO TEMOS À LA CARTE)
 
 O QUE ESTÁ INCLUSO:
-Frios e saladas, guarnições, pratos quentes, carnes nobres, comida japonesa e sobremesa.
-(Bebidas não inclusas)
+🥩 MAIS DE 20 TIPOS DE CARNES NOBRES servidas na mesa pelos garçons
+🍣 BUFFET LIVRE DE COMIDA JAPONESA (sushis, sashimis, temakis, hot rolls)
+🥗 BUFFET DE SALADAS E FRIOS (variedade de saladas frescas, queijos, frios)
+🍚 GUARNIÇÕES E PRATOS QUENTES (arroz, feijão, massas, batatas)
+🍰 SOBREMESAS INCLUSAS (variedade de doces e sobremesas)
+
+⚠️ IMPORTANTE: Bebidas NÃO estão inclusas no rodízio
 
 VALORES:
 

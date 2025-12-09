@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE restaurant_settings SET openingHours = '{\"almoco\": \"11:00 - 15:00\", \"jantar\": \"18:00 - 22:45\"}' WHERE id = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute UPDATE restaurant_settings SET openingHours = '{\"almoco\": \"11:00 - 15:00\", \"jantar\": \"18:00 - 22:45\"}' WHERE id = 1;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 66
+}

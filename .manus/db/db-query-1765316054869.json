@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM restaurant_settings; INSERT INTO restaurant_settings (name, phone, address, openingHours, acceptsDelivery, acceptsReservation, deliveryFee, minimumOrder, paymentMethods) VALUES ('Churrascaria Estrela do Sul', '(17) 3322-8899', 'Rua dos Gaúchos, 123 - Centro, Barretos-SP', '{\"almoco\": \"11:00 - 15:00\", \"jantar\": \"18:00 - 22:45\"}', 1, 1, 800, 3000, '[\"Dinheiro\", \"Cartão de Débito\", \"Cartão de Crédito\", \"PIX\"]');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute DELETE FROM restaurant_settings; INSERT INTO restaurant_settings (name, phone, address, openingHours, acceptsDelivery, acceptsReservation, deliveryFee, minimumOrder, paymentMethods) VALUES ('Churrascaria Estrela do Sul', '(17) 3322-8899', 'Rua dos Gaúchos, 123 - Centro, Barretos-SP', '{\"almoco\": \"11:00 - 15:00\", \"jantar\": \"18:00 - 22:45\"}', 1, 1, 800, 3000, '[\"Dinheiro\", \"Cartão de Débito\", \"Cartão de Crédito\", \"PIX\"]');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 90
+}

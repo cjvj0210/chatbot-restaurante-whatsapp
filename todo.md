@@ -249,3 +249,15 @@
 - [x] Exibir áudios e transcrições
 - [x] Adicionar ao menu do dashboard
 - [x] Testar URL compartilhável completa
+
+
+## CORREÇÃO URGENTE - Informações Incorretas do Restaurante
+- [x] Atualizar preço do rodízio jantar para R$ 109,90 (estava R$ 89,90)
+- [x] Corrigir horário de fechamento para 22:45h (estava 23h)
+- [x] Adicionar informação sobre buffet de comida japonesa no rodízio
+- [x] Adicionar informação sobre sobremesas incluídas
+- [x] Remover menção a "à la carte" no rodízio presencial (É APENAS RODÍZIO)
+- [x] Criar arquivo compartilhado chatbotPrompt.ts com prompt completo
+- [x] Atualizar publicTest.ts para usar prompt compartilhado
+- [x] Atualizar banco de dados com informações corretas
+- [x] Testar correções no simulador e página pública (SUCESSO!)
