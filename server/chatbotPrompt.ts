@@ -150,7 +150,158 @@ MARMITEX ECONÔMICA:
 - Contém: Arroz, feijão, farofa, maionese, 2 frango + 1 linguiça (SEM mix churrasco)
 - Preço: R$ 18,90
 
+ADICIONAIS MARMITEX:
+- Queijinho bola unidade: R$ 3,50
+- Só carne bovina: R$ 2,50 (acrescenta na marmitex escolhida)
+- Maionese individual: R$ 3,50
+- Ovo frito unidade: R$ 2,50
+- Linguiça extra unidade: R$ 2,50
+
+OPCIONAIS (sem custo):
+- Trocar arroz e feijão por mandioca cozida
+- Trocar batata frita por mandioca frita
+
+MIX CHURRASCO (600g) - DELIVERY:
+
+MIX TRADICIONAL - R$ 62,00
+- 600g de churrasco + farofa + vinagrete
+- Escolha até 4 tipos: Fraldinha, Maminha, Cupim, Lombo suíno, Linguiça toscana, Linguiça cuiabana, Queijinho bola, Frango
+
+MIX NOBRE - R$ 100,00
+- 600g de churrasco + farofa + vinagrete
+- Escolha até 4 tipos: Picanha, Filé mignon, Maminha c/ queijo, T-bone cordeiro, Contra filé, Javali, Costela bovina, Linguiça toscana, Linguiça cuiabana, Queijinho bola
+
 ---
+
+🍽️ PRATOS EXECUTIVOS (PRESENCIAL - NÃO DELIVERY)
+
+EXECUTIVO COWBOY - R$ 33,90
+- Escolha 2 carnes: Fraldinha OU Maminha OU Cupim
+- Acompanhamentos: Batata/mandioca frita + Farofa/maionese + Arroz biro biro
+
+EXECUTIVO FIT - R$ 29,90
+- Escolha 2 carnes: Frango OU Alcatra OU Lombo suíno
+- Acompanhamentos: Mandioca cozida/arroz biro biro + Farofa/batata chips + Salada simples
+
+EXECUTIVO TROPEIRO - R$ 33,90
+- Escolha 1: Costela no bafo OU Cupim filetado
+- Acompanhamentos: Arroz biro biro + Feijão tropeiro + Maionese
+
+EXECUTIVO LAÇADOR
+- Filé bovino ao molho de catupiry
+- Acompanhamentos: Arroz + Feijão + Batata chips/fritas
+- Contra filé: R$ 35,90 | Filé mignon: R$ 45,90
+
+EXECUTIVO PESCADOR - R$ 37,90
+- Salmão grelhado com molho de maracujá
+- Acompanhamentos: Arroz + Batata chips + Legumes salteados
+
+EXECUTIVOS KIDS:
+- ESTRELINHA (R$ 24,90): Arroz/purê + Salada/legumes + Polenta/batata frita + Strogonoff/isca frango
+- PEÃOZINHO (R$ 25,90): Batata sorriso/chips + Legumes/salada + Mac cheese/nhoque + Nuggets/fraldinha
+
+---
+
+🥩 KITS CHURRASCO (PRESENCIAL - NÃO DELIVERY)
+
+KIT TRADICIONAL:
+- 3 pessoas (1kg): R$ 145,90
+- 5 pessoas (1,5kg): R$ 214,90
+- Carnes: Costelão bovino, cupim, maminha c/ queijo, fraldinha, linguiça cuiabana, coraçãozinho, frango
+- Acompanhamentos: Arroz, mandioca cozida, banana à milanesa, farofa, vinagrete, alho frito, molho barbecue, chimichurri
+
+KIT NOBRE:
+- 3 pessoas (1kg): R$ 189,90
+- 5 pessoas (1,5kg): R$ 269,90
+- Carnes: Picanha, filé mignon, ancho argentino, T-bone cordeiro, linguiça cuiabana, baby beef, javali
+- Acompanhamentos: Arroz, mandioca cozida, banana à milanesa, farofa, vinagrete, alho frito, molho barbecue, chimichurri
+
+---
+
+🍷 CARTA DE VINHOS (PRESENCIAL - RODÍZIO)
+
+VINHOS DA CASA SINUELO (Brasil):
+- Taça vinho suave: R$ 18,90
+- Jarra (750ml) vinho suave: R$ 74,90
+- Taça vinho seco: R$ 18,90
+- Jarra (750ml) vinho seco: R$ 74,90
+
+BRANCOS E ESPUMANTES:
+
+🥂 Ravanal Chardonnay (Brasil) - R$ 89,90
+Leve, frutado, refrescante. Notas tropicais.
+Harmoniza: saladas, queijos, massas leves, peixe grelhado
+
+🥂 Santa Helena Sauvignon Blanc (Chile) - R$ 64,90
+Cítrico, herbáceo, aromático. Acidez marcante.
+Harmoniza: comida japonesa, saladas, queijos cabra, camarão
+
+🥂 Salton Prosecco Brut (Brasil) - R$ 74,90
+Refrescante, elegante, bolhas finas.
+Harmoniza: entradas, salmão defumado, tempurá, sobremesas leves
+
+🥂 Lambrusco Branco Linda Dona (Itália) - R$ 109,90
+Adocicado, frutado, frisante. Notas de pera e melão.
+Harmoniza: comida japonesa agridoce, queijos azuis, sobremesas
+
+TINTOS INTENSOS E ENCORPADOS:
+
+🍷 Casa Perini Vitis Tinto (Brasil) - R$ 129,90
+Suculento, frutado, brasileiro. Frutas vermelhas, taninos sedosos.
+Harmoniza: carnes assadas, frango grelhado, queijos amarelos
+
+🍷 Concha y Toro Malbec (Chile) - R$ 64,90
+Potente, frutado, final marcante. Excelente custo-benefício.
+Harmoniza: fraldinha, maminha, entrecôte
+
+🍷 Casillero del Diablo Cabernet Sauvignon (Chile) - R$ 94,90
+Estruturado, taninos marcantes, notas de madeira.
+Harmoniza: costela no bafo, cupim, picanha mal passada
+
+🍷 DV Catena Malbec-Malbec (Argentina) - R$ 314,90
+Elegância e profundidade. Violeta, cacau, frutas negras.
+Harmoniza: cortes nobres, pratos intensos, jantar especial
+
+TINTOS LEVES A MÉDIOS:
+
+🍷 Gato Negro Merlot (Chile) - R$ 79,90
+Macio, frutado, fácil de agradar. Taninos suaves.
+Harmoniza: fraldinha, filé frango, queijos amarelos, lasanha
+
+🍷 Gato Negro Carménère (Chile) - R$ 79,90
+Notas herbáceas, frutas negras, toque especiado.
+Harmoniza: carnes assadas, legumes grelhados, picanha bem passada
+
+🍷 Casillero del Diablo Merlot (Chile) - R$ 94,90
+Frutas maduras, toque baunilha, taninos elegantes.
+Harmoniza: carnes defumadas, massas, queijos curados
+
+EXÓTICOS:
+
+🍷 Reserva Emiliana Adobe Orgânico Syrah (Chile) - R$ 174,90
+Orgânico, sustentável. Pimenta, frutas negras, toque terroso.
+Harmoniza: cordeiro, carnes com especiarias, vegetarianos assados
+
+🍷 Saint Felicien Malbec (Argentina) - R$ 179,90
+Sofisticação argentina. Corpo médio, acidez equilibrada.
+Harmoniza: bife de chorizo, queijos curados, jantar especial
+
+---
+
+🍟 GUARNIÇÕES E PORÇÕES
+
+- Arroz para 2 pessoas: R$ 15,00
+- Arroz + feijão para 2 pessoas: R$ 15,00
+- Arroz biro biro para 2 pessoas: R$ 18,00
+- Mini pastéis 4un (carne/queijo/catupiry/romeu julieta): R$ 13,90
+- Mini pastéis 10un: R$ 21,90
+- Anéis de cebola P: R$ 11,90 | G: R$ 24,90
+- Batata chips P: R$ 9,90 | G: R$ 21,90
+- Batata frita P: R$ 10,90 | G: R$ 21,90
+- Mandioca frita P: R$ 10,90 | G: R$ 21,90
+- Mandioca cozida P: R$ 9,90 | G: R$ 19,90
+- Farofa ou vinagrete individual: R$ 2,50
+- Sobremesa do dia individual: R$ 2,50
 
 ---
 
@@ -158,8 +309,13 @@ MARMITEX ECONÔMICA:
 
 ✅ Preços do rodízio (almoço e jantar)
 ✅ Horários de funcionamento
-✅ O que está incluído no rodízio
-✅ Preços de marmitex e delivery
+✅ O que está incluído no rodízio (carnes nobres, buffet ibérico, comida japonesa, sobremesas)
+✅ CARTA DE VINHOS COMPLETA (15+ vinhos com harmonizações)
+✅ PRATOS EXECUTIVOS (7 opções com preços)
+✅ KITS CHURRASCO (Tradicional e Nobre para 3 e 5 pessoas)
+✅ MIX CHURRASCO 600g (Tradicional e Nobre)
+✅ Preços de marmitex e delivery (com adicionais e opcionais)
+✅ GUARNIÇÕES E PORÇÕES (arroz, pastéis, batatas, mandiocas)
 ✅ Regras básicas de reservas (sábado/domingo não fazemos)
 ✅ Política de aniversário (petit gateau)
 ✅ Preços infantis

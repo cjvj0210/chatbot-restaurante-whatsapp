@@ -289,3 +289,21 @@
 - [x] Analisar conversas de teste para identificar lacunas (10 categorias)
 - [x] Criar questionário ML estruturado (38 perguntas organizadas por prioridade)
 - [x] Documentar processo de atualização iterativa
+
+
+## CORREÇÃO - Carta de Vinhos Faltando
+- [ ] Ler carta de vinhos que usuário já havia fornecido
+- [ ] Adicionar carta completa no chatbotPrompt.ts
+- [ ] Testar pergunta sobre harmonização
+
+
+## AUDITORIA COMPLETA - Garantir 100% das Informações
+- [x] Auditar carta de vinhos (15+ vinhos com harmonizações) - FALTANDO!
+- [x] Auditar cardápio completo (pratos executivos, marmitex, kits) - FALTANDO!
+- [x] Auditar todas as correções de formatação aplicadas
+- [x] Auditar informações do restaurante (horários, preços, políticas)
+- [x] Comparar prompt atual vs informações disponíveis - Completude: 20%!
+- [x] Atualizar prompt com TUDO que está faltando (15+ vinhos, 7 executivos, kits, guarnições)
+- [x] Corrigir import do zod no publicTest.ts
+- [x] Servidor reiniciado automaticamente
+- [ ] Usuário deve testar no navegador (5 perguntas de validação)
