@@ -307,3 +307,21 @@
 - [x] Corrigir import do zod no publicTest.ts
 - [x] Servidor reiniciado automaticamente
 - [ ] Usuário deve testar no navegador (5 perguntas de validação)
+
+
+## CORREÇÕES FINAIS - 100% Completo
+- [ ] Corrigir endereço (Barretos → São José do Rio Preto)
+- [ ] Corrigir preços do almoço (R$ 119,90/129,90 → R$ 89,90)
+- [ ] Adicionar drinks e caipirinhas (se informações disponíveis)
+
+
+## PROMPT COMPLETO E ROBUSTO - SEM LIMITAÇÃO DE TAMANHO
+- [x] Reunir TODAS as informações de todos os arquivos (cardápio, vinhos, etc)
+- [x] Criar prompt EXTENSO com tudo (466 linhas!)
+- [x] Incluir TODOS os drinks, caipirinhas, batidas, doses (7 drinks assinatura)
+- [x] Incluir TODAS as saladas (4 tipos com ingredientes)
+- [x] Incluir TODAS as sobremesas detalhadas
+- [x] Incluir TODOS os vinhos com harmonizações completas
+- [x] Incluir TODOS os pratos executivos com detalhes
+- [x] Incluir TODOS os kits com todas as carnes listadas
+- [ ] Testar completude final
