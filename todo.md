@@ -261,3 +261,13 @@
 - [x] Atualizar publicTest.ts para usar prompt compartilhado
 - [x] Atualizar banco de dados com informações corretas
 - [x] Testar correções no simulador e página pública (SUCESSO!)
+
+
+## CORREÇÃO URGENTE - Asteriscos e Tom de Conversa
+- [x] Corrigir horário de jantar: 19h (não 18h!)
+- [x] ELIMINAR asteriscos duplos (**) - adicionado PROIBIÇÃO ABSOLUTA
+- [x] Reduzir tamanho das respostas (máximo 3-4 linhas) - regra explícita
+- [x] Remover informações óbvias (dia da semana) - regra de bom senso
+- [x] Tornar conversa mais fluida e humana - prompt reescrito
+- [x] Adicionar 4 exemplos práticos de respostas CURTAS e DIRETAS
+- [x] Testar múltiplas perguntas para validar (3 testes - TODOS PERFEITOS!)
