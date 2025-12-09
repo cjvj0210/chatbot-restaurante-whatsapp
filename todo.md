@@ -233,3 +233,19 @@
 - [x] Processar transcrição pelo chatbot
 - [x] Exibir áudio gravado como mensagem no chat
 - [x] Testar fluxo completo de gravação → transcrição → resposta (pronto para teste do usuário)
+
+
+## Página Pública de Teste do Chatbot
+- [x] Criar tabela `test_sessions` no banco (ID, data, user-agent, IP)
+- [x] Criar tabela `test_messages` no banco (session_id, role, content, tipo, timestamp)
+- [x] Criar página pública `/teste` sem autenticação
+- [x] Interface WhatsApp limpa (apenas conversa, sem sidebar)
+- [x] Implementar endpoint para criar sessão de teste
+- [x] Implementar endpoint para salvar mensagens no banco
+- [x] Adaptar endpoints de áudio para salvar no banco
+- [x] Criar página administrativa `/conversas-teste`
+- [x] Listar todas as sessões de teste
+- [x] Visualizar mensagens completas de cada sessão
+- [x] Exibir áudios e transcrições
+- [x] Adicionar ao menu do dashboard
+- [x] Testar URL compartilhável completa

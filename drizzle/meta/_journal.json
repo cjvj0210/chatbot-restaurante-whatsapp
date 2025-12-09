@@ -15,6 +15,13 @@
       "when": 1764785274249,
       "tag": "0001_shiny_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1765314751447,
+      "tag": "0002_wandering_starbolt",
+      "breakpoints": true
     }
   ]
 }

@@ -7,11 +7,15 @@ import * as db from "./db";
 import { verifyWebhook } from "./whatsapp";
 import { processIncomingMessage } from "./chatbot";
 import { chatSimulatorRouter } from "./chatSimulator";
+import { publicTestRouter } from "./publicTest";
+import { testConversationsRouter } from "./testConversations";
 import { getWebhookLogs, clearWebhookLogs } from "./debug";
 
 export const appRouter = router({
   system: systemRouter,
   chatSimulator: chatSimulatorRouter,
+  publicTest: publicTestRouter,
+  testConversations: testConversationsRouter,
   
   // Debug - Monitoramento de Webhooks
   debug: router({

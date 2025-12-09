@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, UtensilsCrossed, ShoppingBag, Calendar, Settings, MessageSquare, Smartphone } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, UtensilsCrossed, ShoppingBag, Calendar, Settings, MessageSquare, Smartphone, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -31,6 +31,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Smartphone, label: "Simulador WhatsApp", path: "/simulator" },
   { icon: MessageSquare, label: "Simulador Chat", path: "/chat-simulator" },
+  { icon: Users, label: "Conversas de Teste", path: "/conversas-teste" },
   { icon: UtensilsCrossed, label: "Cardápio", path: "/menu" },
   { icon: ShoppingBag, label: "Pedidos", path: "/orders" },
   { icon: Calendar, label: "Reservas", path: "/reservations" },

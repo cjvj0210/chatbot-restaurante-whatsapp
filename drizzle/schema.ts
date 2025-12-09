@@ -199,3 +199,35 @@ export const feedback = mysqlTable("feedback", {
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = typeof feedback.$inferInsert;
+
+/**
+ * Sessões de teste públicas (para URL compartilhável)
+ */
+export const testSessions = mysqlTable("test_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 255 }).notNull().unique(),
+  userAgent: text("userAgent"),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  lastActivityAt: timestamp("lastActivityAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TestSession = typeof testSessions.$inferSelect;
+export type InsertTestSession = typeof testSessions.$inferInsert;
+
+/**
+ * Mensagens das sessões de teste
+ */
+export const testMessages = mysqlTable("test_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 255 }).notNull(),
+  role: mysqlEnum("role", ["user", "assistant"]).notNull(),
+  content: text("content").notNull(),
+  messageType: mysqlEnum("messageType", ["text", "audio"]).default("text").notNull(),
+  audioUrl: text("audioUrl"), // URL do áudio no S3 (se for áudio)
+  transcription: text("transcription"), // Transcrição do áudio (se for áudio)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TestMessage = typeof testMessages.$inferSelect;
+export type InsertTestMessage = typeof testMessages.$inferInsert;
