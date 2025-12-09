@@ -271,3 +271,21 @@
 - [x] Tornar conversa mais fluida e humana - prompt reescrito
 - [x] Adicionar 4 exemplos práticos de respostas CURTAS e DIRETAS
 - [x] Testar múltiplas perguntas para validar (3 testes - TODOS PERFEITOS!)
+
+
+## CORREÇÃO CRÍTICA - Profissionalismo e Humildade
+- [x] Adicionar regra: NUNCA inventar ou supor informações
+- [x] Adicionar regra: Admitir quando NÃO sabe algo
+- [x] Adicionar regra: Oferecer telefone ou atendente humano quando incerto
+- [x] Completar informações do rodízio (buffet ibérico, queijos especiais, pratos quentes variados)
+- [x] Adicionar lista clara do que o bot SABE (9 itens) vs NÃO SABE (8 itens)
+- [x] Adicionar 3 exemplos práticos de como lidar com incertezas
+- [x] Adicionar 3 exemplos do que NÃO fazer ("vai ter fila", "provavelmente conseguimos")
+- [x] Testar cenários de perguntas que ele não deveria saber (3 testes - TODOS PERFEITOS!)
+
+
+## Sistema de Aprendizado Iterativo
+- [x] Corrigir ordem: Atendente humano ANTES de telefone (1º atendente, 2º telefone)
+- [x] Analisar conversas de teste para identificar lacunas (10 categorias)
+- [x] Criar questionário ML estruturado (38 perguntas organizadas por prioridade)
+- [x] Documentar processo de atualização iterativa
