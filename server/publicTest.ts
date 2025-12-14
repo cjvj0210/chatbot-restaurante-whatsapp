@@ -55,13 +55,14 @@ export const publicTestRouter = router({
       // Adicionar mensagem do usuário ao histórico
       history.push({ role: "user", content: message });
 
-      // Obter data atual para contexto
-      const hoje = new Date();
-      const diaSemana = hoje.toLocaleDateString('pt-BR', { weekday: 'long' });
-      const dataCompleta = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      // Obter data e HORÁRIO atual para contexto
+      const agora = new Date();
+      const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long' });
+      const dataCompleta = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      const horarioAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
       // System prompt completo (compartilhado com simulador)
-      const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta);
+      const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
       // Chamar LLM
       const response = await invokeLLM({
@@ -165,13 +166,14 @@ export const publicTestRouter = router({
       // Adicionar mensagem transcrita ao histórico
       history.push({ role: "user", content: transcribedText });
 
-      // Obter data atual para contexto
-      const hoje = new Date();
-      const diaSemana = hoje.toLocaleDateString('pt-BR', { weekday: 'long' });
-      const dataCompleta = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      // Obter data e HORÁRIO atual para contexto
+      const agora = new Date();
+      const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long' });
+      const dataCompleta = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      const horarioAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
       // System prompt completo (compartilhado com simulador)
-      const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta);
+      const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
       // Chamar LLM
       const response = await invokeLLM({

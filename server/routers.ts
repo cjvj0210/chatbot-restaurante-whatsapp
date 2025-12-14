@@ -9,6 +9,7 @@ import { processIncomingMessage } from "./chatbot";
 import { chatSimulatorRouter } from "./chatSimulator";
 import { publicTestRouter } from "./publicTest";
 import { testConversationsRouter } from "./testConversations";
+import { chatbotReservationsRouter } from "./chatbotReservations";
 import { getWebhookLogs, clearWebhookLogs } from "./debug";
 
 export const appRouter = router({
@@ -16,6 +17,7 @@ export const appRouter = router({
   chatSimulator: chatSimulatorRouter,
   publicTest: publicTestRouter,
   testConversations: testConversationsRouter,
+  chatbotReservations: chatbotReservationsRouter,
   
   // Debug - Monitoramento de Webhooks
   debug: router({

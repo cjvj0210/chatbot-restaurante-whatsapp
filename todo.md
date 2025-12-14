@@ -356,3 +356,19 @@
 - [x] Adicionar regra: Se cliente pede "todos" ou "cada", listar TODOS
 - [x] Adicionar regra: Qualidade e completude > brevidade forçada
 - [x] Testar pergunta "O que vem em cada executivos?" (servidor reiniciado)
+
+
+## Sistema de Reservas Diretas via Chatbot (14/12/2024)
+- [x] Adicionar contexto de data/hora ao prompt (dia da semana + horário exato)
+- [x] Criar campos adicionais no schema de reservas (customerName, customerPhone, source)
+- [x] Aplicar migração do banco de dados (pnpm db:push)
+- [x] Criar router de reservas via chatbot (chatbotReservations.ts)
+- [x] Implementar endpoint createReservation (público)
+- [x] Implementar endpoint validateReservation (validação de regras)
+- [x] Registrar router no appRouter
+- [x] Atualizar prompt com fluxo completo de coleta de reservas
+- [x] Integrar coleta de reservas no fluxo de conversação do bot (prompt atualizado)
+- [x] Testar contexto de data/hora (SUCESSO - bot sabe dia e horário)
+- [x] Testar validação de regras de reservas (SUCESSO - segunda à noite fechado)
+- [ ] Testar coleta completa de dados de reserva (nome, telefone, etc)
+- [ ] Testar salvamento de reserva no banco de dados
