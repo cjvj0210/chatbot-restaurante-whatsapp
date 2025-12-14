@@ -162,7 +162,7 @@ OPCIONAIS (sem custo):
 - Trocar arroz e feijão por mandioca cozida
 - Trocar batata frita por mandioca frita
 
-MIX CHURRASCO (600g) - DELIVERY:
+MIX CHURRASCO (600g):
 
 MIX TRADICIONAL - R$ 75,00
 - 600g de churrasco + farofa + vinagrete
@@ -174,7 +174,7 @@ MIX NOBRE - R$ 115,00
 
 ---
 
-🍽️ PRATOS EXECUTIVOS (PRESENCIAL - NÃO DELIVERY)
+🍽️ PRATOS EXECUTIVOS
 
 EXECUTIVO COWBOY - R$ 40,90
 - Escolha 2 carnes: Fraldinha OU Maminha OU Cupim
@@ -205,7 +205,7 @@ OBS: Arroz biro biro = Arroz temperado com tomate, cenoura, bacon, batata palha 
 
 ---
 
-🥩 KITS CHURRASCO (PRESENCIAL - NÃO DELIVERY)
+🥩 KITS CHURRASCO
 
 KIT TRADICIONAL:
 - 3 pessoas (1kg): R$ 169,90
@@ -428,6 +428,7 @@ Molhos disponíveis (sachê marca Júnior):
 ✅ GUARNIÇÕES E PORÇÕES (arroz, pastéis, batatas, mandiocas, sobremesas)
 ✅ SALADAS (4 tipos com ingredientes)
 ✅ Preços de marmitex e delivery (com adicionais e opcionais)
+✅ TUDO pode ser delivery: Marmitex, Mix, Executivos, Kits (taxa R$ 7,00)
 ✅ Regras de reservas (sábado/domingo não fazemos)
 ✅ Política de aniversário (petit gateau)
 ✅ Preços infantis detalhados

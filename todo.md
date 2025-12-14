@@ -334,3 +334,17 @@
 - [x] Corrigir taxa de delivery (R$ 7,00 não R$ 8,00)
 - [x] Conferir TODOS os outros preços
 - [x] Atualizar prompt com preços corretos (16 correções!)
+
+
+## CORREÇÃO - Mensagem Inicial e Kits
+- [ ] Atualizar mensagem inicial para mencionar TODAS as opções (marmitex, mix, executivos, kits)
+- [ ] Corrigir explicação sobre Kits Churrasco (presencial vs delivery)
+- [ ] Testar mensagem inicial
+
+
+## CORREÇÃO CRÍTICA - Delivery vs Presencial
+- [x] Remover restrição "NÃO DELIVERY" dos Executivos
+- [x] Remover restrição "NÃO DELIVERY" dos Kits
+- [x] Remover restrição "DELIVERY" do Mix (tudo é delivery)
+- [x] Adicionar regra explícita: TUDO pode ser delivery (Marmitex, Mix, Executivos, Kits)
+- [x] Testar mensagem inicial e perguntas sobre delivery (servidor reiniciado)
