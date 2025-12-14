@@ -348,3 +348,11 @@
 - [x] Remover restrição "DELIVERY" do Mix (tudo é delivery)
 - [x] Adicionar regra explícita: TUDO pode ser delivery (Marmitex, Mix, Executivos, Kits)
 - [x] Testar mensagem inicial e perguntas sobre delivery (servidor reiniciado)
+
+
+## CORREÇÃO - Regra de Brevidade
+- [x] Remover limitação rígida "máximo 3-4 linhas"
+- [x] Adicionar regra: Preferir objetividade MAS responder COMPLETAMENTE
+- [x] Adicionar regra: Se cliente pede "todos" ou "cada", listar TODOS
+- [x] Adicionar regra: Qualidade e completude > brevidade forçada
+- [x] Testar pergunta "O que vem em cada executivos?" (servidor reiniciado)
