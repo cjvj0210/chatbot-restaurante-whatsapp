@@ -483,3 +483,10 @@
 - [x] Mostrar observações no carrinho (texto laranja itálico)
 - [x] Card clicável para ver descrição completa
 - [x] Botão Adicionar abre modal com observações
+
+
+## Bug: Erro de build - pnpm lockfile e optionalDependencies (22/12/2024)
+- [x] Remover canvas completamente do package.json
+- [x] Remover patch do wouter que não existe mais
+- [x] Regenerar pnpm-lock.yaml
+- [ ] Testar build para publicação (usuário deve tentar novamente)
