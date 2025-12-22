@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { ShoppingCart, Plus, Minus, X, Clock, MapPin } from "lucide-react";
 
 
@@ -23,6 +26,8 @@ export default function Pedido() {
   
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [itemObservations, setItemObservations] = useState("");
 
   // Validar sessão
   const { data: validation, isLoading: validating } = trpc.orderLink.validate.useQuery(
@@ -42,7 +47,7 @@ export default function Pedido() {
     }
   }, [validation, setLocation]);
 
-  const addToCart = (item: { id: number; name: string; price: number }) => {
+  const addToCart = (item: { id: number; name: string; price: number; observations?: string }) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.menuItemId === item.id);
       if (existing) {
@@ -50,7 +55,7 @@ export default function Pedido() {
           i.menuItemId === item.id ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
-      return [...prev, { menuItemId: item.id, name: item.name, price: item.price, quantity: 1 }];
+      return [...prev, { menuItemId: item.id, name: item.name, price: item.price, quantity: 1, observations: item.observations }];
     });
     // Item adicionado ao carrinho
   };
@@ -134,7 +139,14 @@ export default function Pedido() {
               )}
               <div className="grid gap-4 md:grid-cols-2">
                 {category.items.map((item) => (
-                  <Card key={item.id} className="hover:shadow-lg transition-shadow">
+                  <Card 
+                    key={item.id} 
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setItemObservations("");
+                    }}
+                  >
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
@@ -154,7 +166,11 @@ export default function Pedido() {
                         {item.preparationTime || 30} min
                       </div>
                       <Button 
-                        onClick={() => addToCart({ id: item.id, name: item.name, price: item.price })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedItem(item);
+                          setItemObservations("");
+                        }}
                         size="sm"
                         className="bg-orange-600 hover:bg-orange-700"
                       >
@@ -195,6 +211,9 @@ export default function Pedido() {
                     <div className="flex-1">
                       <p className="font-medium text-sm">{item.name}</p>
                       <p className="text-xs text-gray-600">R$ {(item.price / 100).toFixed(2)}</p>
+                      {item.observations && (
+                        <p className="text-xs text-orange-600 italic mt-1">Obs: {item.observations}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button 
@@ -244,6 +263,75 @@ export default function Pedido() {
           </div>
         </div>
       )}
+
+      {/* Modal de Detalhes do Item */}
+      <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        <DialogContent className="max-w-2xl">
+          {selectedItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{selectedItem.name}</DialogTitle>
+                <DialogDescription>
+                  {selectedItem.description || "Delicioso prato da nossa churrascaria"}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {/* Preço e tempo */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Clock className="w-5 h-5" />
+                    <span>Tempo de preparo: {selectedItem.preparationTime || 30} min</span>
+                  </div>
+                  <Badge className="text-lg px-4 py-2 bg-green-600">
+                    R$ {(selectedItem.price / 100).toFixed(2)}
+                  </Badge>
+                </div>
+
+                {/* Campo de observações */}
+                <div className="space-y-2">
+                  <Label htmlFor="observations">Observações (opcional)</Label>
+                  <Textarea
+                    id="observations"
+                    placeholder="Ex: Sem cebola, mal passado, ponto da carne, etc..."
+                    value={itemObservations}
+                    onChange={(e) => setItemObservations(e.target.value)}
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Adicione aqui preferências sobre o preparo, ingredientes que deseja remover, ponto da carne, etc.
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedItem(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={() => {
+                    addToCart({ 
+                      id: selectedItem.id, 
+                      name: selectedItem.name, 
+                      price: selectedItem.price,
+                      observations: itemObservations || undefined
+                    });
+                    setSelectedItem(null);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar ao Carrinho
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -475,3 +475,11 @@
 - [x] Mover canvas para optionalDependencies
 - [x] Tornar import de canvas dinâmico e opcional
 - [ ] Testar build e publicação (usuário deve tentar publicar novamente)
+
+
+## Melhorias UX do Cardápio Web (22/12/2024)
+- [x] Criar modal de detalhes do item (clicar no card abre modal)
+- [x] Adicionar campo de observações por item (textarea no modal)
+- [x] Mostrar observações no carrinho (texto laranja itálico)
+- [x] Card clicável para ver descrição completa
+- [x] Botão Adicionar abre modal com observações
