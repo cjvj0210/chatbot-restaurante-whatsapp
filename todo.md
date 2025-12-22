@@ -521,7 +521,34 @@
 - [x] Visualizar detalhes completos (já existia)
 
 ### Fase 9: Testes Finais
-- [ ] Testar fluxo completo (bot → cardápio → checkout → WhatsApp)
-- [ ] Validar observações nos pedidos
-- [ ] Testar painel admin
-- [ ] Salvar checkpoint final
+- [x] Salvar checkpoint final (0b061be1)
+- [ ] Testar fluxo completo (bot → cardápio → checkout → WhatsApp) - PRONTO PARA TESTE
+- [ ] Validar observações nos pedidos - PRONTO PARA TESTE
+- [ ] Testar painel admin - PRONTO PARA TESTE
+
+
+## Sistema de Upload de Imagens para Cardápio (22/12/2024)
+### Backend
+- [x] Adicionar campo `imageUrl` no schema de menuItems (já existe)
+- [x] Executar migração do banco (já migrado)
+- [x] Criar endpoint de upload de imagem (S3) - uploadRouter.uploadMenuItemImage
+- [x] Criar endpoint para atualizar imageUrl do item (já existe no menuItems.update)
+
+### Frontend Admin
+- [x] Adicionar campo de upload na página Menu
+- [x] Implementar preview da imagem
+- [x] Integrar com endpoint de upload
+- [x] Adicionar estados (uploadingImage, imagePreview, imageUrl)
+- [x] Adicionar função handleImageUpload
+- [x] Atualizar handleCreateItem para incluir imageUrl
+
+### Frontend Público
+- [x] Exibir imagens nos cards do cardápio web (Pedido.tsx)
+- [x] Adicionar imagem grande no modal de detalhes
+- [x] Ajustar layout para fotos (height 48, object-cover)
+- [x] Condicional para exibir apenas se imageUrl existir
+
+### Testes
+- [ ] Testar upload de imagem
+- [ ] Validar exibição no cardápio web
+- [ ] Salvar checkpoint

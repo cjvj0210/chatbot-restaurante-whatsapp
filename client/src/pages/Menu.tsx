@@ -13,6 +13,9 @@ export default function Menu() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const utils = trpc.useUtils();
   const { data: categories, isLoading: categoriesLoading } = trpc.menuCategories.list.useQuery();
@@ -32,6 +35,8 @@ export default function Menu() {
     onSuccess: () => {
       utils.menuItems.list.invalidate();
       setItemDialogOpen(false);
+      setImagePreview(null);
+      setImageUrl(null);
       toast.success("Item criado com sucesso!");
     },
   });
@@ -42,6 +47,56 @@ export default function Menu() {
       toast.success("Item removido com sucesso!");
     },
   });
+
+  const uploadImage = trpc.upload.uploadMenuItemImage.useMutation({
+    onSuccess: (data) => {
+      setImageUrl(data.url);
+      toast.success("Imagem enviada com sucesso!");
+      setUploadingImage(false);
+    },
+    onError: (error) => {
+      toast.error(`Erro ao enviar imagem: ${error.message}`);
+      setUploadingImage(false);
+    },
+  });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, selecione uma imagem");
+      return;
+    }
+
+    // Validar tamanho (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Máximo: 5MB");
+      return;
+    }
+
+    // Preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload
+    setUploadingImage(true);
+    const base64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+
+    uploadImage.mutate({
+      fileName: file.name,
+      fileData: base64,
+      mimeType: file.type,
+    });
+  };
 
   const handleCreateCategory = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,6 +122,7 @@ export default function Menu() {
       name: formData.get("name") as string,
       description: formData.get("description") as string || undefined,
       price: priceInCents,
+      imageUrl: imageUrl || undefined,
       preparationTime: parseInt(formData.get("preparationTime") as string) || 30,
     });
   };
@@ -181,6 +237,26 @@ export default function Menu() {
                           min="1"
                           defaultValue="30"
                         />
+                      </div>
+                      <div>
+                        <Label htmlFor="image">Imagem do Item</Label>
+                        <Input
+                          id="image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                        />
+                        {uploadingImage && <p className="text-sm text-muted-foreground mt-1">Enviando imagem...</p>}
+                        {imagePreview && (
+                          <div className="mt-2">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-32 h-32 object-cover rounded border"
+                            />
+                          </div>
+                        )}
                       </div>
                       <Button type="submit" disabled={createItem.isPending}>
                         {createItem.isPending ? "Criando..." : "Criar Item"}

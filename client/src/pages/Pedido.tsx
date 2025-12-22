@@ -141,21 +141,30 @@ export default function Pedido() {
                 {category.items.map((item) => (
                   <Card 
                     key={item.id} 
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
                     onClick={() => {
                       setSelectedItem(item);
                       setItemObservations("");
                     }}
                   >
+                    {item.imageUrl && (
+                      <div className="w-full h-48 overflow-hidden">
+                        <img 
+                          src={item.imageUrl} 
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <CardTitle className="text-lg">{item.name}</CardTitle>
                           {item.description && (
-                            <CardDescription className="mt-1">{item.description}</CardDescription>
+                            <CardDescription className="mt-1 line-clamp-2">{item.description}</CardDescription>
                           )}
                         </div>
-                        <Badge className="ml-2 bg-green-600">
+                        <Badge className="ml-2 bg-green-600 shrink-0">
                           R$ {(item.price / 100).toFixed(2)}
                         </Badge>
                       </div>
@@ -281,6 +290,16 @@ export default function Pedido() {
               </DialogHeader>
 
               <div className="space-y-4">
+                {/* Imagem do item */}
+                {selectedItem.imageUrl && (
+                  <div className="w-full h-64 overflow-hidden rounded-lg">
+                    <img 
+                      src={selectedItem.imageUrl} 
+                      alt={selectedItem.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 {/* Preço e tempo */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">

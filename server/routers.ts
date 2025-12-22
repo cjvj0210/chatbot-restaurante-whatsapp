@@ -13,6 +13,7 @@ import { chatbotReservationsRouter } from "./chatbotReservations";
 import { getWebhookLogs, clearWebhookLogs } from "./debug";
 import { orderLinkRouter } from "./orderLinkRouter";
 import { orderRouter } from "./orderRouter";
+import { uploadRouter } from "./uploadRouter";
 
 export const appRouter = router({
   system: systemRouter,
@@ -22,6 +23,7 @@ export const appRouter = router({
   chatbotReservations: chatbotReservationsRouter,
   orderLink: orderLinkRouter,
   order: orderRouter,
+  upload: uploadRouter,
 
   // Cardápio Público (para página de pedidos)
   menu: router({
