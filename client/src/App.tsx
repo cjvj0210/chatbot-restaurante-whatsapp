@@ -16,6 +16,8 @@ import Debug from "./pages/Debug";
 import PublicTest from "./pages/PublicTest";
 import TestConversations from "./pages/TestConversations";
 import Pedido from "./pages/Pedido";
+import Checkout from "./pages/Checkout";
+import Confirmacao from "./pages/Confirmacao";
 
 function Router() {
   return (
@@ -23,6 +25,8 @@ function Router() {
       {/* Rotas públicas sem autenticação */}
       <Route path="/teste" component={PublicTest} />
       <Route path="/pedido/:sessionId" component={Pedido} />
+      <Route path="/pedido/:sessionId/checkout" component={Checkout} />
+      <Route path="/pedido/:sessionId/confirmacao" component={Confirmacao} />
       
       {/* Rotas autenticadas com DashboardLayout */}
       <Route>

@@ -255,7 +255,11 @@ export default function Pedido() {
               <Button 
                 size="lg"
                 className="bg-green-600 hover:bg-green-700"
-                onClick={() => setLocation(`/pedido/${sessionId}/checkout`)}
+                onClick={() => {
+                  // Salvar carrinho no localStorage antes de ir para checkout
+                  localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cart));
+                  setLocation(`/pedido/${sessionId}/checkout`);
+                }}
               >
                 Finalizar Pedido
               </Button>

@@ -35,11 +35,11 @@ const statusLabels = {
 
 export default function Orders() {
   const utils = trpc.useUtils();
-  const { data: orders, isLoading } = trpc.orders.list.useQuery();
+  const { data: orders, isLoading } = trpc.order.list.useQuery();
 
-  const updateStatus = trpc.orders.updateStatus.useMutation({
+  const updateStatus = trpc.order.updateStatus.useMutation({
     onSuccess: () => {
-      utils.orders.list.invalidate();
+      utils.order.list.invalidate();
       toast.success("Status atualizado com sucesso!");
     },
   });

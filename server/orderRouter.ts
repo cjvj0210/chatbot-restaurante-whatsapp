@@ -18,18 +18,20 @@ export const orderRouter = router({
         sessionId: z.string(),
         customerName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
         customerPhone: z.string().min(10, "Telefone inválido"),
-        deliveryAddress: z.string().optional(),
-        orderType: z.enum(["delivery", "pickup"]),
+        deliveryType: z.enum(["delivery", "pickup"]),
+        address: z.string().optional(),
+        paymentMethod: z.enum(["dinheiro", "cartao", "pix"]),
+        changeFor: z.number().optional(),
+        additionalNotes: z.string().optional(),
+        totalAmount: z.number(),
         items: z.array(
           z.object({
             menuItemId: z.number(),
             quantity: z.number().min(1),
+            price: z.number(),
             observations: z.string().optional(),
-            addons: z.array(z.string()).optional(),
           })
         ).min(1, "Pedido deve ter pelo menos 1 item"),
-        paymentMethod: z.string(),
-        customerNotes: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -87,10 +89,10 @@ export const orderRouter = router({
       });
 
       // Taxa de entrega (buscar das configurações ou usar padrão)
-      const deliveryFee = input.orderType === "delivery" ? 500 : 0; // R$ 5,00 padrão
+      const deliveryFee = input.deliveryType === "delivery" ? 500 : 0; // R$ 5,00 padrão
 
       // Total
-      const total = subtotal + deliveryFee;
+      const total = input.totalAmount + deliveryFee;
 
       // Gerar número do pedido (timestamp + random)
       const orderNumber = `PED${Date.now().toString().slice(-8)}`;
@@ -103,15 +105,15 @@ export const orderRouter = router({
           customerId: session.customerId || null,
           orderNumber,
           status: "pending",
-          orderType: input.orderType,
+          orderType: input.deliveryType,
           customerName: input.customerName,
           customerPhone: input.customerPhone,
           items: JSON.stringify(input.items), // Manter para compatibilidade
           subtotal,
           deliveryFee,
           total,
-          deliveryAddress: input.deliveryAddress || null,
-          customerNotes: input.customerNotes || null,
+          deliveryAddress: input.address || null,
+          customerNotes: input.additionalNotes || null,
           paymentMethod: input.paymentMethod,
           estimatedTime: 40, // 40 minutos padrão
         });

@@ -490,3 +490,38 @@
 - [x] Remover patch do wouter que não existe mais
 - [x] Regenerar pnpm-lock.yaml
 - [ ] Testar build para publicação (usuário deve tentar novamente)
+
+
+## Conclusão do Cardápio Digital (22/12/2024)
+### Fase 6: Checkout
+- [x] Criar página `/pedido/[sessionId]/checkout` (Checkout.tsx)
+- [x] Formulário de dados do cliente (nome, telefone)
+- [x] Seleção de tipo de entrega (delivery/retirada)
+- [x] Campo de endereço (se delivery, condicional)
+- [x] Seleção de forma de pagamento (dinheiro/cartão/pix)
+- [x] Campo de troco (se pagamento em dinheiro)
+- [x] Observações adicionais (opcional)
+- [x] Resumo do pedido com observações dos itens
+- [x] Botão de confirmação
+- [x] Criar página de confirmação (Confirmacao.tsx)
+- [x] Salvar carrinho no localStorage antes de checkout
+- [x] Adicionar rotas no App.tsx
+
+### Fase 7: Finalização e Integração
+- [x] Implementar envio de pedido ao backend (orderRouter.create)
+- [x] Atualizar schema de input para aceitar dados do checkout
+- [x] Formatar mensagem para WhatsApp (orderNotification.ts)
+- [x] Página de confirmação de pedido (Confirmacao.tsx)
+- [ ] Testar fluxo completo (próxima fase)
+
+### Fase 8: Painel Admin
+- [x] Atualizar página Orders.tsx para usar orderRouter
+- [x] Listar pedidos em tempo real (já existia)
+- [x] Atualizar status de pedidos (já existia)
+- [x] Visualizar detalhes completos (já existia)
+
+### Fase 9: Testes Finais
+- [ ] Testar fluxo completo (bot → cardápio → checkout → WhatsApp)
+- [ ] Validar observações nos pedidos
+- [ ] Testar painel admin
+- [ ] Salvar checkpoint final
