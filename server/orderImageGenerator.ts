@@ -1,4 +1,18 @@
-import { createCanvas } from 'canvas';
+// Canvas é opcional - só funciona se instalado
+let createCanvas: any = null;
+
+async function loadCanvas() {
+  if (createCanvas !== null) return createCanvas;
+  try {
+    const canvasModule = await import('canvas');
+    createCanvas = canvasModule.createCanvas;
+  } catch (e) {
+    // Canvas não disponível - funcionalidade de imagem desabilitada
+    console.warn('Canvas module not available - image generation disabled');
+    createCanvas = false;
+  }
+  return createCanvas;
+}
 
 export interface OrderItem {
   name: string;
@@ -18,6 +32,10 @@ export interface OrderData {
 }
 
 export async function generateOrderImage(order: OrderData): Promise<Buffer> {
+  const canvasFactory = await loadCanvas();
+  if (!canvasFactory) {
+    throw new Error('Canvas module not available. Install canvas package to enable image generation.');
+  }
   // Canvas dimensions
   const width = 600;
   const headerHeight = 120;
@@ -27,7 +45,7 @@ export async function generateOrderImage(order: OrderData): Promise<Buffer> {
   
   const totalHeight = headerHeight + (order.items.length * itemHeight) + footerHeight + (padding * 4);
   
-  const canvas = createCanvas(width, totalHeight);
+  const canvas = canvasFactory(width, totalHeight);
   const ctx = canvas.getContext('2d');
   
   // Background

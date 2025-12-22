@@ -18,7 +18,7 @@ export const publicTestRouter = router({
         message: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { sessionId, message } = input;
 
       // Criar ou atualizar sessão no banco de dados
@@ -92,9 +92,10 @@ export const publicTestRouter = router({
           expiresAt,
         });
 
-        // Gerar URL do cardápio
-        const frontendUrl = process.env.VITE_FRONTEND_FORGE_API_URL || 'http://localhost:3000';
-        const orderLink = `${frontendUrl}/pedido/${sessionIdPedido}`;
+        // Gerar URL do cardápio (usar host da requisição atual)
+        const protocol = ctx.req.protocol || 'http';
+        const host = ctx.req.get('host') || 'localhost:3000';
+        const orderLink = `${protocol}://${host}/pedido/${sessionIdPedido}`;
 
         // Substituir placeholder pelo link real
         botMessage = botMessage.replace('[GERAR_LINK_PEDIDO]', orderLink);
@@ -128,7 +129,7 @@ export const publicTestRouter = router({
         mimeType: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { sessionId, audioBase64, mimeType } = input;
 
       // Criar ou atualizar sessão no banco de dados
@@ -225,9 +226,10 @@ export const publicTestRouter = router({
           expiresAt,
         });
 
-        // Gerar URL do cardápio
-        const frontendUrl = process.env.VITE_FRONTEND_FORGE_API_URL || 'http://localhost:3000';
-        const orderLink = `${frontendUrl}/pedido/${sessionIdPedido}`;
+        // Gerar URL do cardápio (usar host da requisição atual)
+        const protocol = ctx.req.protocol || 'http';
+        const host = ctx.req.get('host') || 'localhost:3000';
+        const orderLink = `${protocol}://${host}/pedido/${sessionIdPedido}`;
 
         // Substituir placeholder pelo link real
         botMessage = botMessage.replace('[GERAR_LINK_PEDIDO]', orderLink);

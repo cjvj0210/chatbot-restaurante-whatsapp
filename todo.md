@@ -463,3 +463,15 @@
 - [ ] Ajustes de UX
 - [ ] Documentação
 - [ ] Checkpoint final
+
+
+## Bug: Link de pedido com domínio errado (22/12/2024)
+- [x] Corrigir URL de geração de link no publicTest.ts (agora usa ctx.req.get('host'))
+- [ ] Testar link gerado pelo bot
+
+
+## Bug: Erro de build ao publicar - pixman-1 (22/12/2024)
+- [x] Investigar uso de canvas no projeto (orderImageGenerator.ts não usado)
+- [x] Mover canvas para optionalDependencies
+- [x] Tornar import de canvas dinâmico e opcional
+- [ ] Testar build e publicação (usuário deve tentar publicar novamente)

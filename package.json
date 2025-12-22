@@ -47,7 +47,6 @@
     "@trpc/react-query": "^11.6.0",
     "@trpc/server": "^11.6.0",
     "axios": "^1.12.0",
-    "canvas": "^3.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -78,6 +77,9 @@
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
     "zod": "^4.1.12"
+  },
+  "optionalDependencies": {
+    "canvas": "^3.2.0"
   },
   "devDependencies": {
     "@builder.io/vite-plugin-jsx-loc": "^0.1.1",
@@ -111,9 +113,6 @@
     },
     "overrides": {
       "tailwindcss>nanoid": "3.3.7"
-    },
-    "onlyBuiltDependencies": [
-      "canvas"
-    ]
+    }
   }
 }
