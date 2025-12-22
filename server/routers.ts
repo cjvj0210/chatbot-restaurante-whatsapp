@@ -11,6 +11,8 @@ import { publicTestRouter } from "./publicTest";
 import { testConversationsRouter } from "./testConversations";
 import { chatbotReservationsRouter } from "./chatbotReservations";
 import { getWebhookLogs, clearWebhookLogs } from "./debug";
+import { orderLinkRouter } from "./orderLinkRouter";
+import { orderRouter } from "./orderRouter";
 
 export const appRouter = router({
   system: systemRouter,
@@ -18,6 +20,18 @@ export const appRouter = router({
   publicTest: publicTestRouter,
   testConversations: testConversationsRouter,
   chatbotReservations: chatbotReservationsRouter,
+  orderLink: orderLinkRouter,
+  order: orderRouter,
+
+  // Cardápio Público (para página de pedidos)
+  menu: router({
+    listCategories: publicProcedure.query(async () => {
+      return await db.getMenuCategories();
+    }),
+    listItems: publicProcedure.query(async () => {
+      return await db.getMenuItems();
+    }),
+  }),
   
   // Debug - Monitoramento de Webhooks
   debug: router({

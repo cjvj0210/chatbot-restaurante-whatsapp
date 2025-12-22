@@ -3,8 +3,9 @@ import { publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { getRestaurantSettings, getDb } from "./db";
 import { getChatbotPrompt } from "./chatbotPrompt";
-import { testSessions, testMessages } from "../drizzle/schema";
+import { testSessions, testMessages, orderSessions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 // Armazenamento em memória das conversas de teste (para contexto)
 const testConversations = new Map<string, Array<{ role: "user" | "assistant"; content: string }>>();
@@ -72,10 +73,32 @@ export const publicTestRouter = router({
         ],
       });
 
-      const botMessageContent = response.choices[0]?.message?.content;
-      const botMessage = typeof botMessageContent === 'string' 
+      let botMessageContent = response.choices[0]?.message?.content;
+      let botMessage = typeof botMessageContent === 'string' 
         ? botMessageContent 
         : "Desculpe, não consegui processar sua mensagem.";
+
+      // Detectar se bot quer gerar link de pedido
+      if (botMessage.includes('[GERAR_LINK_PEDIDO]')) {
+        // Gerar link único de pedido
+        const sessionIdPedido = randomBytes(16).toString('hex');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+        await db.insert(orderSessions).values({
+          sessionId: sessionIdPedido,
+          whatsappNumber: null, // Não temos WhatsApp no teste
+          customerId: null,
+          status: 'pending',
+          expiresAt,
+        });
+
+        // Gerar URL do cardápio
+        const frontendUrl = process.env.VITE_FRONTEND_FORGE_API_URL || 'http://localhost:3000';
+        const orderLink = `${frontendUrl}/pedido/${sessionIdPedido}`;
+
+        // Substituir placeholder pelo link real
+        botMessage = botMessage.replace('[GERAR_LINK_PEDIDO]', orderLink);
+      }
 
       // Adicionar resposta do bot ao histórico
       history.push({ role: "assistant", content: botMessage });
@@ -183,10 +206,32 @@ export const publicTestRouter = router({
         ],
       });
 
-      const botMessageContent = response.choices[0]?.message?.content;
-      const botMessage = typeof botMessageContent === 'string' 
+      let botMessageContent = response.choices[0]?.message?.content;
+      let botMessage = typeof botMessageContent === 'string' 
         ? botMessageContent 
         : "Desculpe, não consegui processar sua mensagem.";
+
+      // Detectar se bot quer gerar link de pedido
+      if (botMessage.includes('[GERAR_LINK_PEDIDO]')) {
+        // Gerar link único de pedido
+        const sessionIdPedido = randomBytes(16).toString('hex');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+        await db.insert(orderSessions).values({
+          sessionId: sessionIdPedido,
+          whatsappNumber: null, // Não temos WhatsApp no teste
+          customerId: null,
+          status: 'pending',
+          expiresAt,
+        });
+
+        // Gerar URL do cardápio
+        const frontendUrl = process.env.VITE_FRONTEND_FORGE_API_URL || 'http://localhost:3000';
+        const orderLink = `${frontendUrl}/pedido/${sessionIdPedido}`;
+
+        // Substituir placeholder pelo link real
+        botMessage = botMessage.replace('[GERAR_LINK_PEDIDO]', orderLink);
+      }
 
       // Adicionar resposta do bot ao histórico
       history.push({ role: "assistant", content: botMessage });

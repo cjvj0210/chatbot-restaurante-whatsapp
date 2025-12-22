@@ -372,3 +372,94 @@
 - [x] Testar validação de regras de reservas (SUCESSO - segunda à noite fechado)
 - [ ] Testar coleta completa de dados de reserva (nome, telefone, etc)
 - [ ] Testar salvamento de reserva no banco de dados
+
+
+## Bug: Erro de validação na página /teste (16/12/2024)
+- [ ] Investigar erro "The string did not match the expected pattern"
+- [ ] Corrigir validação no backend
+- [ ] Testar correção
+
+
+## Nova Feature: Cardápio Digital Integrado ao WhatsApp (21/12/2024)
+- [x] Pesquisar benchmarks de cardápios digitais (iFood, Rappi, Aiqfome, Goomer)
+- [x] Buscar soluções open-source de cardápio digital (MERN Food Ordering, TastyIgniter)
+- [x] Pesquisar integrações WhatsApp + cardápio web (webhooks, APIs)
+- [x] Analisar melhores opções e tecnologias (stack compatibility)
+- [x] Propor arquitetura de integração bot → cardápio → impressão
+- [x] Documentar roadmap de implementação (6 semanas, 5 fases)
+
+**Documentação Gerada**:
+- PESQUISA_CARDAPIO_DIGITAL.md - Soluções open-source encontradas
+- INTEGRACAO_WHATSAPP_CARDAPIO.md - Arquitetura técnica detalhada
+- RELATORIO_FINAL_CARDAPIO_DIGITAL.md - Análise completa + recomendações
+
+**Recomendação**: Adaptar MERN Food Ordering System (6 semanas, R$ 30-48k)
+
+
+## Implementação: Cardápio Digital + WhatsApp (Iniciado 21/12/2024)
+
+### Fase 1: Backend - Banco de Dados
+- [x] Adicionar tabela `orderSessions` (links únicos)
+- [x] Atualizar tabela `orders` (adicionar sessionId, customerName, customerPhone)
+- [x] Adicionar tabela `orderItems` (itens do pedido normalizados)
+- [x] Adicionar tabela `botMessages` (fila de mensagens WhatsApp)
+- [x] Executar `pnpm db:push` para migrar (SUCESSO - 0004_clammy_dragon_lord.sql)
+
+### Fase 2: Backend - Endpoints tRPC
+- [x] Criar `orderLinkRouter.generate` (gerar link único)
+- [x] Criar `orderLinkRouter.validate` (validar sessão)
+- [x] Criar `orderRouter.create` (criar pedido completo)
+- [x] Criar `orderRouter.getBySession` (buscar pedido por sessão)
+- [x] Criar `orderRouter.list` (listar pedidos - admin)
+- [x] Criar `orderRouter.updateStatus` (atualizar status - admin)
+- [x] Registrar routers no appRouter
+
+### Fase 3: Backend - Notificação WhatsApp
+- [x] Implementar `notifyWhatsAppBot()` function (adiciona na fila)
+- [x] Implementar `formatOrderForWhatsApp()` function (mensagem formatada)
+- [x] Implementar `notifyStatusUpdate()` function (atualizações de status)
+- [x] Integrar notificações em orderRouter.create
+- [x] Integrar notificações em orderRouter.updateStatus
+- [x] Sistema de fila usando tabela botMessages
+
+### Fase 4: Bot - Detecção de Pedidos
+- [x] Atualizar prompt para detectar pedidos (seção DELIVERY atualizada)
+- [x] Adicionar instruções de envio de link no prompt
+- [x] Implementar geração de link no publicTest router
+- [x] Implementar substituição de [GERAR_LINK_PEDIDO] por URL real
+- [ ] Testar envio de link (próxima fase)
+
+### Fase 5: Frontend - Cardápio Web
+- [x] Criar página `/pedido/[sessionId]` (Pedido.tsx)
+- [x] Adicionar rota pública no App.tsx
+- [x] Criar endpoint público `menu.listCategories`
+- [x] Criar endpoint público `menu.listItems`
+- [x] Implementar listagem de categorias
+- [x] Implementar cards de itens com preços
+- [x] Implementar carrinho flutuante
+- [x] Implementar adicionar/remover itens
+- [x] Implementar cálculo de subtotal e total
+- [ ] Criar página de checkout (próxima etapa)
+
+### Fase 6: Frontend - Carrinho e Checkout
+- [ ] Implementar carrinho flutuante
+- [ ] Implementar página de checkout
+- [ ] Implementar formulário de entrega
+- [ ] Integrar com endpoints tRPC
+
+### Fase 7: Integração e Testes
+- [ ] Testar fluxo completo (bot → web → bot)
+- [ ] Implementar template de impressão
+- [ ] Testar notificações WhatsApp
+
+### Fase 8: Painel Admin
+- [ ] Criar página de gestão de pedidos
+- [ ] Implementar filtros e busca
+- [ ] Implementar atualização de status
+- [ ] Adicionar upload de fotos de pratos
+
+### Fase 9: Finalização
+- [ ] Testes finais
+- [ ] Ajustes de UX
+- [ ] Documentação
+- [ ] Checkpoint final

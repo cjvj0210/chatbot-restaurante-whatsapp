@@ -15,12 +15,14 @@ import Settings from "./pages/Settings";
 import Debug from "./pages/Debug";
 import PublicTest from "./pages/PublicTest";
 import TestConversations from "./pages/TestConversations";
+import Pedido from "./pages/Pedido";
 
 function Router() {
   return (
     <Switch>
-      {/* Rota pública sem autenticação */}
+      {/* Rotas públicas sem autenticação */}
       <Route path="/teste" component={PublicTest} />
+      <Route path="/pedido/:sessionId" component={Pedido} />
       
       {/* Rotas autenticadas com DashboardLayout */}
       <Route>

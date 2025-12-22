@@ -29,6 +29,13 @@
       "when": 1765727046074,
       "tag": "0003_hot_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1766420792160,
+      "tag": "0004_clammy_dragon_lord",
+      "breakpoints": true
     }
   ]
 }

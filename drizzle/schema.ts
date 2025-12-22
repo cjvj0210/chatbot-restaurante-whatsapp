@@ -114,11 +114,17 @@ export type InsertCustomer = typeof customers.$inferInsert;
  */
 export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
-  customerId: int("customerId").notNull(),
+  sessionId: varchar("sessionId", { length: 255 }), // Link para orderSession (pedidos via web)
+  customerId: int("customerId"), // Opcional (pode ser pedido via web sem cadastro)
   orderNumber: varchar("orderNumber", { length: 20 }).notNull().unique(),
   status: mysqlEnum("status", ["pending", "confirmed", "preparing", "ready", "delivering", "delivered", "cancelled"]).default("pending").notNull(),
   orderType: mysqlEnum("orderType", ["delivery", "pickup"]).notNull(),
-  items: text("items").notNull(), // JSON array de itens
+  
+  // Dados do cliente (para pedidos via web)
+  customerName: varchar("customerName", { length: 255 }).notNull(),
+  customerPhone: varchar("customerPhone", { length: 20 }).notNull(),
+  
+  items: text("items").notNull(), // JSON array de itens (manter para compatibilidade)
   subtotal: int("subtotal").notNull(), // em centavos
   deliveryFee: int("deliveryFee").default(0).notNull(),
   total: int("total").notNull(),
@@ -234,3 +240,54 @@ export const testMessages = mysqlTable("test_messages", {
 
 export type TestMessage = typeof testMessages.$inferSelect;
 export type InsertTestMessage = typeof testMessages.$inferInsert;
+
+/**
+ * Sessões de pedido (links únicos para cardápio web)
+ */
+export const orderSessions = mysqlTable("order_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 255 }).notNull().unique(),
+  whatsappNumber: varchar("whatsappNumber", { length: 20 }),
+  customerId: int("customerId"),
+  status: mysqlEnum("status", ["pending", "completed", "expired"]).default("pending").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OrderSession = typeof orderSessions.$inferSelect;
+export type InsertOrderSession = typeof orderSessions.$inferInsert;
+
+/**
+ * Itens do pedido (normalizado, não JSON)
+ */
+export const orderItems = mysqlTable("order_items", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  menuItemId: int("menuItemId").notNull(),
+  quantity: int("quantity").notNull(),
+  unitPrice: int("unitPrice").notNull(), // em centavos (preço no momento do pedido)
+  observations: text("observations"),
+  addons: text("addons"), // JSON array de adicionais
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OrderItem = typeof orderItems.$inferSelect;
+export type InsertOrderItem = typeof orderItems.$inferInsert;
+
+/**
+ * Fila de mensagens do bot (para notificações WhatsApp)
+ */
+export const botMessages = mysqlTable("bot_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 255 }).notNull(),
+  whatsappNumber: varchar("whatsappNumber", { length: 20 }),
+  message: text("message").notNull(),
+  messageType: varchar("messageType", { length: 50 }).notNull(), // order_confirmation, order_update, etc
+  status: mysqlEnum("status", ["pending", "sent", "failed"]).default("pending").notNull(),
+  sentAt: timestamp("sentAt"),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type BotMessage = typeof botMessages.$inferSelect;
+export type InsertBotMessage = typeof botMessages.$inferInsert;
