@@ -18,6 +18,7 @@ import TestConversations from "./pages/TestConversations";
 import Pedido from "./pages/Pedido";
 import Checkout from "./pages/Checkout";
 import Confirmacao from "./pages/Confirmacao";
+import PrintOrder from "./pages/PrintOrder";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/pedido/:sessionId" component={Pedido} />
       <Route path="/pedido/:sessionId/checkout" component={Checkout} />
       <Route path="/pedido/:sessionId/confirmacao" component={Confirmacao} />
+      <Route path="/print-order/:orderId" component={PrintOrder} />
       
       {/* Rotas autenticadas com DashboardLayout */}
       <Route>

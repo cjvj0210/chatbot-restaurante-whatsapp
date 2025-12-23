@@ -211,14 +211,12 @@ export const orderRouter = router({
     }),
 
   /**
-   * Listar todos os pedidos (admin)
+   * Buscar pedido por ID (para impressão)
    */
-  list: protectedProcedure
+  getById: publicProcedure
     .input(
       z.object({
-        status: z.enum(["pending", "confirmed", "preparing", "ready", "delivering", "delivered", "cancelled"]).optional(),
-        limit: z.number().min(1).max(100).default(50),
-        offset: z.number().min(0).default(0),
+        id: z.number(),
       })
     )
     .query(async ({ input }) => {
@@ -227,16 +225,67 @@ export const orderRouter = router({
         throw new Error("Database connection failed");
       }
 
+      const [order] = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.id, input.id))
+        .limit(1);
+
+      if (!order) {
+        return null;
+      }
+
+      // Buscar itens do pedido
+      const items = await db
+        .select({
+          id: orderItems.id,
+          menuItemId: orderItems.menuItemId,
+          menuItemName: menuItems.name,
+          quantity: orderItems.quantity,
+          unitPrice: orderItems.unitPrice,
+          observations: orderItems.observations,
+          addons: orderItems.addons,
+        })
+        .from(orderItems)
+        .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+        .where(eq(orderItems.orderId, order.id));
+
+      return {
+        ...order,
+        items,
+      };
+    }),
+
+  /**
+   * Listar todos os pedidos (admin)
+   */
+  list: protectedProcedure
+    .input(
+      z.object({
+        status: z.enum(["pending", "confirmed", "preparing", "ready", "delivering", "delivered", "cancelled"]).optional(),
+        limit: z.number().min(1).max(100).optional(),
+        offset: z.number().min(0).optional(),
+      }).optional()
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new Error("Database connection failed");
+      }
+
+      const limit = input?.limit || 50;
+      const offset = input?.offset || 0;
+
       let query = db.select().from(orders);
 
-      if (input.status) {
+      if (input?.status) {
         query = query.where(eq(orders.status, input.status)) as any;
       }
 
       const ordersList = await query
         .orderBy(desc(orders.createdAt))
-        .limit(input.limit)
-        .offset(input.offset);
+        .limit(limit)
+        .offset(offset);
 
       return ordersList;
     }),

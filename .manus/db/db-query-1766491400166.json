@@ -1,0 +1,30 @@
+{
+  "query": "SELECT * FROM orders ORDER BY createdAt DESC LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT * FROM orders ORDER BY createdAt DESC LIMIT 5",
+  "rows": [
+    {
+      "id": "1",
+      "customerId": "NULL",
+      "orderNumber": "PED91240605",
+      "status": "pending",
+      "orderType": "delivery",
+      "items": "[{\"menuItemId\":60002,\"quantity\":1,\"price\":30},{\"menuItemId\":60004,\"quantity\":1,\"price\":20,\"observations\":\"carne mal passada\\n\"},{\"menuItemId\":60015,\"quantity\":1,\"price\":12}]",
+      "subtotal": "62",
+      "deliveryFee": "500",
+      "total": "562",
+      "deliveryAddress": "Rua 28, av 07, n 2541",
+      "customerNotes": "NULL",
+      "estimatedTime": "40",
+      "paymentMethod": "cartao",
+      "createdAt": "2025-12-23 12:00:40",
+      "updatedAt": "2025-12-23 12:00:40",
+      "sessionId": "5e3370a6302e6b8c0fba041efb7a3e65",
+      "customerName": "CLOVIS JR",
+      "customerPhone": "17988112791"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\torderNumber\tstatus\torderType\titems\tsubtotal\tdeliveryFee\ttotal\tdeliveryAddress\tcustomerNotes\testimatedTime\tpaymentMethod\tcreatedAt\tupdatedAt\tsessionId\tcustomerName\tcustomerPhone\n1\tNULL\tPED91240605\tpending\tdelivery\t[{\"menuItemId\":60002,\"quantity\":1,\"price\":30},{\"menuItemId\":60004,\"quantity\":1,\"price\":20,\"observations\":\"carne mal passada\\n\"},{\"menuItemId\":60015,\"quantity\":1,\"price\":12}]\t62\t500\t562\tRua 28, av 07, n 2541\tNULL\t40\tcartao\t2025-12-23 12:00:40\t2025-12-23 12:00:40\t5e3370a6302e6b8c0fba041efb7a3e65\tCLOVIS JR\t17988112791\n",
+  "stderr": "",
+  "execution_time_ms": 550
+}

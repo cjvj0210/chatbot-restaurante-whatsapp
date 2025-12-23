@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Printer, Send } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -142,12 +143,36 @@ export default function Orders() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 pt-2">
-                      <label className="text-sm font-medium">Alterar Status:</label>
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => handleStatusChange(order.id, value as keyof typeof statusLabels)}
+                    <div className="flex items-center gap-4 pt-4 border-t">
+                      {/* Botão de Impressão */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(`/print-order/${order.id}`, '_blank')}
                       >
+                        <Printer className="w-4 h-4 mr-2" />
+                        Imprimir
+                      </Button>
+
+                      {/* Botão de Expedição */}
+                      {(order.status === "confirmed" || order.status === "preparing" || order.status === "ready") && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleStatusChange(order.id, order.deliveryType === "delivery" ? "delivering" : "ready")}
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          {order.deliveryType === "delivery" ? "Expedir para Entrega" : "Marcar como Pronto"}
+                        </Button>
+                      )}
+
+                      {/* Seletor de Status */}
+                      <div className="flex items-center gap-2 ml-auto">
+                        <label className="text-sm font-medium">Status:</label>
+                        <Select
+                          value={order.status}
+                          onValueChange={(value) => handleStatusChange(order.id, value as keyof typeof statusLabels)}
+                        >
                         <SelectTrigger className="w-[180px]">
                           <SelectValue />
                         </SelectTrigger>
@@ -161,6 +186,7 @@ export default function Orders() {
                           <SelectItem value="cancelled">Cancelado</SelectItem>
                         </SelectContent>
                       </Select>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

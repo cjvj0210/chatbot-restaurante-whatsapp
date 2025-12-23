@@ -549,6 +549,33 @@
 - [x] Condicional para exibir apenas se imageUrl existir
 
 ### Testes
-- [ ] Testar upload de imagem
+- [x] Salvar checkpoint (34f6ae66)
+- [ ] Testar upload de imagem no painel admin - PRONTO PARA TESTE
+- [ ] Validar exibição no cardápio web - PRONTO PARA TESTE
+
+
+## Sistema de Impressão e Notificações (22/12/2024)
+### Verificação
+- [x] Verificar se pedido de teste foi recebido no banco (SIM - 1 pedido encontrado)
+- [x] Analisar estrutura do pedido salvo
+- [x] Identificar problema: frontend não exibe pedidos (query com input opcional)
+### Impressão de Comanda
+- [x] Criar página de impressão otimizada para impressora térmica (PrintOrder.tsx)
+- [x] Formatar comanda com dados do pedido (itens, observações, cliente, endereço)
+- [x] Criar endpoint para buscar pedido completo por ID (orderRouter.getById)
+- [x] Adicionar rota /print-order/:orderId
+- [x] Impressão automática ao carregar
+- [ ] Adicionar bo### Botão de Expedição
+- [x] Adicionar botão "Imprimir" no painel admin (Orders.tsx)
+- [x] Adicionar botão "Expedir para Entrega" / "Marcar como Pronto" (Orders.tsx)
+- [x] Botão condicional baseado em status (confirmed/preparing/ready)
+- [x] Atualizar status do pedido automaticamente (já existe no orderRouter.updateStatus)
+- [x] Notificação WhatsApp ao expedir (já existe no orderRouter.updateStatus)
+- [x] Sistema de notificação já implementado (orderNotification.ts)
+- [x] Mensagens formatadas para WhatsApp (formatStatusUpdateForWhatsApp)
+- [x] Fila de mensagens (tabela botMessages)
+- [ ] Testar fluxo completo de notificação (próxima fase)
+
+### Upload de Imagens
+- [ ] Testar upload de imagem no painel admin
 - [ ] Validar exibição no cardápio web
-- [ ] Salvar checkpoint
