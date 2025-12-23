@@ -577,5 +577,23 @@
 - [ ] Testar fluxo completo de notificação (próxima fase)
 
 ### Upload de Imagens
-- [ ] Testar upload de imagem no painel admin
-- [ ] Validar exibição no cardápio web
+- [x] Sistema de upload já implementado (checkpoint 34f6ae66)
+- [x] Endpoint uploadRouter.uploadMenuItemImage funcional
+- [x] Campo de upload no painel admin (Menu.tsx)
+- [x] Exibição no cardápio web (Pedido.tsx)
+- [ ] Testar upload de imagem no painel admin - PRONTO PARA TESTE
+- [ ] Validar exibição no cardápio web - PRONTO PARA TESTE
+
+
+## Atualizar Taxa de Entrega (22/12/2024)
+- [x] Taxa já está em R$ 7,00 no Pedido.tsx (linha 80: deliveryFee = 700)
+- [x] Verificado outros arquivos (Orders.tsx, Settings.tsx, PrintOrder.tsx usam valor do banco)
+- [x] Taxa fixa aplicada corretamente no cálculo do total
+
+
+## Bug: Preços aparecendo 100x menores no cardápio (22/12/2024)
+- [x] Investigar valores no banco de dados (menu_items.price estava em centavos errados)
+- [x] Identificado: preços salvos como 30 (R$ 0,30) ao invés de 3000 (R$ 30,00)
+- [x] Corrigir valores no banco: UPDATE menu_items SET price = price * 100 WHERE price < 1000
+- [x] Preços corrigidos: agora em centavos corretos (3000 = R$ 30,00)
+- [ ] Testar correção no cardápio web (usuário deve validar)

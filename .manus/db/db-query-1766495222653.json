@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, name, price FROM menu_items LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name, price FROM menu_items LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Coca-Cola",
+      "price": "500"
+    },
+    {
+      "id": "30001",
+      "name": "Rodízio Almoço (Seg-Sex)",
+      "price": "11990"
+    },
+    {
+      "id": "30002",
+      "name": "Rodízio Almoço (Sáb-Dom)",
+      "price": "12990"
+    },
+    {
+      "id": "30003",
+      "name": "Rodízio Jantar Individual",
+      "price": "10990"
+    },
+    {
+      "id": "30004",
+      "name": "Rodízio Jantar Casal (PROMOÇÃO)",
+      "price": "19990"
+    },
+    {
+      "id": "30005",
+      "name": "Coca-Cola 2L",
+      "price": "1000"
+    },
+    {
+      "id": "60001",
+      "name": "Marmitex G",
+      "price": "34"
+    },
+    {
+      "id": "60002",
+      "name": "Marmitex M",
+      "price": "30"
+    },
+    {
+      "id": "60003",
+      "name": "Marmitex P",
+      "price": "26"
+    },
+    {
+      "id": "60004",
+      "name": "Marmitex Econômico",
+      "price": "20"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tprice\n1\tCoca-Cola\t500\n30001\tRodízio Almoço (Seg-Sex)\t11990\n30002\tRodízio Almoço (Sáb-Dom)\t12990\n30003\tRodízio Jantar Individual\t10990\n30004\tRodízio Jantar Casal (PROMOÇÃO)\t19990\n30005\tCoca-Cola 2L\t1000\n60001\tMarmitex G\t34\n60002\tMarmitex M\t30\n60003\tMarmitex P\t26\n60004\tMarmitex Econômico\t20\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}
