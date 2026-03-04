@@ -639,3 +639,13 @@
 - [x] Cadastrar 4 itens da Categoria 6: Saladas Especiais
 - [x] Cadastrar 10 itens da Categoria 7: Bebidas
 - [x] Verificar todos os 37 itens cadastrados corretamente (7+3+8+1+4+4+10 = 37)
+
+## Sistema de Complementos (iFood-style) - Mar/2026
+- [x] Criar tabelas menu_addon_groups e menu_addon_options no schema
+- [x] Migrar banco com pnpm db:push
+- [x] Criar endpoints tRPC para CRUD de complementos (admin) e leitura pública
+- [x] Cadastrar 89 grupos e 348 opções para todos os 37 itens via script SQL
+- [x] Atualizar modal do cardápio público com seleção de complementos (radio/checkbox/quantidade)
+- [x] Atualizar painel admin Menu.tsx com gestão de complementos por item (modal Settings2)
+- [x] Validar grupos obrigatórios antes de adicionar ao carrinho
+- [x] Incluir complementos selecionados no resumo do pedido e checkout

@@ -238,6 +238,94 @@ export const appRouter = router({
     }),
   }),
 
+  // Complementos do Cardápio (Addon Groups e Options)
+  menuAddons: router({
+    // Leitura pública: busca grupos e opções de um item
+    getByItem: publicProcedure
+      .input(z.object({ menuItemId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAddonGroupsWithOptions(input.menuItemId);
+      }),
+    // Leitura pública: busca múltiplos itens de uma vez (para o cardápio completo)
+    getByItems: publicProcedure
+      .input(z.object({ menuItemIds: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        return await db.getAddonGroupsForItems(input.menuItemIds);
+      }),
+    // Admin: criar grupo de complementos
+    createGroup: protectedProcedure
+      .input(z.object({
+        menuItemId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        isRequired: z.boolean().default(false),
+        minSelections: z.number().default(0),
+        maxSelections: z.number().default(1),
+        displayOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createAddonGroup(input);
+      }),
+    // Admin: atualizar grupo
+    updateGroup: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        isRequired: z.boolean().optional(),
+        minSelections: z.number().optional(),
+        maxSelections: z.number().optional(),
+        displayOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateAddonGroup(id, data);
+        return { success: true };
+      }),
+    // Admin: deletar grupo (e suas opções)
+    deleteGroup: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteAddonGroup(input.id);
+        return { success: true };
+      }),
+    // Admin: criar opção dentro de um grupo
+    createOption: protectedProcedure
+      .input(z.object({
+        groupId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        priceExtra: z.number().default(0),
+        displayOrder: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createAddonOption(input);
+      }),
+    // Admin: atualizar opção
+    updateOption: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        priceExtra: z.number().optional(),
+        displayOrder: z.number().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateAddonOption(id, data);
+        return { success: true };
+      }),
+    // Admin: deletar opção
+    deleteOption: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteAddonOption(input.id);
+        return { success: true };
+      }),
+  }),
+
   // Dashboard Stats
   dashboard: router({
     stats: protectedProcedure.query(async () => {

@@ -36,6 +36,13 @@
       "when": 1766420792160,
       "tag": "0004_clammy_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1772649128656,
+      "tag": "0005_wise_susan_delgado",
+      "breakpoints": true
     }
   ]
 }

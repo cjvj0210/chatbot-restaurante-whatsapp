@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   Dialog,
@@ -21,6 +21,10 @@ import {
   Loader2,
   ChevronRight,
   FolderOpen,
+  Settings2,
+  GripVertical,
+  X,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,6 +35,19 @@ export default function Menu() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  // Estado para modal de complementos
+  const [addonItemId, setAddonItemId] = useState<number | null>(null);
+  const [addonItemName, setAddonItemName] = useState<string>("");
+  const [addonDialogOpen, setAddonDialogOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupRequired, setNewGroupRequired] = useState(false);
+  const [newGroupMin, setNewGroupMin] = useState(0);
+  const [newGroupMax, setNewGroupMax] = useState(1);
+  const [addingGroupId, setAddingGroupId] = useState<number | null>(null);
+  const [newOptionName, setNewOptionName] = useState("");
+  const [newOptionDesc, setNewOptionDesc] = useState("");
+  const [newOptionPrice, setNewOptionPrice] = useState("");
 
   const utils = trpc.useUtils();
   const { data: categories, isLoading: categoriesLoading } = trpc.menuCategories.list.useQuery();
@@ -123,6 +140,38 @@ export default function Menu() {
   };
 
   const selectedCategoryName = categories?.find((c) => c.id === selectedCategory)?.name;
+
+  // Queries e mutations de complementos
+  const { data: addonGroups, refetch: refetchAddons } = trpc.menuAddons.getByItem.useQuery(
+    { menuItemId: addonItemId || 0 },
+    { enabled: !!addonItemId && addonDialogOpen }
+  );
+
+  const createAddonGroup = trpc.menuAddons.createGroup.useMutation({
+    onSuccess: () => { refetchAddons(); setNewGroupName(""); setNewGroupRequired(false); setNewGroupMin(0); setNewGroupMax(1); toast.success("Grupo criado!"); },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const deleteAddonGroup = trpc.menuAddons.deleteGroup.useMutation({
+    onSuccess: () => { refetchAddons(); toast.success("Grupo removido!"); },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const createAddonOption = trpc.menuAddons.createOption.useMutation({
+    onSuccess: () => { refetchAddons(); setNewOptionName(""); setNewOptionDesc(""); setNewOptionPrice(""); setAddingGroupId(null); toast.success("Opção adicionada!"); },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const deleteAddonOption = trpc.menuAddons.deleteOption.useMutation({
+    onSuccess: () => { refetchAddons(); toast.success("Opção removida!"); },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const openAddonDialog = (itemId: number, itemName: string) => {
+    setAddonItemId(itemId);
+    setAddonItemName(itemName);
+    setAddonDialogOpen(true);
+  };
 
   return (
     <div className="space-y-5 max-w-6xl">
@@ -278,16 +327,25 @@ export default function Menu() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-1">
                           <p className="font-semibold text-foreground text-sm truncate">{item.name}</p>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Remover "${item.name}"?`)) {
-                                deleteItem.mutate({ id: item.id });
-                              }
-                            }}
-                            className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors shrink-0"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => openAddonDialog(item.id, item.name)}
+                              title="Gerenciar complementos"
+                              className="p-1 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                            >
+                              <Settings2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Remover "${item.name}"?`)) {
+                                  deleteItem.mutate({ id: item.id });
+                                }
+                              }}
+                              className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                         {item.description && (
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -340,6 +398,189 @@ export default function Menu() {
               {createCategory.isPending ? "Criando..." : "Criar Categoria"}
             </button>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== MODAL COMPLEMENTOS ===== */}
+      <Dialog open={addonDialogOpen} onOpenChange={(open) => {
+        setAddonDialogOpen(open);
+        if (!open) { setAddonItemId(null); setAddingGroupId(null); setNewGroupName(""); }
+      }}>
+        <DialogContent className="rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings2 className="w-5 h-5 text-primary" />
+              Complementos — {addonItemName}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            {/* Adicionar novo grupo */}
+            <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
+              <p className="text-sm font-semibold text-foreground mb-3">Novo Grupo de Complementos</p>
+              <div className="space-y-3">
+                <Input
+                  placeholder="Nome do grupo (ex: Escolha o ponto da carne)"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="rounded-xl text-sm"
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Mínimo</Label>
+                    <Input type="number" min={0} value={newGroupMin} onChange={(e) => setNewGroupMin(parseInt(e.target.value) || 0)} className="rounded-xl text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Máximo</Label>
+                    <Input type="number" min={1} value={newGroupMax} onChange={(e) => setNewGroupMax(parseInt(e.target.value) || 1)} className="rounded-xl text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Obrigatório?</Label>
+                    <div className="flex items-center gap-2 h-10">
+                      <Switch checked={newGroupRequired} onCheckedChange={setNewGroupRequired} />
+                      <span className="text-xs text-muted-foreground">{newGroupRequired ? "Sim" : "Não"}</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (!newGroupName.trim() || !addonItemId) return;
+                    createAddonGroup.mutate({
+                      menuItemId: addonItemId,
+                      name: newGroupName.trim(),
+                      isRequired: newGroupRequired,
+                      minSelections: newGroupMin,
+                      maxSelections: newGroupMax,
+                      displayOrder: (addonGroups?.length || 0) + 1,
+                    });
+                  }}
+                  disabled={!newGroupName.trim() || createAddonGroup.isPending}
+                  className="w-full bg-primary text-white py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {createAddonGroup.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  Criar Grupo
+                </button>
+              </div>
+            </div>
+
+            {/* Lista de grupos existentes */}
+            {!addonGroups?.length ? (
+              <div className="py-8 text-center text-muted-foreground">
+                <Settings2 className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">Nenhum grupo de complementos ainda</p>
+                <p className="text-xs mt-1">Crie o primeiro grupo acima</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {addonGroups.map((group) => (
+                  <div key={group.id} className="border border-border/50 rounded-xl overflow-hidden">
+                    {/* Cabeçalho do grupo */}
+                    <div className="bg-muted/30 px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <GripVertical className="w-4 h-4 text-muted-foreground/40" />
+                        <div>
+                          <p className="font-semibold text-sm text-foreground">{group.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {group.isRequired ? "Obrigatório" : "Opcional"} · 
+                            {group.maxSelections === 1 ? " 1 opção" : ` até ${group.maxSelections} opções`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setAddingGroupId(addingGroupId === group.id ? null : group.id)}
+                          className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                          title="Adicionar opção"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => { if (confirm(`Remover grupo "${group.name}" e todas as opções?`)) deleteAddonGroup.mutate({ id: group.id }); }}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Opções do grupo */}
+                    <div className="divide-y divide-border/30">
+                      {group.options.map((opt) => (
+                        <div key={opt.id} className="px-4 py-3 flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{opt.name}</p>
+                            {opt.description && <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>}
+                            {opt.priceExtra > 0 && (
+                              <p className="text-xs text-primary font-semibold mt-0.5">+ R$ {(opt.priceExtra / 100).toFixed(2).replace(".", ",")}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => deleteAddonOption.mutate({ id: opt.id })}
+                            className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors ml-3 shrink-0"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Formulário de nova opção */}
+                    {addingGroupId === group.id && (
+                      <div className="px-4 py-3 bg-primary/5 border-t border-border/30 space-y-2">
+                        <p className="text-xs font-semibold text-primary">Nova Opção</p>
+                        <Input
+                          placeholder="Nome da opção (ex: Bem passado)"
+                          value={newOptionName}
+                          onChange={(e) => setNewOptionName(e.target.value)}
+                          className="rounded-xl text-sm"
+                        />
+                        <Input
+                          placeholder="Descrição (opcional)"
+                          value={newOptionDesc}
+                          onChange={(e) => setNewOptionDesc(e.target.value)}
+                          className="rounded-xl text-sm"
+                        />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="Preço extra R$ (0 = gratuito)"
+                          value={newOptionPrice}
+                          onChange={(e) => setNewOptionPrice(e.target.value)}
+                          className="rounded-xl text-sm"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              if (!newOptionName.trim()) return;
+                              createAddonOption.mutate({
+                                groupId: group.id,
+                                name: newOptionName.trim(),
+                                description: newOptionDesc.trim() || undefined,
+                                priceExtra: Math.round(parseFloat(newOptionPrice || "0") * 100),
+                                displayOrder: group.options.length + 1,
+                              });
+                            }}
+                            disabled={!newOptionName.trim() || createAddonOption.isPending}
+                            className="flex-1 bg-primary text-white py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1"
+                          >
+                            {createAddonOption.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                            Adicionar
+                          </button>
+                          <button
+                            onClick={() => { setAddingGroupId(null); setNewOptionName(""); setNewOptionDesc(""); setNewOptionPrice(""); }}
+                            className="px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

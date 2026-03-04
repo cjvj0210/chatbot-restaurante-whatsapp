@@ -7,6 +7,8 @@ import {
   whatsappSettings,
   menuCategories,
   menuItems,
+  menuAddonGroups,
+  menuAddonOptions,
   customers,
   orders,
   reservations,
@@ -17,6 +19,10 @@ import {
   type WhatsappSettings,
   type MenuCategory,
   type MenuItem,
+  type MenuAddonGroup,
+  type MenuAddonOption,
+  type InsertMenuAddonGroup,
+  type InsertMenuAddonOption,
   type Customer,
   type Order,
   type Reservation,
@@ -425,4 +431,85 @@ export async function getAllFeedback(): Promise<typeof feedback.$inferSelect[]> 
   if (!db) return [];
 
   return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+}
+
+// ===== Complementos do Cardápio (Addon Groups & Options) =====
+
+export type AddonGroupWithOptions = MenuAddonGroup & {
+  options: MenuAddonOption[];
+};
+
+export async function getAddonGroupsWithOptions(menuItemId: number): Promise<AddonGroupWithOptions[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const groups = await db
+    .select()
+    .from(menuAddonGroups)
+    .where(and(eq(menuAddonGroups.menuItemId, menuItemId), eq(menuAddonGroups.isActive, true)))
+    .orderBy(menuAddonGroups.displayOrder);
+
+  const result: AddonGroupWithOptions[] = [];
+  for (const group of groups) {
+    const options = await db
+      .select()
+      .from(menuAddonOptions)
+      .where(and(eq(menuAddonOptions.groupId, group.id), eq(menuAddonOptions.isActive, true)))
+      .orderBy(menuAddonOptions.displayOrder);
+    result.push({ ...group, options });
+  }
+  return result;
+}
+
+export async function getAddonGroupsForItems(menuItemIds: number[]): Promise<Record<number, AddonGroupWithOptions[]>> {
+  if (menuItemIds.length === 0) return {};
+  const result: Record<number, AddonGroupWithOptions[]> = {};
+  for (const id of menuItemIds) {
+    result[id] = await getAddonGroupsWithOptions(id);
+  }
+  return result;
+}
+
+export async function createAddonGroup(data: InsertMenuAddonGroup): Promise<MenuAddonGroup> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const res = await db.insert(menuAddonGroups).values(data);
+  const inserted = await db.select().from(menuAddonGroups).where(eq(menuAddonGroups.id, Number(res[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function updateAddonGroup(id: number, data: Partial<InsertMenuAddonGroup>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(menuAddonGroups).set(data).where(eq(menuAddonGroups.id, id));
+}
+
+export async function deleteAddonGroup(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Deleta opções primeiro, depois o grupo
+  await db.delete(menuAddonOptions).where(eq(menuAddonOptions.groupId, id));
+  await db.delete(menuAddonGroups).where(eq(menuAddonGroups.id, id));
+}
+
+export async function createAddonOption(data: InsertMenuAddonOption): Promise<MenuAddonOption> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const res = await db.insert(menuAddonOptions).values(data);
+  const inserted = await db.select().from(menuAddonOptions).where(eq(menuAddonOptions.id, Number(res[0].insertId))).limit(1);
+  return inserted[0]!;
+}
+
+export async function updateAddonOption(id: number, data: Partial<InsertMenuAddonOption>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(menuAddonOptions).set(data).where(eq(menuAddonOptions.id, id));
+}
+
+export async function deleteAddonOption(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(menuAddonOptions).where(eq(menuAddonOptions.id, id));
 }

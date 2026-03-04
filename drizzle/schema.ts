@@ -291,3 +291,43 @@ export const botMessages = mysqlTable("bot_messages", {
 
 export type BotMessage = typeof botMessages.$inferSelect;
 export type InsertBotMessage = typeof botMessages.$inferInsert;
+
+/**
+ * Grupos de complementos/adicionais por item do cardápio
+ * Ex: "Escolha as carnes", "Ponto da carne", "Molho para o churrasco?", "Precisa de talheres?"
+ */
+export const menuAddonGroups = mysqlTable("menu_addon_groups", {
+  id: int("id").autoincrement().primaryKey(),
+  menuItemId: int("menuItemId").notNull(), // FK para menu_items
+  name: varchar("name", { length: 150 }).notNull(), // "Escolha as carnes"
+  description: text("description"), // descrição opcional do grupo
+  isRequired: boolean("isRequired").default(false).notNull(), // OBRIGATÓRIO ou opcional
+  minSelections: int("minSelections").default(0).notNull(), // mínimo de seleções
+  maxSelections: int("maxSelections").default(1).notNull(), // máximo de seleções (1 = radio, >1 = checkbox)
+  displayOrder: int("displayOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MenuAddonGroup = typeof menuAddonGroups.$inferSelect;
+export type InsertMenuAddonGroup = typeof menuAddonGroups.$inferInsert;
+
+/**
+ * Opções dentro de cada grupo de complementos
+ * Ex: "Com cupim", "Com costela no bafo", "Molho chimichurri (+R$3,99)", "Com talher (+R$0,50)"
+ */
+export const menuAddonOptions = mysqlTable("menu_addon_options", {
+  id: int("id").autoincrement().primaryKey(),
+  groupId: int("groupId").notNull(), // FK para menu_addon_groups
+  name: varchar("name", { length: 150 }).notNull(), // "Com cupim"
+  description: text("description"), // "Delicioso cupim cozido por mais de 6 horas..."
+  priceExtra: int("priceExtra").default(0).notNull(), // preço adicional em centavos (0 = grátis)
+  displayOrder: int("displayOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MenuAddonOption = typeof menuAddonOptions.$inferSelect;
+export type InsertMenuAddonOption = typeof menuAddonOptions.$inferInsert;

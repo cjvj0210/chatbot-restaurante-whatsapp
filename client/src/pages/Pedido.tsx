@@ -6,13 +6,44 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, Star } from "lucide-react";
 
+interface AddonOption {
+  id: number;
+  groupId: number;
+  name: string;
+  description: string | null;
+  priceExtra: number;
+  displayOrder: number;
+}
+
+interface AddonGroup {
+  id: number;
+  menuItemId: number;
+  name: string;
+  description: string | null;
+  isRequired: boolean;
+  minSelections: number;
+  maxSelections: number;
+  displayOrder: number;
+  options: AddonOption[];
+}
+
+interface SelectedAddon {
+  groupId: number;
+  groupName: string;
+  optionId: number;
+  optionName: string;
+  priceExtra: number;
+}
+
 interface CartItem {
   menuItemId: number;
   name: string;
-  price: number;
+  price: number; // preço base + addons
+  basePrice: number; // preço base sem addons
   quantity: number;
   observations?: string;
   imageUrl?: string;
+  addons?: SelectedAddon[];
 }
 
 type Tab = "menu" | "cart";
@@ -26,6 +57,13 @@ export default function Pedido() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [itemObservations, setItemObservations] = useState("");
   const [itemQty, setItemQty] = useState(1);
+  const [selectedAddons, setSelectedAddons] = useState<Record<number, SelectedAddon[]>>({}); // groupId -> selected options
+
+  // Buscar complementos do item selecionado
+  const { data: addonGroups, isLoading: loadingAddons } = trpc.menuAddons.getByItem.useQuery(
+    { menuItemId: selectedItem?.id || 0 },
+    { enabled: !!selectedItem?.id }
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const categoryRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -106,25 +144,58 @@ export default function Pedido() {
     }
   }, [handleScroll]);
 
-  const addToCart = (item: any, qty: number, obs?: string) => {
-    setCart((prev) => {
-      const existing = prev.find((i) => i.menuItemId === item.id && i.observations === (obs || undefined));
-      if (existing && !obs) {
-        return prev.map((i) =>
-          i.menuItemId === item.id ? { ...i, quantity: i.quantity + qty } : i
-        );
+  const addToCart = (item: any, qty: number, obs?: string, addons?: SelectedAddon[]) => {
+    const addonsExtra = (addons || []).reduce((sum, a) => sum + a.priceExtra, 0);
+    const totalPrice = item.price + addonsExtra;
+    setCart((prev) => [
+      ...prev,
+      {
+        menuItemId: item.id,
+        name: item.name,
+        price: totalPrice,
+        basePrice: item.price,
+        quantity: qty,
+        observations: obs || undefined,
+        imageUrl: item.imageUrl || undefined,
+        addons: addons && addons.length > 0 ? addons : undefined,
+      },
+    ]);
+  };
+
+  // Validar se todos os grupos obrigatórios foram preenchidos
+  const validateAddons = (groups: AddonGroup[]): string | null => {
+    for (const group of groups) {
+      const selected = selectedAddons[group.id] || [];
+      if (group.isRequired && selected.length < group.minSelections) {
+        return `Escolha ${group.minSelections === 1 ? 'uma opção' : `${group.minSelections} opções`} em "${group.name}"`;
       }
-      return [
-        ...prev,
-        {
-          menuItemId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: qty,
-          observations: obs || undefined,
-          imageUrl: item.imageUrl || undefined,
-        },
-      ];
+    }
+    return null;
+  };
+
+  const toggleAddon = (group: AddonGroup, option: AddonOption) => {
+    setSelectedAddons((prev) => {
+      const current = prev[group.id] || [];
+      const isSelected = current.some((a) => a.optionId === option.id);
+
+      if (group.maxSelections === 1) {
+        // Radio: substitui a seleção
+        if (isSelected) return { ...prev, [group.id]: [] };
+        return {
+          ...prev,
+          [group.id]: [{ groupId: group.id, groupName: group.name, optionId: option.id, optionName: option.name, priceExtra: option.priceExtra }],
+        };
+      } else {
+        // Checkbox: adiciona/remove, respeitando o máximo
+        if (isSelected) {
+          return { ...prev, [group.id]: current.filter((a) => a.optionId !== option.id) };
+        }
+        if (current.length >= group.maxSelections) return prev; // já no máximo
+        return {
+          ...prev,
+          [group.id]: [...current, { groupId: group.id, groupName: group.name, optionId: option.id, optionName: option.name, priceExtra: option.priceExtra }],
+        };
+      }
     });
   };
 
@@ -423,6 +494,15 @@ export default function Pedido() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-800 text-sm">{item.name}</p>
+                        {item.addons && item.addons.length > 0 && (
+                          <div className="mt-0.5 space-y-0.5">
+                            {item.addons.map((a) => (
+                              <p key={a.optionId} className="text-xs text-gray-500">
+                                • {a.optionName}{a.priceExtra > 0 ? ` (+${formatPrice(a.priceExtra)})` : ""}
+                              </p>
+                            ))}
+                          </div>
+                        )}
                         {item.observations && (
                           <p className="text-xs text-orange-600 mt-0.5 italic">Obs: {item.observations}</p>
                         )}
@@ -528,93 +608,176 @@ export default function Pedido() {
       )}
 
       {/* ===== MODAL DE DETALHES DO ITEM ===== */}
-      <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <DialogContent className="p-0 max-w-md w-full overflow-hidden rounded-2xl" style={{ maxHeight: "90vh", overflowY: "auto" }}>
-          {selectedItem && (
-            <div>
-              {/* Foto do item */}
-              {selectedItem.imageUrl ? (
-                <div className="w-full h-52 overflow-hidden">
-                  <img
-                    src={selectedItem.imageUrl}
-                    alt={selectedItem.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-40 bg-gradient-to-br from-orange-100 to-red-200 flex items-center justify-center text-6xl">
-                  🍖
-                </div>
-              )}
+      <Dialog open={!!selectedItem} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedItem(null);
+          setSelectedAddons({});
+          setItemObservations("");
+          setItemQty(1);
+        }
+      }}>
+        <DialogContent className="p-0 max-w-md w-full overflow-hidden rounded-2xl" style={{ maxHeight: "92vh", overflowY: "auto" }}>
+          {selectedItem && (() => {
+            const groups: AddonGroup[] = addonGroups || [];
+            const addonsExtra = Object.values(selectedAddons).flat().reduce((sum, a) => sum + a.priceExtra, 0);
+            const totalItemPrice = (selectedItem.price + addonsExtra) * itemQty;
 
-              <div className="p-5">
-                {/* Nome e preço */}
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <h2 className="text-xl font-bold text-gray-800 leading-tight flex-1">
-                    {selectedItem.name}
-                  </h2>
-                  <span className="text-red-600 font-bold text-xl whitespace-nowrap">
-                    {formatPrice(selectedItem.price * itemQty)}
-                  </span>
-                </div>
-
-                {/* Descrição */}
-                {selectedItem.description && (
-                  <p className="text-gray-500 text-sm leading-relaxed mb-4">
-                    {selectedItem.description}
-                  </p>
+            return (
+              <div>
+                {/* Foto do item */}
+                {selectedItem.imageUrl ? (
+                  <div className="w-full h-52 overflow-hidden">
+                    <img src={selectedItem.imageUrl} alt={selectedItem.name} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-full h-40 bg-gradient-to-br from-orange-100 to-red-200 flex items-center justify-center text-6xl">
+                    🍖
+                  </div>
                 )}
 
-                {/* Tempo de preparo */}
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Tempo de preparo: {selectedItem.preparationTime || 30} min</span>
+                {/* Nome, preço e descrição */}
+                <div className="p-5 pb-3">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <h2 className="text-xl font-bold text-gray-800 leading-tight flex-1">{selectedItem.name}</h2>
+                    <span className="text-red-600 font-bold text-xl whitespace-nowrap">{formatPrice(selectedItem.price)}</span>
+                  </div>
+                  {selectedItem.description && (
+                    <p className="text-gray-500 text-sm leading-relaxed">{selectedItem.description}</p>
+                  )}
                 </div>
 
+                {/* Grupos de complementos - estilo iFood */}
+                {loadingAddons ? (
+                  <div className="px-5 py-4 text-sm text-gray-400">Carregando opções...</div>
+                ) : (
+                  groups.map((group) => {
+                    const selected = selectedAddons[group.id] || [];
+                    const isMaxReached = selected.length >= group.maxSelections;
+                    return (
+                      <div key={group.id}>
+                        {/* Cabeçalho do grupo */}
+                        <div className="bg-gray-50 px-5 py-3 flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-gray-800 text-sm">{group.name}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {group.maxSelections === 1
+                                ? "Escolha 1 opção"
+                                : group.minSelections > 0
+                                ? `Escolha de ${group.minSelections} a ${group.maxSelections} opções`
+                                : `Escolha até ${group.maxSelections} opções`}
+                            </p>
+                          </div>
+                          {group.isRequired && (
+                            <span className="text-xs font-bold bg-gray-800 text-white px-2 py-0.5 rounded">
+                              OBRIGATÓRIO
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Opções do grupo */}
+                        <div className="divide-y divide-gray-100">
+                          {group.options.map((option) => {
+                            const isSelected = selected.some((a) => a.optionId === option.id);
+                            const isDisabled = !isSelected && isMaxReached;
+                            return (
+                              <button
+                                key={option.id}
+                                onClick={() => !isDisabled && toggleAddon(group, option)}
+                                disabled={isDisabled}
+                                className={`w-full px-5 py-4 flex items-center justify-between text-left transition-colors ${
+                                  isDisabled ? "opacity-40" : "hover:bg-gray-50"
+                                }`}
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-800">{option.name}</p>
+                                  {option.description && (
+                                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{option.description}</p>
+                                  )}
+                                  {option.priceExtra > 0 && (
+                                    <p className="text-sm text-red-600 font-semibold mt-0.5">+ {formatPrice(option.priceExtra)}</p>
+                                  )}
+                                </div>
+                                {/* Radio ou Checkbox visual */}
+                                {group.maxSelections === 1 ? (
+                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-3 ${
+                                    isSelected ? "border-red-600" : "border-gray-300"
+                                  }`}>
+                                    {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-red-600" />}
+                                  </div>
+                                ) : (
+                                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ml-3 ${
+                                    isSelected ? "border-red-600 bg-red-600" : "border-gray-300"
+                                  }`}>
+                                    {isSelected && (
+                                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
                 {/* Observações */}
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Alguma observação? <span className="font-normal text-gray-400">(opcional)</span>
-                  </label>
+                <div className="px-5 pt-4 pb-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base">💬</span>
+                    <label className="text-sm font-semibold text-gray-700">Alguma observação?</label>
+                    <span className="text-xs text-gray-400 ml-auto">{itemObservations.length}/140</span>
+                  </div>
                   <Textarea
-                    placeholder="Ex: Sem cebola, mal passado, ponto da carne..."
+                    placeholder="Ex: tirar a cebola, maionese à parte etc."
                     value={itemObservations}
-                    onChange={(e) => setItemObservations(e.target.value)}
+                    onChange={(e) => setItemObservations(e.target.value.slice(0, 140))}
                     rows={2}
                     className="resize-none text-sm border-gray-200 focus:border-red-400 focus:ring-red-100"
                   />
                 </div>
 
-                {/* Quantidade + Botão adicionar */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 bg-gray-100 rounded-xl px-3 py-2">
+                {/* Quantidade + Botão adicionar - fixo no bottom */}
+                <div className="px-5 pb-5 pt-2 border-t border-gray-100 bg-white">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 bg-gray-100 rounded-xl px-3 py-2">
+                      <button
+                        onClick={() => setItemQty((q) => Math.max(1, q - 1))}
+                        className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+                      >
+                        <Minus className="w-3.5 h-3.5 text-gray-600" />
+                      </button>
+                      <span className="w-6 text-center font-bold text-gray-800">{itemQty}</span>
+                      <button
+                        onClick={() => setItemQty((q) => q + 1)}
+                        className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center hover:bg-red-700"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
                     <button
-                      onClick={() => setItemQty((q) => Math.max(1, q - 1))}
-                      className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+                      onClick={() => {
+                        const error = validateAddons(groups);
+                        if (error) { alert(error); return; }
+                        const allAddons = Object.values(selectedAddons).flat();
+                        addToCart(selectedItem, itemQty, itemObservations || undefined, allAddons);
+                        setSelectedItem(null);
+                        setSelectedAddons({});
+                        setItemObservations("");
+                        setItemQty(1);
+                      }}
+                      className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-red-700 transition-colors"
                     >
-                      <Minus className="w-3.5 h-3.5 text-gray-600" />
-                    </button>
-                    <span className="w-6 text-center font-bold text-gray-800">{itemQty}</span>
-                    <button
-                      onClick={() => setItemQty((q) => q + 1)}
-                      className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center hover:bg-red-700"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-white" />
+                      Adicionar · {formatPrice(totalItemPrice)}
                     </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      addToCart(selectedItem, itemQty, itemObservations || undefined);
-                      setSelectedItem(null);
-                    }}
-                    className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-red-700 transition-colors"
-                  >
-                    Adicionar · {formatPrice(selectedItem.price * itemQty)}
-                  </button>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
