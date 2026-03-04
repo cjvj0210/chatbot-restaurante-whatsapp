@@ -149,13 +149,13 @@ export default function PrintOrder() {
         </div>
         <div>
           <span className="comanda-label">Tipo:</span>
-          {order.deliveryType === "delivery" ? "DELIVERY" : "RETIRADA"}
+          {order.orderType === "delivery" ? "DELIVERY" : "RETIRADA"}
         </div>
-        {order.deliveryType === "delivery" && order.address && (
+        {order.orderType === "delivery" && order.deliveryAddress && (
           <div>
             <span className="comanda-label">Endereço:</span>
             <div style={{ marginLeft: "120px", marginTop: "5px" }}>
-              {order.address}
+              {order.deliveryAddress}
             </div>
           </div>
         )}
@@ -184,16 +184,16 @@ export default function PrintOrder() {
       <div className="comanda-section">
         <div className="comanda-item">
           <span>Subtotal:</span>
-          <span>R$ {((order.totalAmount - (order.deliveryFee || 0)) / 100).toFixed(2)}</span>
+          <span>R$ {((order.total - (order.deliveryFee || 0)) / 100).toFixed(2)}</span>
         </div>
-        {order.deliveryType === "delivery" && (
+        {order.orderType === "delivery" && (
           <div className="comanda-item">
             <span>Taxa de Entrega:</span>
             <span>R$ {((order.deliveryFee || 0) / 100).toFixed(2)}</span>
           </div>
         )}
         <div className="comanda-total">
-          TOTAL: R$ {(order.totalAmount / 100).toFixed(2)}
+          TOTAL: R$ {(order.total / 100).toFixed(2)}
         </div>
       </div>
 
@@ -205,19 +205,18 @@ export default function PrintOrder() {
           {order.paymentMethod === "cartao" && "CARTÃO"}
           {order.paymentMethod === "pix" && "PIX"}
         </div>
-        {order.paymentMethod === "dinheiro" && order.changeFor && (
+        {order.paymentMethod === "dinheiro" && (
           <div>
-            <span className="comanda-label">Troco para:</span>
-            R$ {(order.changeFor / 100).toFixed(2)}
+            <span className="comanda-label">Troco para:</span> Verificar com cliente
           </div>
         )}
       </div>
 
       {/* Observações Adicionais */}
-      {order.additionalNotes && (
+      {order.customerNotes && (
         <div className="comanda-section">
           <div style={{ fontWeight: "bold" }}>OBSERVAÇÕES:</div>
-          <div style={{ marginTop: "5px" }}>{order.additionalNotes}</div>
+          <div style={{ marginTop: "5px" }}>{order.customerNotes}</div>
         </div>
       )}
 

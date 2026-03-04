@@ -1,0 +1,78 @@
+{
+  "query": "\nSELECT c.name as categoria, COUNT(i.id) as itens FROM menu_categories c LEFT JOIN menu_items i ON i.categoryId = c.id GROUP BY c.id, c.name ORDER BY c.displayOrder;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT c.name as categoria, COUNT(i.id) as itens FROM menu_categories c LEFT JOIN menu_items i ON i.categoryId = c.id GROUP BY c.id, c.name ORDER BY c.displayOrder;\n",
+  "rows": [
+    {
+      "categoria": "Marmitex",
+      "itens": "4"
+    },
+    {
+      "categoria": "Pizzas",
+      "itens": "0"
+    },
+    {
+      "categoria": "Rodízio",
+      "itens": "4"
+    },
+    {
+      "categoria": "Bebidas",
+      "itens": "2"
+    },
+    {
+      "categoria": "Marmitas Simples",
+      "itens": "3"
+    },
+    {
+      "categoria": "Marmitex",
+      "itens": "0"
+    },
+    {
+      "categoria": "Guarnições",
+      "itens": "8"
+    },
+    {
+      "categoria": "Pratos Executivos",
+      "itens": "0"
+    },
+    {
+      "categoria": "Kits de Carne",
+      "itens": "0"
+    },
+    {
+      "categoria": "Salgados",
+      "itens": "4"
+    },
+    {
+      "categoria": "Mix e Kits de Churrasco",
+      "itens": "6"
+    },
+    {
+      "categoria": "Guarnições",
+      "itens": "0"
+    },
+    {
+      "categoria": "Pratos Executivos",
+      "itens": "8"
+    },
+    {
+      "categoria": "Bebidas",
+      "itens": "0"
+    },
+    {
+      "categoria": "Saladas",
+      "itens": "2"
+    },
+    {
+      "categoria": "Adicionais",
+      "itens": "0"
+    },
+    {
+      "categoria": "Bebidas",
+      "itens": "11"
+    }
+  ],
+  "messages": [],
+  "stdout": "categoria\titens\nMarmitex\t4\nPizzas\t0\nRodízio\t4\nBebidas\t2\nMarmitas Simples\t3\nMarmitex\t0\nGuarnições\t8\nPratos Executivos\t0\nKits de Carne\t0\nSalgados\t4\nMix e Kits de Churrasco\t6\nGuarnições\t0\nPratos Executivos\t8\nBebidas\t0\nSaladas\t2\nAdicionais\t0\nBebidas\t11\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

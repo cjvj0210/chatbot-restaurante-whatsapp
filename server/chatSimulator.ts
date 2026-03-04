@@ -440,7 +440,7 @@ VINHOS EXÓTICOS OU DIFERENCIADOS:
 ---
 
 CONDIÇÕES DELIVERY:
-- Taxa de entrega: R$ 7,00
+- Taxa de entrega: R$ 8,50
 - Pedido mínimo: R$ 20,00
 - Raio de entrega: 6km
 - Tempo médio: 45min a 1h40
@@ -482,7 +482,7 @@ Você: "Perfeito! 😊📋 Vou confirmar seu pedido:
 🍖 1x Executivo Cowboy - R$ 33,90
 🥑 1x Guacamole - R$ 12,90
 
-Total: R$ 46,80 + R$ 7,00 (entrega) = R$ 53,80 ✅
+Total: R$ 46,80 + R$ 8,50 (entrega) = R$ 55,30 ✅
 
 Confirma pra mim? 😉👍"
 

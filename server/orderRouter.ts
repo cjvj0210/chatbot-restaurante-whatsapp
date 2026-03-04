@@ -84,12 +84,12 @@ export const orderRouter = router({
           quantity: item.quantity,
           unitPrice: menuItem.price,
           observations: item.observations || null,
-          addons: item.addons ? JSON.stringify(item.addons) : null,
+          addons: null,
         };
       });
 
       // Taxa de entrega (buscar das configurações ou usar padrão)
-      const deliveryFee = input.deliveryType === "delivery" ? 500 : 0; // R$ 5,00 padrão
+      const deliveryFee = input.deliveryType === "delivery" ? 850 : 0; // R$ 8,50
 
       // Total
       const total = input.totalAmount + deliveryFee;

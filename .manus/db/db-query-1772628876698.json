@@ -1,0 +1,58 @@
+{
+  "query": "\nSELECT 'restaurant_settings' as tabela, COUNT(*) as registros FROM restaurant_settings\nUNION ALL SELECT 'menu_categories', COUNT(*) FROM menu_categories\nUNION ALL SELECT 'menu_items', COUNT(*) FROM menu_items\nUNION ALL SELECT 'orders', COUNT(*) FROM orders\nUNION ALL SELECT 'order_items', COUNT(*) FROM order_items\nUNION ALL SELECT 'order_sessions', COUNT(*) FROM order_sessions\nUNION ALL SELECT 'bot_messages', COUNT(*) FROM bot_messages\nUNION ALL SELECT 'reservations', COUNT(*) FROM reservations\nUNION ALL SELECT 'customers', COUNT(*) FROM customers\nUNION ALL SELECT 'whatsapp_settings', COUNT(*) FROM whatsapp_settings\nUNION ALL SELECT 'test_sessions', COUNT(*) FROM test_sessions\nUNION ALL SELECT 'test_messages', COUNT(*) FROM test_messages;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT 'restaurant_settings' as tabela, COUNT(*) as registros FROM restaurant_settings\nUNION ALL SELECT 'menu_categories', COUNT(*) FROM menu_categories\nUNION ALL SELECT 'menu_items', COUNT(*) FROM menu_items\nUNION ALL SELECT 'orders', COUNT(*) FROM orders\nUNION ALL SELECT 'order_items', COUNT(*) FROM order_items\nUNION ALL SELECT 'order_sessions', COUNT(*) FROM order_sessions\nUNION ALL SELECT 'bot_messages', COUNT(*) FROM bot_messages\nUNION ALL SELECT 'reservations', COUNT(*) FROM reservations\nUNION ALL SELECT 'customers', COUNT(*) FROM customers\nUNION ALL SELECT 'whatsapp_settings', COUNT(*) FROM whatsapp_settings\nUNION ALL SELECT 'test_sessions', COUNT(*) FROM test_sessions\nUNION ALL SELECT 'test_messages', COUNT(*) FROM test_messages;\n",
+  "rows": [
+    {
+      "tabela": "restaurant_settings",
+      "registros": "1"
+    },
+    {
+      "tabela": "menu_items",
+      "registros": "52"
+    },
+    {
+      "tabela": "order_items",
+      "registros": "5"
+    },
+    {
+      "tabela": "orders",
+      "registros": "2"
+    },
+    {
+      "tabela": "menu_categories",
+      "registros": "17"
+    },
+    {
+      "tabela": "bot_messages",
+      "registros": "2"
+    },
+    {
+      "tabela": "order_sessions",
+      "registros": "5"
+    },
+    {
+      "tabela": "customers",
+      "registros": "2"
+    },
+    {
+      "tabela": "whatsapp_settings",
+      "registros": "1"
+    },
+    {
+      "tabela": "reservations",
+      "registros": "0"
+    },
+    {
+      "tabela": "test_sessions",
+      "registros": "33"
+    },
+    {
+      "tabela": "test_messages",
+      "registros": "220"
+    }
+  ],
+  "messages": [],
+  "stdout": "tabela\tregistros\nrestaurant_settings\t1\nmenu_items\t52\norder_items\t5\norders\t2\nmenu_categories\t17\nbot_messages\t2\norder_sessions\t5\ncustomers\t2\nwhatsapp_settings\t1\nreservations\t0\ntest_sessions\t33\ntest_messages\t220\n",
+  "stderr": "",
+  "execution_time_ms": 83
+}

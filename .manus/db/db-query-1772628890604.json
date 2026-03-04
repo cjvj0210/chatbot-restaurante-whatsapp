@@ -1,0 +1,22 @@
+{
+  "query": "\nSELECT name, phone, address, deliveryFee, minimumOrder FROM restaurant_settings LIMIT 1;\nSELECT phoneNumberId, isActive FROM whatsapp_settings LIMIT 1;\nSELECT status, COUNT(*) as total FROM bot_messages GROUP BY status;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT name, phone, address, deliveryFee, minimumOrder FROM restaurant_settings LIMIT 1;\nSELECT phoneNumberId, isActive FROM whatsapp_settings LIMIT 1;\nSELECT status, COUNT(*) as total FROM bot_messages GROUP BY status;\n",
+  "rows": [
+    {
+      "name": "Churrascaria Estrela do Sul",
+      "phone": "(17) 3322-8899",
+      "address": "Rua dos Gaúchos, 123 - Centro, Barretos-SP",
+      "deliveryFee": "800",
+      "minimumOrder": "3000"
+    }
+  ],
+  "messages": [
+    "phoneNumberId\tisActive",
+    "874312709104071\t1",
+    "status\ttotal",
+    "pending\t2"
+  ],
+  "stdout": "name\tphone\taddress\tdeliveryFee\tminimumOrder\nChurrascaria Estrela do Sul\t(17) 3322-8899\tRua dos Gaúchos, 123 - Centro, Barretos-SP\t800\t3000\nphoneNumberId\tisActive\n874312709104071\t1\nstatus\ttotal\npending\t2\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

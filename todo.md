@@ -597,3 +597,22 @@
 - [x] Corrigir valores no banco: UPDATE menu_items SET price = price * 100 WHERE price < 1000
 - [x] Preços corrigidos: agora em centavos corretos (3000 = R$ 30,00)
 - [ ] Testar correção no cardápio web (usuário deve validar)
+
+
+## Redesign Cardápio Digital - Estilo Anota.ai (Mar/2026)
+- [x] Pesquisar Anota.ai: funcionalidades, UX, estrutura de cardápio digital
+- [x] Atualizar taxa de entrega para R$ 8,50 (era R$ 7,00)
+- [x] Corrigir erro TypeScript: PrintOrder.tsx - additionalNotes → customerNotes
+- [x] Remover orderImageGenerator.ts (não usado, causa erro de canvas)
+- [x] Corrigir erro TypeScript: orderRouter.ts linha 87
+- [x] Redesenhar página /pedido/[sessionId] com estrutura Anota.ai
+- [x] Adicionar header com logo/nome do restaurante e banner
+- [x] Adicionar barra de busca de itens
+- [x] Adicionar navegação por categorias (tabs/âncoras fixas)
+- [x] Melhorar cards de itens (foto grande, nome, descrição, preço, botão +)
+- [x] Carrinho lateral/bottom sheet com resumo do pedido
+- [x] Botão flutuante de carrinho com contador de itens
+- [x] Redesenhar checkout com UX mais fluida
+- [x] Adicionar seletor delivery/retirada na tela inicial do cardápio
+- [x] Atualizar taxa de entrega no chatbotPrompt.ts (R$ 8,50)
+- [x] Atualizar taxa de entrega no Pedido.tsx (R$ 8,50 = 850 centavos)

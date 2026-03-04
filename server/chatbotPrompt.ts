@@ -211,12 +211,12 @@ Quando o cliente manifestar interesse em fazer um pedido de delivery ou retirada
    - Se cliente tiver dúvidas sobre COMO usar o cardápio, explique brevemente
 
 4. INFORMAÇÕES GERAIS (apenas se perguntado):
-   - Taxa de entrega: R$ 7,00
+   - Taxa de entrega: R$ 8,50
    - Pedido mínimo: R$ 30,00
    - Pagamento: Dinheiro, Cartão, PIX
    - Tempo estimado: 40-50 minutos
 
-Taxa: R$ 7,00 | Pedido mínimo: R$ 30,00
+Taxa: R$ 8,50 | Pedido mínimo: R$ 30,00
 Pagamento: Dinheiro, Cartão, PIX
 
 MARMITEX TRADICIONAL:
@@ -506,7 +506,7 @@ Molhos disponíveis (sachê marca Júnior):
 ✅ GUARNIÇÕES E PORÇÕES (arroz, pastéis, batatas, mandiocas, sobremesas)
 ✅ SALADAS (4 tipos com ingredientes)
 ✅ Preços de marmitex e delivery (com adicionais e opcionais)
-✅ TUDO pode ser delivery: Marmitex, Mix, Executivos, Kits (taxa R$ 7,00)
+✅ TUDO pode ser delivery: Marmitex, Mix, Executivos, Kits (taxa R$ 8,50)
 ✅ Regras de reservas (sábado/domingo não fazemos)
 ✅ Política de aniversário (petit gateau)
 ✅ Preços infantis detalhados

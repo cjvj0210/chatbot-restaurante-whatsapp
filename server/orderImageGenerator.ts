@@ -4,11 +4,9 @@ let createCanvas: any = null;
 async function loadCanvas() {
   if (createCanvas !== null) return createCanvas;
   try {
-    const canvasModule = await import('canvas');
-    createCanvas = canvasModule.createCanvas;
+    // Canvas module disabled - not available in this environment
+    createCanvas = false;
   } catch (e) {
-    // Canvas não disponível - funcionalidade de imagem desabilitada
-    console.warn('Canvas module not available - image generation disabled');
     createCanvas = false;
   }
   return createCanvas;

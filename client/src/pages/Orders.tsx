@@ -46,7 +46,7 @@ export default function Orders() {
   });
 
   const handleStatusChange = (orderId: number, newStatus: keyof typeof statusLabels) => {
-    updateStatus.mutate({ id: orderId, status: newStatus });
+    updateStatus.mutate({ orderId: orderId, status: newStatus });
   };
 
   if (isLoading) {
@@ -159,10 +159,10 @@ export default function Orders() {
                         <Button
                           variant="default"
                           size="sm"
-                          onClick={() => handleStatusChange(order.id, order.deliveryType === "delivery" ? "delivering" : "ready")}
+                          onClick={() => handleStatusChange(order.id, order.orderType === "delivery" ? "delivering" : "ready")}
                         >
                           <Send className="w-4 h-4 mr-2" />
-                          {order.deliveryType === "delivery" ? "Expedir para Entrega" : "Marcar como Pronto"}
+                          {order.orderType === "delivery" ? "Expedir para Entrega" : "Marcar como Pronto"}
                         </Button>
                       )}
 
