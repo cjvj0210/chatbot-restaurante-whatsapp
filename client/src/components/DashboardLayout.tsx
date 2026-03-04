@@ -29,7 +29,6 @@ import {
   ShoppingBag,
   Calendar,
   Settings,
-  MessageSquare,
   Smartphone,
   Users,
   ChevronRight,
@@ -59,7 +58,6 @@ const menuGroups = [
     label: "Chatbot",
     items: [
       { icon: Smartphone, label: "Simulador WhatsApp", path: "/simulator" },
-      { icon: MessageSquare, label: "Simulador Chat", path: "/chat-simulator" },
       { icon: Users, label: "Conversas de Teste", path: "/conversas-teste" },
     ],
   },

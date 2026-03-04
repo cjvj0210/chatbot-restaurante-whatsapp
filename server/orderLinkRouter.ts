@@ -4,6 +4,7 @@ import { getDb } from "./db";
 import { orderSessions } from "../drizzle/schema";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
+import { getSiteUrl } from "./_core/siteUrl";
 
 /**
  * Router para geração de links únicos de pedido
@@ -44,8 +45,7 @@ export const orderLinkRouter = router({
       });
 
       // Gerar URL completa
-      const frontendUrl = process.env.VITE_FRONTEND_FORGE_API_URL || "http://localhost:3000";
-      const orderLink = `${frontendUrl}/pedido/${sessionId}`;
+      const orderLink = `${getSiteUrl()}/pedido/${sessionId}`;
 
       return {
         sessionId,

@@ -649,3 +649,12 @@
 - [x] Atualizar painel admin Menu.tsx com gestão de complementos por item (modal Settings2)
 - [x] Validar grupos obrigatórios antes de adicionar ao carrinho
 - [x] Incluir complementos selecionados no resumo do pedido e checkout
+
+## Unificação Simuladores e Fluxo Delivery via Cardápio Digital - Mar/2026
+- [x] Remover Simulador Chat da sidebar (DashboardLayout.tsx)
+- [x] Simulador WhatsApp usa getChatbotPrompt() completo do restaurante (mesmo do WhatsApp real)
+- [x] Bot detecta intenção de pedido delivery → gera sessão real e envia link clicavel do cardápio
+- [x] Página do cardápio recebe sessionId do chat para vincular o pedido
+- [x] Ao finalizar pedido no cardápio, polling detecta e exibe resumo completo no chat
+- [x] Pedido finalizado exibido no simulador com botão de impressão térmica (link /imprimir/[id])
+- [x] Formatar pedido para impressão térmica (80mm, texto simples, sem imagens) via PrintOrder.tsx

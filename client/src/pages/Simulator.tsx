@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, RotateCcw, Smartphone, Mic, Square } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Send, RotateCcw, Smartphone, Mic, Square, ExternalLink, ShoppingBag, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -10,13 +10,69 @@ interface Message {
   text: string;
   sender: "user" | "bot";
   timestamp: Date;
+  isOrderSummary?: boolean;
+  orderId?: number;
+}
+
+// Formata valor em centavos para R$
+function formatCurrency(cents: number): string {
+  return `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
+}
+
+// Renderiza texto com links clicáveis
+function MessageText({ text, isOrderSummary }: { text: string; isOrderSummary?: boolean }) {
+  if (isOrderSummary) {
+    return <div className="text-sm whitespace-pre-wrap break-words">{text}</div>;
+  }
+
+  // Detectar URLs no texto e transformar em links
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+
+  return (
+    <p className="text-sm whitespace-pre-wrap break-words">
+      {parts.map((part, i) => {
+        if (urlRegex.test(part)) {
+          urlRegex.lastIndex = 0;
+          const isOrderLink = part.includes("/pedido/");
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center gap-1 underline font-medium break-all ${
+                isOrderLink
+                  ? "text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded"
+                  : "text-blue-600 dark:text-blue-400"
+              }`}
+            >
+              {isOrderLink ? (
+                <>
+                  <ShoppingBag className="w-3 h-3 flex-shrink-0" />
+                  Abrir Cardápio Digital
+                  <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                </>
+              ) : (
+                <>
+                  {part}
+                  <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                </>
+              )}
+            </a>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </p>
+  );
 }
 
 export default function Simulator() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      text: "Olá! Bem-vindo ao Simulador de Conversas! 👋\n\nAqui você pode testar o chatbot como se estivesse conversando pelo WhatsApp.\n\nExperimente perguntar sobre:\n• Cardápio e preços\n• Fazer um pedido\n• Reservar uma mesa\n• Horário de funcionamento\n\nEnvie uma mensagem para começar!",
+      text: "Olá! Bem-vindo ao Simulador WhatsApp! 👋\n\nAqui você testa o Gaúchinho como se fosse uma conversa real pelo WhatsApp.\n\nExperimente:\n• Fazer um pedido delivery\n• Reservar uma mesa\n• Perguntar sobre o cardápio\n• Horário de funcionamento\n\nEnvie uma mensagem para começar!",
       sender: "bot",
       timestamp: new Date(),
     },
@@ -25,11 +81,102 @@ export default function Simulator() {
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
+  const [activeOrderSessionId, setActiveOrderSessionId] = useState<string | null>(null);
+  const [pollingActive, setPollingActive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [sessionId] = useState(() => `session-${Date.now()}`);
+  const [sessionId] = useState(() => `sim-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+
+  const utils = trpc.useUtils();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Polling: verificar se o pedido foi finalizado no cardápio digital
+  const checkOrderCompletion = useCallback(async (orderSessId: string) => {
+    try {
+      const result = await utils.chatSimulator.checkOrderStatus.fetch({ orderSessionId: orderSessId });
+      if (result.status === "completed") {
+        // Pedido finalizado! Buscar detalhes
+        setPollingActive(false);
+        setActiveOrderSessionId(null);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+
+        // Buscar dados completos do pedido
+        const order = await utils.order.getBySession.fetch({ sessionId: orderSessId });
+        if (order) {
+          const deliveryLabel = order.orderType === "delivery" ? "🚚 Delivery" : "🏠 Retirada";
+          const paymentLabel = order.paymentMethod === "dinheiro" ? "💵 Dinheiro" : order.paymentMethod === "pix" ? "📱 PIX" : "💳 Cartão";
+
+          let summaryText = `✅ Pedido recebido! Número: ${order.orderNumber}\n`;
+          summaryText += `━━━━━━━━━━━━━━━━━━━━\n`;
+          summaryText += `👤 ${order.customerName}\n`;
+          summaryText += `📞 ${order.customerPhone}\n`;
+          summaryText += `${deliveryLabel}`;
+          if (order.deliveryAddress) summaryText += `\n📍 ${order.deliveryAddress}`;
+          summaryText += `\n${paymentLabel}\n`;
+          summaryText += `━━━━━━━━━━━━━━━━━━━━\n`;
+          order.items.forEach((item: any) => {
+            summaryText += `🍖 ${item.quantity}x ${item.menuItemName} — ${formatCurrency(item.unitPrice * item.quantity)}\n`;
+            if (item.observations) summaryText += `   📝 ${item.observations}\n`;
+          });
+          summaryText += `━━━━━━━━━━━━━━━━━━━━\n`;
+          summaryText += `Subtotal: ${formatCurrency(order.subtotal)}\n`;
+          if (order.deliveryFee > 0) summaryText += `Entrega: ${formatCurrency(order.deliveryFee)}\n`;
+          summaryText += `Total: ${formatCurrency(order.total)}\n`;
+          if (order.estimatedTime) summaryText += `⏱️ Estimativa: ${order.estimatedTime} min\n`;
+          if (order.customerNotes) summaryText += `📝 Obs: ${order.customerNotes}\n`;
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `order-summary-${Date.now()}`,
+              text: summaryText,
+              sender: "bot",
+              timestamp: new Date(),
+              isOrderSummary: true,
+              orderId: order.id,
+            },
+            {
+              id: `order-confirm-${Date.now()}`,
+              text: "Agradecemos seu pedido e desejamos uma ótima refeição, nós da Estrela do Sul esperamos poder lhe atender em breve novamente! 😁🤠",
+              sender: "bot",
+              timestamp: new Date(),
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      console.error("[Simulator] Erro no polling:", err);
+    }
+  }, [utils]);
+
+  // Iniciar polling quando há um pedido ativo
+  useEffect(() => {
+    if (activeOrderSessionId && pollingActive) {
+      pollingIntervalRef.current = setInterval(() => {
+        checkOrderCompletion(activeOrderSessionId);
+      }, 3000); // Verificar a cada 3 segundos
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+      };
+    }
+  }, [activeOrderSessionId, pollingActive, checkOrderCompletion]);
 
   const sendMessageMutation = trpc.chatSimulator.sendMessage.useMutation({
     onSuccess: (response) => {
@@ -43,6 +190,11 @@ export default function Simulator() {
           timestamp: new Date(response.timestamp),
         },
       ]);
+      // Se gerou link de pedido, iniciar polling
+      if (response.orderSessionId) {
+        setActiveOrderSessionId(response.orderSessionId);
+        setPollingActive(true);
+      }
     },
     onError: (error) => {
       setIsTyping(false);
@@ -61,7 +213,7 @@ export default function Simulator() {
   const resetMutation = trpc.chatSimulator.resetConversation.useMutation();
 
   const sendAudioMutation = trpc.chatSimulator.sendAudio.useMutation({
-    onSuccess: (response: { message: string; transcription: string; timestamp: Date }) => {
+    onSuccess: (response) => {
       setIsProcessingAudio(false);
       setIsTyping(false);
       setMessages((prev) => [
@@ -73,6 +225,10 @@ export default function Simulator() {
           timestamp: new Date(response.timestamp),
         },
       ]);
+      if (response.orderSessionId) {
+        setActiveOrderSessionId(response.orderSessionId);
+        setPollingActive(true);
+      }
     },
     onError: (error: any) => {
       setIsProcessingAudio(false);
@@ -89,18 +245,9 @@ export default function Simulator() {
     },
   });
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const handleSend = () => {
     if (!inputText.trim()) return;
 
-    // Adicionar mensagem do usuário
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputText,
@@ -112,14 +259,18 @@ export default function Simulator() {
     setInputText("");
     setIsTyping(true);
 
-    // Enviar para o chatbot
-    sendMessageMutation.mutate({
-      sessionId,
-      message: inputText,
-    });
+    sendMessageMutation.mutate({ sessionId, message: inputText });
   };
 
   const handleReset = () => {
+    // Parar polling
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    setActiveOrderSessionId(null);
+    setPollingActive(false);
+
     resetMutation.mutate({ sessionId });
     setMessages([
       {
@@ -141,8 +292,8 @@ export default function Simulator() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-      
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -153,9 +304,8 @@ export default function Simulator() {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        
-        // Adicionar mensagem de áudio do usuário
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+
         setMessages((prev) => [
           ...prev,
           {
@@ -169,28 +319,24 @@ export default function Simulator() {
         setIsProcessingAudio(true);
         setIsTyping(true);
 
-        // Converter para base64
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = () => {
-          const base64Audio = (reader.result as string).split(',')[1];
-          
-          // Enviar para o backend
+          const base64Audio = (reader.result as string).split(",")[1];
           sendAudioMutation.mutate({
             sessionId,
             audioBase64: base64Audio,
-            mimeType: 'audio/webm',
+            mimeType: "audio/webm",
           });
         };
 
-        // Parar stream
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
-      console.error('Erro ao acessar microfone:', error);
+      console.error("Erro ao acessar microfone:", error);
       setMessages((prev) => [
         ...prev,
         {
@@ -204,7 +350,7 @@ export default function Simulator() {
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
@@ -218,15 +364,23 @@ export default function Simulator() {
           Simulador WhatsApp
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Teste o chatbot como se fosse uma conversa real pelo WhatsApp
+          Teste o Gaúchinho como se fosse uma conversa real pelo WhatsApp — com IA completa do restaurante
         </p>
       </div>
 
+      {/* Indicador de pedido ativo */}
+      {pollingActive && (
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-800">
+          <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+          <span>Aguardando cliente finalizar o pedido no cardápio digital...</span>
+        </div>
+      )}
+
       <Card className="h-[600px] flex flex-col bg-[#e5ddd5] dark:bg-[#0b141a]">
-        {/* Header */}
+        {/* Header WhatsApp */}
         <div className="bg-[#075e54] dark:bg-[#202c33] text-white p-4 flex items-center justify-between rounded-t-lg">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg">
               🍴
             </div>
             <div>
@@ -253,13 +407,34 @@ export default function Simulator() {
               className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[75%] rounded-lg p-3 shadow-sm ${
+                className={`max-w-[80%] rounded-lg p-3 shadow-sm ${
                   message.sender === "user"
                     ? "bg-[#d9fdd3] dark:bg-[#005c4b] text-gray-900 dark:text-white"
+                    : message.isOrderSummary
+                    ? "bg-white dark:bg-[#202c33] text-gray-900 dark:text-white border-l-4 border-green-500"
                     : "bg-white dark:bg-[#202c33] text-gray-900 dark:text-white"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+                {message.isOrderSummary && (
+                  <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-gray-200 dark:border-gray-600">
+                    <span className="text-xs font-semibold text-green-700 dark:text-green-400 flex items-center gap-1">
+                      <ShoppingBag className="w-3 h-3" />
+                      Resumo do Pedido
+                    </span>
+                    {message.orderId && (
+                      <a
+                        href={`/imprimir/${message.orderId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 hover:underline"
+                      >
+                        <Printer className="w-3 h-3" />
+                        Imprimir
+                      </a>
+                    )}
+                  </div>
+                )}
+                <MessageText text={message.text} isOrderSummary={message.isOrderSummary} />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {message.timestamp.toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
@@ -292,8 +467,8 @@ export default function Simulator() {
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isTyping || isProcessingAudio}
               className={`${
-                isRecording 
-                  ? "bg-red-600 hover:bg-red-700 animate-pulse" 
+                isRecording
+                  ? "bg-red-600 hover:bg-red-700 animate-pulse"
                   : "bg-[#075e54] hover:bg-[#064e47]"
               } text-white`}
               title={isRecording ? "Parar gravação" : "Gravar áudio"}
@@ -319,19 +494,19 @@ export default function Simulator() {
         </div>
       </Card>
 
-      {/* Dicas */}
+      {/* Sugestões */}
       <div className="bg-blue-50 border border-blue-200/60 rounded-2xl p-4">
         <p className="text-sm font-semibold text-blue-800 mb-2">Sugestões para testar:</p>
         <div className="grid grid-cols-2 gap-1.5">
           {[
+            "Quero fazer um pedido delivery",
             "Qual o cardápio?",
-            "Quero fazer um pedido",
             "Reservar uma mesa",
             "Horário de funcionamento",
           ].map((tip) => (
             <button
               key={tip}
-              onClick={() => { setInputText(tip); }}
+              onClick={() => setInputText(tip)}
               className="text-left text-xs bg-white text-blue-700 border border-blue-200 rounded-xl px-3 py-2 hover:bg-blue-50 transition-colors font-medium"
             >
               {tip}
