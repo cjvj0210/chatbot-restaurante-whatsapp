@@ -1,8 +1,6 @@
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Printer, Send } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -10,187 +8,342 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Package,
+  Printer,
+  Send,
+  MapPin,
+  Store,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-const statusColors = {
-  pending: "bg-yellow-500",
-  confirmed: "bg-blue-500",
-  preparing: "bg-purple-500",
-  ready: "bg-green-500",
-  delivering: "bg-indigo-500",
-  delivered: "bg-gray-500",
-  cancelled: "bg-red-500",
+const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
+  pending:    { label: "Pendente",    bg: "bg-amber-50",   text: "text-amber-700",  dot: "bg-amber-400" },
+  confirmed:  { label: "Confirmado",  bg: "bg-blue-50",    text: "text-blue-700",   dot: "bg-blue-500" },
+  preparing:  { label: "Preparando",  bg: "bg-orange-50",  text: "text-orange-700", dot: "bg-orange-500" },
+  ready:      { label: "Pronto",      bg: "bg-green-50",   text: "text-green-700",  dot: "bg-green-500" },
+  delivering: { label: "Em Entrega",  bg: "bg-indigo-50",  text: "text-indigo-700", dot: "bg-indigo-500" },
+  delivered:  { label: "Entregue",    bg: "bg-gray-100",   text: "text-gray-600",   dot: "bg-gray-400" },
+  cancelled:  { label: "Cancelado",   bg: "bg-red-50",     text: "text-red-600",    dot: "bg-red-500" },
 };
 
-const statusLabels = {
-  pending: "Pendente",
-  confirmed: "Confirmado",
-  preparing: "Preparando",
-  ready: "Pronto",
-  delivering: "Em Entrega",
-  delivered: "Entregue",
-  cancelled: "Cancelado",
-};
+const statusFlow = ["pending", "confirmed", "preparing", "ready", "delivering", "delivered"];
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+  observations?: string;
+}
 
 export default function Orders() {
   const utils = trpc.useUtils();
-  const { data: orders, isLoading } = trpc.order.list.useQuery();
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  type StatusEnum = "pending" | "confirmed" | "preparing" | "ready" | "delivering" | "delivered" | "cancelled";
+  const { data: orders, isLoading } = trpc.order.list.useQuery(
+    filterStatus !== "all" ? { status: filterStatus as StatusEnum } : undefined
+  );
 
   const updateStatus = trpc.order.updateStatus.useMutation({
     onSuccess: () => {
       utils.order.list.invalidate();
-      toast.success("Status atualizado com sucesso!");
+      toast.success("Status atualizado!");
     },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
   });
 
-  const handleStatusChange = (orderId: number, newStatus: keyof typeof statusLabels) => {
-    updateStatus.mutate({ orderId: orderId, status: newStatus });
+  const handleStatusChange = (orderId: number, newStatus: string) => {
+    updateStatus.mutate({ orderId, status: newStatus as StatusEnum });
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-8">
-        <h1 className="text-3xl font-bold mb-6">Pedidos</h1>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-6 bg-muted rounded w-32"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted rounded w-full"></div>
-                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const getNextStatus = (current: string, orderType: string) => {
+    const idx = statusFlow.indexOf(current);
+    if (idx === -1 || idx >= statusFlow.length - 1) return null;
+    if (current === "ready" && orderType === "pickup") return "delivered";
+    return statusFlow[idx + 1];
+  };
+
+  const pendingCount = orders?.filter((o) => o.status === "pending").length ?? 0;
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Pedidos</h1>
+    <div className="space-y-5 max-w-5xl">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Package className="w-6 h-6 text-primary" />
+            Pedidos
+            {pendingCount > 0 && (
+              <span className="ml-1 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                {pendingCount} novo{pendingCount > 1 ? "s" : ""}
+              </span>
+            )}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Gerencie e acompanhe todos os pedidos
+          </p>
+        </div>
 
-      {!orders || orders.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <p className="text-center text-muted-foreground">
-              Nenhum pedido realizado ainda.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Filtro de status */}
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-44 h-9 text-sm rounded-xl border-border/60">
+              <SelectValue placeholder="Filtrar status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os pedidos</SelectItem>
+              {Object.entries(statusConfig).map(([k, v]) => (
+                <SelectItem key={k} value={k}>
+                  <span className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${v.dot}`} />
+                    {v.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Lista de pedidos */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-card rounded-2xl border border-border/50 p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-32 mb-1.5" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+              <Skeleton className="h-3 w-full mb-1.5" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+          ))}
+        </div>
+      ) : !orders?.length ? (
+        <div className="bg-card rounded-2xl border border-border/50 py-16 text-center">
+          <Package className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
+          <p className="font-semibold text-muted-foreground">Nenhum pedido encontrado</p>
+          <p className="text-sm text-muted-foreground/60 mt-1">
+            {filterStatus !== "all" ? "Tente outro filtro de status" : "Os pedidos aparecerão aqui"}
+          </p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {orders.map((order) => {
-            const items = JSON.parse(order.items);
+            const status = statusConfig[order.status] ?? statusConfig.pending;
+            const isExpanded = expandedId === order.id;
+            const items: OrderItem[] = (() => {
+              try { return JSON.parse(order.items); } catch { return []; }
+            })();
+            const nextStatus = getNextStatus(order.status, order.orderType ?? "delivery");
+
             return (
-              <Card key={order.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Pedido #{order.orderNumber}</CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(order.createdAt), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
-                          locale: ptBR,
-                        })}
+              <div
+                key={order.id}
+                className={`bg-card rounded-2xl border shadow-sm overflow-hidden transition-all ${
+                  order.status === "pending" ? "border-amber-300/60 ring-1 ring-amber-200" : "border-border/50"
+                }`}
+              >
+                {/* Linha de progresso de status */}
+                <div className="h-1 w-full bg-muted">
+                  <div
+                    className={`h-full transition-all ${status.dot}`}
+                    style={{
+                      width: `${((statusFlow.indexOf(order.status) + 1) / statusFlow.length) * 100}%`,
+                    }}
+                  />
+                </div>
+
+                {/* Header do card */}
+                <div
+                  className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-muted/20 transition-colors"
+                  onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                >
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                    {order.orderType === "delivery" ? (
+                      <MapPin className="w-5 h-5 text-primary" />
+                    ) : (
+                      <Store className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-foreground text-sm">
+                        #{order.orderNumber}
+                      </p>
+                      <span className="text-muted-foreground/40">·</span>
+                      <p className="font-semibold text-foreground text-sm truncate">
+                        {order.customerName}
                       </p>
                     </div>
-                    <Badge className={statusColors[order.status]}>
-                      {statusLabels[order.status]}
-                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {format(new Date(order.createdAt), "dd/MM 'às' HH:mm", { locale: ptBR })} ·{" "}
+                      {order.orderType === "delivery" ? "Delivery" : "Retirada"} ·{" "}
+                      <span className="font-semibold text-foreground">
+                        R$ {(order.total / 100).toFixed(2).replace(".", ",")}
+                      </span>
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`status-badge ${status.bg} ${status.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+                      {status.label}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Detalhes expandidos */}
+                {isExpanded && (
+                  <div className="border-t border-border/40 px-5 py-4 space-y-4">
+                    {/* Itens do pedido */}
                     <div>
-                      <h4 className="font-semibold mb-2">Itens:</h4>
-                      <ul className="space-y-1">
-                        {items.map((item: { name: string; quantity: number; price: number }, idx: number) => (
-                          <li key={idx} className="text-sm">
-                            {item.quantity}x {item.name} - R$ {((item.price * item.quantity) / 100).toFixed(2)}
-                          </li>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                        Itens do Pedido
+                      </p>
+                      <div className="space-y-1.5">
+                        {items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <div>
+                              <span className="font-medium text-foreground">
+                                {item.quantity}x {item.name}
+                              </span>
+                              {item.observations && (
+                                <p className="text-xs text-orange-500 italic">
+                                  Obs: {item.observations}
+                                </p>
+                              )}
+                            </div>
+                            <span className="text-muted-foreground">
+                              R$ {((item.price * item.quantity) / 100).toFixed(2)}
+                            </span>
+                          </div>
                         ))}
-                      </ul>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Subtotal: R$ {(order.subtotal / 100).toFixed(2)}</p>
-                        {order.deliveryFee > 0 && (
-                          <p className="text-sm text-muted-foreground">Taxa de Entrega: R$ {(order.deliveryFee / 100).toFixed(2)}</p>
-                        )}
-                        <p className="font-semibold">Total: R$ {(order.total / 100).toFixed(2)}</p>
                       </div>
-                      <Badge variant="outline">{order.orderType === "delivery" ? "Delivery" : "Retirada"}</Badge>
                     </div>
 
+                    {/* Totais */}
+                    <div className="bg-muted/30 rounded-xl p-3 space-y-1">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>R$ {(order.subtotal / 100).toFixed(2)}</span>
+                      </div>
+                      {order.deliveryFee > 0 && (
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>Taxa de entrega</span>
+                          <span>R$ {(order.deliveryFee / 100).toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm font-bold text-foreground pt-1 border-t border-border/40">
+                        <span>Total</span>
+                        <span className="text-primary">R$ {(order.total / 100).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Endereço */}
                     {order.deliveryAddress && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Endereço de Entrega:</h4>
-                        <p className="text-sm text-muted-foreground">{order.deliveryAddress}</p>
+                      <div className="flex items-start gap-2 text-sm">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <span className="text-muted-foreground">{order.deliveryAddress}</span>
                       </div>
                     )}
 
+                    {/* Observações */}
                     {order.customerNotes && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Observações:</h4>
-                        <p className="text-sm text-muted-foreground">{order.customerNotes}</p>
+                      <div className="bg-orange-50 rounded-xl px-3 py-2 text-sm text-orange-700">
+                        <span className="font-semibold">Obs: </span>
+                        {order.customerNotes}
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4 pt-4 border-t">
-                      {/* Botão de Impressão */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(`/print-order/${order.id}`, '_blank')}
+                    {/* Ações */}
+                    <div className="flex items-center gap-2 pt-1 flex-wrap">
+                      <button
+                        onClick={() => window.open(`/print-order/${order.id}`, "_blank")}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
                       >
-                        <Printer className="w-4 h-4 mr-2" />
+                        <Printer className="w-4 h-4" />
                         Imprimir
-                      </Button>
+                      </button>
 
-                      {/* Botão de Expedição */}
-                      {(order.status === "confirmed" || order.status === "preparing" || order.status === "ready") && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleStatusChange(order.id, order.orderType === "delivery" ? "delivering" : "ready")}
+                      {nextStatus && (
+                        <button
+                          onClick={() => handleStatusChange(order.id, nextStatus)}
+                          disabled={updateStatus.isPending}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
                         >
-                          <Send className="w-4 h-4 mr-2" />
-                          {order.orderType === "delivery" ? "Expedir para Entrega" : "Marcar como Pronto"}
-                        </Button>
+                          {updateStatus.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
+                          Avançar para{" "}
+                          {statusConfig[nextStatus]?.label}
+                        </button>
                       )}
 
-                      {/* Seletor de Status */}
-                      <div className="flex items-center gap-2 ml-auto">
-                        <label className="text-sm font-medium">Status:</label>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order.id, value as keyof typeof statusLabels)}
+                      {order.status !== "delivered" && order.status !== "cancelled" && (
+                        <button
+                          onClick={() => handleStatusChange(order.id, "cancelled")}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ml-auto"
                         >
-                        <SelectTrigger className="w-[180px]">
+                          <AlertCircle className="w-4 h-4" />
+                          Cancelar
+                        </button>
+                      )}
+
+                      {order.status === "delivered" && (
+                        <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium ml-auto">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Concluído
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Seletor manual de status */}
+                    <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+                      <span className="text-xs text-muted-foreground">Status manual:</span>
+                      <Select
+                        value={order.status}
+                        onValueChange={(v) => handleStatusChange(order.id, v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs rounded-lg w-40">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="confirmed">Confirmado</SelectItem>
-                          <SelectItem value="preparing">Preparando</SelectItem>
-                          <SelectItem value="ready">Pronto</SelectItem>
-                          <SelectItem value="delivering">Em Entrega</SelectItem>
-                          <SelectItem value="delivered">Entregue</SelectItem>
-                          <SelectItem value="cancelled">Cancelado</SelectItem>
+                          {Object.entries(statusConfig).map(([k, v]) => (
+                            <SelectItem key={k} value={k} className="text-xs">
+                              {v.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </div>
             );
           })}
         </div>

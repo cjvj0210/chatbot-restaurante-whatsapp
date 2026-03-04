@@ -616,3 +616,14 @@
 - [x] Adicionar seletor delivery/retirada na tela inicial do cardápio
 - [x] Atualizar taxa de entrega no chatbotPrompt.ts (R$ 8,50)
 - [x] Atualizar taxa de entrega no Pedido.tsx (R$ 8,50 = 850 centavos)
+
+## Painel Admin Unificado - UI/UX Premium (Mar/2026)
+- [x] Redesenhar DashboardLayout: sidebar escura elegante, logo, ícones, hover states
+- [x] Redesenhar Dashboard: KPIs com gráficos, pedidos recentes, status em tempo real
+- [x] Redesenhar página Cardápio: grid de cards com foto, toggle disponível
+- [x] Redesenhar página Pedidos: cards expansíveis, filtros, progresso visual, ações rápidas
+- [x] Redesenhar página Reservas: cards modernos, contadores por status, link WhatsApp
+- [x] Redesenhar página Configurações: abas visuais, formulários modernos, URL webhook
+- [x] Redesenhar Simuladores: header premium, dicas clicáveis, layout otimizado
+- [x] Adicionar título/logo "Estrela do Sul" na sidebar com ícone Flame
+- [ ] Configurar domínio personalizado (feito pelo usuário via painel Manus > Settings > Domains)

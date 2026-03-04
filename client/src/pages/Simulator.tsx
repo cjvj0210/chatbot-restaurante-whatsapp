@@ -211,14 +211,14 @@ export default function Simulator() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Smartphone className="w-8 h-8 text-green-600" />
-          <h1 className="text-3xl font-bold">Simulador de Conversas WhatsApp</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Teste o chatbot antes de colocar em produção. Todas as funcionalidades estão ativas!
+    <div className="space-y-5 max-w-3xl">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Smartphone className="w-6 h-6 text-primary" />
+          Simulador WhatsApp
+        </h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Teste o chatbot como se fosse uma conversa real pelo WhatsApp
         </p>
       </div>
 
@@ -320,17 +320,25 @@ export default function Simulator() {
       </Card>
 
       {/* Dicas */}
-      <Card className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 Dicas de Teste:</h3>
-        <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-          <li>• Experimente perguntar "Qual o cardápio?" ou "Quero fazer um pedido"</li>
-          <li>• Teste fazer uma reserva: "Gostaria de reservar uma mesa"</li>
-          <li>• Pergunte sobre horários: "Qual o horário de funcionamento?"</li>
-          <li>• <strong>🎤 Clique no botão de microfone para gravar áudio e testar transcrição!</strong></li>
-          <li>• Teste o tom de voz e naturalidade das respostas</li>
-          <li>• Use o botão "Reiniciar" para começar uma nova conversa do zero</li>
-        </ul>
-      </Card>
+      <div className="bg-blue-50 border border-blue-200/60 rounded-2xl p-4">
+        <p className="text-sm font-semibold text-blue-800 mb-2">Sugestões para testar:</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {[
+            "Qual o cardápio?",
+            "Quero fazer um pedido",
+            "Reservar uma mesa",
+            "Horário de funcionamento",
+          ].map((tip) => (
+            <button
+              key={tip}
+              onClick={() => { setInputText(tip); }}
+              className="text-left text-xs bg-white text-blue-700 border border-blue-200 rounded-xl px-3 py-2 hover:bg-blue-50 transition-colors font-medium"
+            >
+              {tip}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
