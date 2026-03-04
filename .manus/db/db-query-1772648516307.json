@@ -1,0 +1,41 @@
+{
+  "query": "SELECT c.name as categoria, COUNT(i.id) as total_itens\nFROM menu_categories c\nLEFT JOIN menu_items i ON i.categoryId = c.id\nGROUP BY c.id, c.name\nORDER BY c.displayOrder;\n\nSELECT COUNT(*) as total_itens FROM menu_items;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT c.name as categoria, COUNT(i.id) as total_itens\nFROM menu_categories c\nLEFT JOIN menu_items i ON i.categoryId = c.id\nGROUP BY c.id, c.name\nORDER BY c.displayOrder;\n\nSELECT COUNT(*) as total_itens FROM menu_items;",
+  "rows": [
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "total_itens": "7"
+    },
+    {
+      "categoria": "Marmitex c/ churrasco à moda",
+      "total_itens": "3"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "total_itens": "8"
+    },
+    {
+      "categoria": "Marmitex econômicas",
+      "total_itens": "1"
+    },
+    {
+      "categoria": "Churrasco do Estrela",
+      "total_itens": "4"
+    },
+    {
+      "categoria": "Saladas Especiais",
+      "total_itens": "4"
+    },
+    {
+      "categoria": "Bebidas",
+      "total_itens": "10"
+    }
+  ],
+  "messages": [
+    "total_itens",
+    "37"
+  ],
+  "stdout": "categoria\ttotal_itens\nExecutivos premium - Estrela do Sul\t7\nMarmitex c/ churrasco à moda\t3\nGuarnições do Estrela\t8\nMarmitex econômicas\t1\nChurrasco do Estrela\t4\nSaladas Especiais\t4\nBebidas\t10\ntotal_itens\n37\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

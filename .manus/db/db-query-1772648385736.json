@@ -1,0 +1,171 @@
+{
+  "query": "SELECT id, name, displayOrder FROM menu_categories ORDER BY displayOrder;\nSELECT id, categoryId, name, price FROM menu_items ORDER BY categoryId, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name, displayOrder FROM menu_categories ORDER BY displayOrder;\nSELECT id, categoryId, name, price FROM menu_items ORDER BY categoryId, id;",
+  "rows": [
+    {
+      "id": "90001",
+      "name": "Pizzas",
+      "displayOrder": "1"
+    },
+    {
+      "id": "2",
+      "name": "Bebidas",
+      "displayOrder": "1"
+    },
+    {
+      "id": "30001",
+      "name": "Rodízio",
+      "displayOrder": "1"
+    },
+    {
+      "id": "1",
+      "name": "Pizzas",
+      "displayOrder": "1"
+    },
+    {
+      "id": "120002",
+      "name": "Bebidas",
+      "displayOrder": "1"
+    },
+    {
+      "id": "120001",
+      "name": "Pizzas",
+      "displayOrder": "1"
+    },
+    {
+      "id": "90002",
+      "name": "Bebidas",
+      "displayOrder": "1"
+    },
+    {
+      "id": "60001",
+      "name": "Marmitex",
+      "displayOrder": "1"
+    },
+    {
+      "id": "30002",
+      "name": "Marmitex",
+      "displayOrder": "2"
+    },
+    {
+      "id": "60002",
+      "name": "Marmitas Simples",
+      "displayOrder": "2"
+    },
+    {
+      "id": "30003",
+      "name": "Pratos Executivos",
+      "displayOrder": "3"
+    },
+    {
+      "id": "60003",
+      "name": "Guarnições",
+      "displayOrder": "3"
+    },
+    {
+      "id": "30004",
+      "name": "Kits de Carne",
+      "displayOrder": "4"
+    },
+    {
+      "id": "60004",
+      "name": "Salgados",
+      "displayOrder": "4"
+    },
+    {
+      "id": "60005",
+      "name": "Mix e Kits de Churrasco",
+      "displayOrder": "5"
+    },
+    {
+      "id": "30005",
+      "name": "Guarnições",
+      "displayOrder": "5"
+    },
+    {
+      "id": "60006",
+      "name": "Pratos Executivos",
+      "displayOrder": "6"
+    },
+    {
+      "id": "30006",
+      "name": "Bebidas",
+      "displayOrder": "6"
+    },
+    {
+      "id": "60007",
+      "name": "Saladas",
+      "displayOrder": "7"
+    },
+    {
+      "id": "30007",
+      "name": "Adicionais",
+      "displayOrder": "7"
+    },
+    {
+      "id": "60008",
+      "name": "Bebidas",
+      "displayOrder": "8"
+    }
+  ],
+  "messages": [
+    "id\tcategoryId\tname\tprice",
+    "1\t2\tCoca-Cola\t50000",
+    "30005\t2\tCoca-Cola 2L\t1000",
+    "30001\t30001\tRodízio Almoço (Seg-Sex)\t11990",
+    "30002\t30001\tRodízio Almoço (Sáb-Dom)\t12990",
+    "30003\t30001\tRodízio Jantar Individual\t10990",
+    "30004\t30001\tRodízio Jantar Casal (PROMOÇÃO)\t19990",
+    "60001\t60001\tMarmitex G\t3400",
+    "60002\t60001\tMarmitex M\t3000",
+    "60003\t60001\tMarmitex P\t2600",
+    "60004\t60001\tMarmitex Econômico\t2000",
+    "60005\t60002\tMarmita de Arroz e Feijão\t1700",
+    "60006\t60002\tMarmita só de Arroz\t1700",
+    "60007\t60002\tMarmita só de Feijão\t1700",
+    "60008\t60003\tMandioca Frita Grande\t2200",
+    "60009\t60003\tMandioca Frita Pequena\t1100",
+    "60010\t60003\tBatata Chips Grande\t2200",
+    "60011\t60003\tBatata Chips Pequena\t1000",
+    "60012\t60003\tNuggets de Frango Grande\t2200",
+    "60013\t60003\tNuggets de Frango Pequeno\t1100",
+    "60014\t60003\tAnéis de Cebola Grande\t2500",
+    "60015\t60003\tAnéis de Cebola Pequena\t1200",
+    "60016\t60004\tMini Pastéis 10 unidades\t2200",
+    "60017\t60004\tMini Pastéis 4 unidades\t1400",
+    "60018\t60004\tBanana Empanada 8 unidades\t2600",
+    "60019\t60004\tBanana Empanada 2 unidades\t900",
+    "60020\t60005\tMix Churrasco Tradicional\t7500",
+    "60021\t60005\tMix Churrasco Nobre\t11500",
+    "60022\t60005\tKit Churrasco Tradicional p/3 pessoas\t17000",
+    "60023\t60005\tKit Churrasco Tradicional p/5 pessoas\t24000",
+    "60024\t60005\tKit Churrasco Nobre p/3 pessoas\t21500",
+    "60025\t60005\tKit Churrasco Nobre p/5 pessoas\t29500",
+    "60026\t60006\tExecutivo Estrelinha\t3000",
+    "60027\t60006\tExecutivo Peãozinho\t3000",
+    "60028\t60006\tExecutivo Tropeiro\t4100",
+    "60029\t60006\tExecutivo Cowboy\t4100",
+    "60030\t60006\tExecutivo Fit\t3700",
+    "60031\t60006\tExecutivo Laçador (Filé Mignon)\t5200",
+    "60032\t60006\tExecutivo Laçador (Contra Filé)\t4300",
+    "60033\t60006\tExecutivo Pescador\t4600",
+    "60034\t60007\tSalada Simples\t2000",
+    "60035\t60007\tAlface Americana\t2400",
+    "60036\t60008\tCoca-Cola 2L\t1500",
+    "60037\t60008\tCoca-Cola Zero 2L\t1500",
+    "60038\t60008\tCoca-Cola 350ml\t1100",
+    "60039\t60008\tGuaraná Antarctica 2L\t1300",
+    "60040\t60008\tGuaraná Antarctica Lata\t700",
+    "60041\t60008\tFanta Laranja 2L\t1300",
+    "60042\t60008\tFanta Uva 2L\t1300",
+    "60043\t60008\tSprite Lata\t700",
+    "60044\t60008\tDel Valle Lata\t600",
+    "60045\t60008\tSuco Abacaxi\t1200",
+    "60046\t60008\tÁgua com Gás Crystal\t700",
+    "90001\t90002\tCoca-Cola\t500",
+    "120001\t120002\tCoca-Cola\t500"
+  ],
+  "stdout": "id\tname\tdisplayOrder\n90001\tPizzas\t1\n2\tBebidas\t1\n30001\tRodízio\t1\n1\tPizzas\t1\n120002\tBebidas\t1\n120001\tPizzas\t1\n90002\tBebidas\t1\n60001\tMarmitex\t1\n30002\tMarmitex\t2\n60002\tMarmitas Simples\t2\n30003\tPratos Executivos\t3\n60003\tGuarnições\t3\n30004\tKits de Carne\t4\n60004\tSalgados\t4\n60005\tMix e Kits de Churrasco\t5\n30005\tGuarnições\t5\n60006\tPratos Executivos\t6\n30006\tBebidas\t6\n60007\tSaladas\t7\n30007\tAdicionais\t7\n60008\tBebidas\t8\nid\tcategoryId\tname\tprice\n1\t2\tCoca-Cola\t50000\n30005\t2\tCoca-Cola 2L\t1000\n30001\t30001\tRodízio Almoço (Seg-Sex)\t11990\n30002\t30001\tRodízio Almoço (Sáb-Dom)\t12990\n30003\t30001\tRodízio Jantar Individual\t10990\n30004\t30001\tRodízio Jantar Casal (PROMOÇÃO)\t19990\n60001\t60001\tMarmitex G\t3400\n60002\t60001\tMarmitex M\t3000\n60003\t60001\tMarmitex P\t2600\n60004\t60001\tMarmitex Econômico\t2000\n60005\t60002\tMarmita de Arroz e Feijão\t1700\n60006\t60002\tMarmita só de Arroz\t1700\n60007\t60002\tMarmita só de Feijão\t1700\n60008\t60003\tMandioca Frita Grande\t2200\n60009\t60003\tMandioca Frita Pequena\t1100\n60010\t60003\tBatata Chips Grande\t2200\n60011\t60003\tBatata Chips Pequena\t1000\n60012\t60003\tNuggets de Frango Grande\t2200\n60013\t60003\tNuggets de Frango Pequeno\t1100\n60014\t60003\tAnéis de Cebola Grande\t2500\n60015\t60003\tAnéis de Cebola Pequena\t1200\n60016\t60004\tMini Pastéis 10 unidades\t2200\n60017\t60004\tMini Pastéis 4 unidades\t1400\n60018\t60004\tBanana Empanada 8 unidades\t2600\n60019\t60004\tBanana Empanada 2 unidades\t900\n60020\t60005\tMix Churrasco Tradicional\t7500\n60021\t60005\tMix Churrasco Nobre\t11500\n60022\t60005\tKit Churrasco Tradicional p/3 pessoas\t17000\n60023\t60005\tKit Churrasco Tradicional p/5 pessoas\t24000\n60024\t60005\tKit Churrasco Nobre p/3 pessoas\t21500\n60025\t60005\tKit Churrasco Nobre p/5 pessoas\t29500\n60026\t60006\tExecutivo Estrelinha\t3000\n60027\t60006\tExecutivo Peãozinho\t3000\n60028\t60006\tExecutivo Tropeiro\t4100\n60029\t60006\tExecutivo Cowboy\t4100\n60030\t60006\tExecutivo Fit\t3700\n60031\t60006\tExecutivo Laçador (Filé Mignon)\t5200\n60032\t60006\tExecutivo Laçador (Contra Filé)\t4300\n60033\t60006\tExecutivo Pescador\t4600\n60034\t60007\tSalada Simples\t2000\n60035\t60007\tAlface Americana\t2400\n60036\t60008\tCoca-Cola 2L\t1500\n60037\t60008\tCoca-Cola Zero 2L\t1500\n60038\t60008\tCoca-Cola 350ml\t1100\n60039\t60008\tGuaraná Antarctica 2L\t1300\n60040\t60008\tGuaraná Antarctica Lata\t700\n60041\t60008\tFanta Laranja 2L\t1300\n60042\t60008\tFanta Uva 2L\t1300\n60043\t60008\tSprite Lata\t700\n60044\t60008\tDel Valle Lata\t600\n60045\t60008\tSuco Abacaxi\t1200\n60046\t60008\tÁgua com Gás Crystal\t700\n90001\t90002\tCoca-Cola\t500\n120001\t120002\tCoca-Cola\t500\n",
+  "stderr": "",
+  "execution_time_ms": 281
+}

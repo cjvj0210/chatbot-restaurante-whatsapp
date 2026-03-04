@@ -627,3 +627,15 @@
 - [x] Redesenhar Simuladores: header premium, dicas clicáveis, layout otimizado
 - [x] Adicionar título/logo "Estrela do Sul" na sidebar com ícone Flame
 - [ ] Configurar domínio personalizado (feito pelo usuário via painel Manus > Settings > Domains)
+
+## Cadastro Cardápio Completo iFood (Mar/2026)
+- [x] Limpar categorias e itens de teste do banco
+- [x] Criar 7 categorias na ordem correta
+- [x] Cadastrar 7 itens da Categoria 1: Executivos Premium
+- [x] Cadastrar 3 itens da Categoria 2: Marmitex c/ churrasco à moda
+- [x] Cadastrar 8 itens da Categoria 3: Guarnições do Estrela
+- [x] Cadastrar 1 item da Categoria 4: Marmitex Econômicas
+- [x] Cadastrar 4 itens da Categoria 5: Churrasco do Estrela
+- [x] Cadastrar 4 itens da Categoria 6: Saladas Especiais
+- [x] Cadastrar 10 itens da Categoria 7: Bebidas
+- [x] Verificar todos os 37 itens cadastrados corretamente (7+3+8+1+4+4+10 = 37)

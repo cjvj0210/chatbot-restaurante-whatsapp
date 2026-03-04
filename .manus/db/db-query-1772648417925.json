@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, displayOrder FROM menu_categories ORDER BY displayOrder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name, displayOrder FROM menu_categories ORDER BY displayOrder;",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Executivos premium - Estrela do Sul",
+      "displayOrder": "1"
+    },
+    {
+      "id": "150002",
+      "name": "Marmitex c/ churrasco à moda",
+      "displayOrder": "2"
+    },
+    {
+      "id": "150003",
+      "name": "Guarnições do Estrela",
+      "displayOrder": "3"
+    },
+    {
+      "id": "150004",
+      "name": "Marmitex econômicas",
+      "displayOrder": "4"
+    },
+    {
+      "id": "150005",
+      "name": "Churrasco do Estrela",
+      "displayOrder": "5"
+    },
+    {
+      "id": "150006",
+      "name": "Saladas Especiais",
+      "displayOrder": "6"
+    },
+    {
+      "id": "150007",
+      "name": "Bebidas",
+      "displayOrder": "7"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tdisplayOrder\n150001\tExecutivos premium - Estrela do Sul\t1\n150002\tMarmitex c/ churrasco à moda\t2\n150003\tGuarnições do Estrela\t3\n150004\tMarmitex econômicas\t4\n150005\tChurrasco do Estrela\t5\n150006\tSaladas Especiais\t6\n150007\tBebidas\t7\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}
