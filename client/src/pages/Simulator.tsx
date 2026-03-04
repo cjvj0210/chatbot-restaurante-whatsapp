@@ -25,9 +25,15 @@ function MessageText({ text, isOrderSummary }: { text: string; isOrderSummary?: 
     return <div className="text-sm whitespace-pre-wrap break-words">{text}</div>;
   }
 
+  // Processar [ORDER_LINK:sessionId] - usa window.location.origin para garantir domínio correto
+  const orderLinkRegex = /\[ORDER_LINK:([a-f0-9]+)\]/g;
+  const processedText = text.replace(orderLinkRegex, (_, sessionId) => {
+    return `${window.location.origin}/pedido/${sessionId}`;
+  });
+
   // Detectar URLs no texto e transformar em links
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = text.split(urlRegex);
+  const parts = processedText.split(urlRegex);
 
   return (
     <p className="text-sm whitespace-pre-wrap break-words">

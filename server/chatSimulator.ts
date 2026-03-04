@@ -84,9 +84,12 @@ export const chatSimulatorRouter = router({
             // Salvar mapeamento chat → pedido para polling
             chatOrderSessions.set(sessionId, orderSessionId);
 
-            // Gerar URL do cardápio usando o domínio do site
-            const orderLink = `${getSiteUrl()}/pedido/${orderSessionId}`;
-            assistantMessage = assistantMessage.replace("[GERAR_LINK_PEDIDO]", orderLink);
+            // Substituir placeholder com marcador especial que o frontend resolve
+            // usando window.location.origin para garantir o domínio correto
+            assistantMessage = assistantMessage.replace(
+              "[GERAR_LINK_PEDIDO]",
+              `[ORDER_LINK:${orderSessionId}]`
+            );
           }
         } catch (err) {
           console.error("[Simulator] Erro ao gerar link de pedido:", err);
@@ -199,8 +202,10 @@ export const chatSimulatorRouter = router({
               expiresAt,
             });
             chatOrderSessions.set(sessionId, orderSessionId);
-            const orderLink = `${getSiteUrl()}/pedido/${orderSessionId}`;
-            assistantMessage = assistantMessage.replace("[GERAR_LINK_PEDIDO]", orderLink);
+            assistantMessage = assistantMessage.replace(
+              "[GERAR_LINK_PEDIDO]",
+              `[ORDER_LINK:${orderSessionId}]`
+            );
           }
         } catch (err) {
           console.error("[Simulator] Erro ao gerar link de pedido (áudio):", err);
