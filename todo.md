@@ -658,3 +658,7 @@
 - [x] Ao finalizar pedido no cardápio, polling detecta e exibe resumo completo no chat
 - [x] Pedido finalizado exibido no simulador com botão de impressão térmica (link /imprimir/[id])
 - [x] Formatar pedido para impressão térmica (80mm, texto simples, sem imagens) via PrintOrder.tsx
+
+## Correção URL Link Cardápio (Mar/2026)
+- [x] Corrigir getSiteUrl() para usar URL de desenvolvimento (SITE_DEV_URL) e produção separados
+- [x] Testar link do cardápio no simulador - gera URL correta: https://3000-i3nfp1m89f65xrfid36rm-84e0c22e.us2.manus.computer/pedido/[id]
