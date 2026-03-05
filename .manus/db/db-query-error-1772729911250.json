@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT \n  mc.name as categoria,\n  mi.name as produto,\n  mi.price as preco_centavos,\n  ROUND(mi.price / 100.0, 2) as preco_reais,\n  mi.isAvailable\nFROM menu_items mi\nJOIN menu_categories mc ON mi.categoryId = mc.id\nORDER BY mc.displayOrder, mi.displayOrder;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT \n  mc.name as categoria,\n  mi.name as produto,\n  mi.price as preco_centavos,\n  ROUND(mi.price / 100.0, 2) as preco_reais,\n  mi.isAvailable\nFROM menu_items mi\nJOIN menu_categories mc ON mi.categoryId = mc.id\nORDER BY mc.displayOrder, mi.displayOrder;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'mi.displayOrder' in 'order clause'"
+  ]
+}

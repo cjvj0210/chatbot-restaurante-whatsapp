@@ -1,0 +1,238 @@
+{
+  "query": "SELECT mc.name as categoria, mi.name as produto, ROUND(mi.price / 100.0, 2) as preco_reais, mi.isAvailable FROM menu_items mi JOIN menu_categories mc ON mi.categoryId = mc.id ORDER BY mc.id, mi.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT mc.name as categoria, mi.name as produto, ROUND(mi.price / 100.0, 2) as preco_reais, mi.isAvailable FROM menu_items mi JOIN menu_categories mc ON mi.categoryId = mc.id ORDER BY mc.id, mi.id;",
+  "rows": [
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Cowboy individual",
+      "preco_reais": "49.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Executivo Fit Premium",
+      "preco_reais": "44.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Laçador individual",
+      "preco_reais": "51.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Tropeiro individual",
+      "preco_reais": "45.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Pescador individual",
+      "preco_reais": "56.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Peãozinho - infantil",
+      "preco_reais": "33.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Executivos premium - Estrela do Sul",
+      "produto": "Estrelinha - infantil",
+      "preco_reais": "33.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Marmitex c/ churrasco à moda",
+      "produto": "Marmitex Completa P",
+      "preco_reais": "33.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Marmitex c/ churrasco à moda",
+      "produto": "Marmitex Completa M",
+      "preco_reais": "37.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Marmitex c/ churrasco à moda",
+      "produto": "Tradicional Marmitex G",
+      "preco_reais": "40.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Banana Empanada (2 unidades)",
+      "preco_reais": "14.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Porções de mini pastéis",
+      "preco_reais": "24.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Queijinho bola Assado (unidade)",
+      "preco_reais": "6.99",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Anéis de cebola empanados",
+      "preco_reais": "17.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Nuggets de frango",
+      "preco_reais": "16.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Batatas chips",
+      "preco_reais": "16.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Batatas fritas",
+      "preco_reais": "18.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Guarnições do Estrela",
+      "produto": "Arroz",
+      "preco_reais": "22.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Marmitex econômicas",
+      "produto": "Marmitex econômica 1 (individual)",
+      "preco_reais": "27.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Churrasco do Estrela",
+      "produto": "Kit de churrasco nobre",
+      "preco_reais": "269.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Churrasco do Estrela",
+      "produto": "Kit de churrasco tradicional",
+      "preco_reais": "234.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Churrasco do Estrela",
+      "produto": "Mix de churrasco nobre",
+      "preco_reais": "154.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Churrasco do Estrela",
+      "produto": "Mix de churrasco tradicional",
+      "preco_reais": "99.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Saladas Especiais",
+      "produto": "Salada Caprese",
+      "preco_reais": "27.99",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Saladas Especiais",
+      "produto": "Salada Simples",
+      "preco_reais": "21.99",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Saladas Especiais",
+      "produto": "Salada Caesar",
+      "preco_reais": "27.99",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Saladas Especiais",
+      "produto": "Salada Estrela",
+      "preco_reais": "27.99",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Refrigerantes 2 Litros",
+      "preco_reais": "18.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Refrigerantes Econômicos",
+      "preco_reais": "14.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Suco de abacaxi natural",
+      "preco_reais": "14.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Suco de Laranja Natural",
+      "preco_reais": "16.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Sucos Del Valle lata",
+      "preco_reais": "12.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Refrigerantes lata",
+      "preco_reais": "9.90",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Suco de limão natural",
+      "preco_reais": "16.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Água mineral",
+      "preco_reais": "9.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Cervejas Long Neck",
+      "preco_reais": "15.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Cervejas lata",
+      "preco_reais": "12.00",
+      "isAvailable": "1"
+    },
+    {
+      "categoria": "Bebidas",
+      "produto": "Coca-Cola",
+      "preco_reais": "5.00",
+      "isAvailable": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "categoria\tproduto\tpreco_reais\tisAvailable\nExecutivos premium - Estrela do Sul\tCowboy individual\t49.90\t1\nExecutivos premium - Estrela do Sul\tExecutivo Fit Premium\t44.90\t1\nExecutivos premium - Estrela do Sul\tLaçador individual\t51.90\t1\nExecutivos premium - Estrela do Sul\tTropeiro individual\t45.90\t1\nExecutivos premium - Estrela do Sul\tPescador individual\t56.90\t1\nExecutivos premium - Estrela do Sul\tPeãozinho - infantil\t33.90\t1\nExecutivos premium - Estrela do Sul\tEstrelinha - infantil\t33.90\t1\nMarmitex c/ churrasco à moda\tMarmitex Completa P\t33.90\t1\nMarmitex c/ churrasco à moda\tMarmitex Completa M\t37.90\t1\nMarmitex c/ churrasco à moda\tTradicional Marmitex G\t40.90\t1\nGuarnições do Estrela\tBanana Empanada (2 unidades)\t14.90\t1\nGuarnições do Estrela\tPorções de mini pastéis\t24.90\t1\nGuarnições do Estrela\tQueijinho bola Assado (unidade)\t6.99\t1\nGuarnições do Estrela\tAnéis de cebola empanados\t17.90\t1\nGuarnições do Estrela\tNuggets de frango\t16.90\t1\nGuarnições do Estrela\tBatatas chips\t16.90\t1\nGuarnições do Estrela\tBatatas fritas\t18.90\t1\nGuarnições do Estrela\tArroz\t22.90\t1\nMarmitex econômicas\tMarmitex econômica 1 (individual)\t27.90\t1\nChurrasco do Estrela\tKit de churrasco nobre\t269.90\t1\nChurrasco do Estrela\tKit de churrasco tradicional\t234.90\t1\nChurrasco do Estrela\tMix de churrasco nobre\t154.90\t1\nChurrasco do Estrela\tMix de churrasco tradicional\t99.90\t1\nSaladas Especiais\tSalada Caprese\t27.99\t1\nSaladas Especiais\tSalada Simples\t21.99\t1\nSaladas Especiais\tSalada Caesar\t27.99\t1\nSaladas Especiais\tSalada Estrela\t27.99\t1\nBebidas\tRefrigerantes 2 Litros\t18.00\t1\nBebidas\tRefrigerantes Econômicos\t14.00\t1\nBebidas\tSuco de abacaxi natural\t14.00\t1\nBebidas\tSuco de Laranja Natural\t16.00\t1\nBebidas\tSucos Del Valle lata\t12.00\t1\nBebidas\tRefrigerantes lata\t9.90\t1\nBebidas\tSuco de limão natural\t16.00\t1\nBebidas\tÁgua mineral\t9.00\t1\nBebidas\tCervejas Long Neck\t15.00\t1\nBebidas\tCervejas lata\t12.00\t1\nBebidas\tCoca-Cola\t5.00\t1\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}
