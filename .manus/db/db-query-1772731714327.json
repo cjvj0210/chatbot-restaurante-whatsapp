@@ -1,0 +1,130 @@
+{
+  "query": "UPDATE menu_items SET price = 990 WHERE id = 150016; UPDATE menu_items SET price = 990 WHERE id = 150017; SELECT id, name FROM menu_addon_groups LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute UPDATE menu_items SET price = 990 WHERE id = 150016; UPDATE menu_items SET price = 990 WHERE id = 150017; SELECT id, name FROM menu_addon_groups LIMIT 30;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Escolha as carnes"
+    },
+    {
+      "id": "2",
+      "name": "Escolha as carnes"
+    },
+    {
+      "id": "3",
+      "name": "Guarnição 1"
+    },
+    {
+      "id": "4",
+      "name": "Guarnição 2"
+    },
+    {
+      "id": "5",
+      "name": "Escolha a proteína"
+    },
+    {
+      "id": "6",
+      "name": "Guarnição 1"
+    },
+    {
+      "id": "7",
+      "name": "Guarnição 2"
+    },
+    {
+      "id": "8",
+      "name": "Guarnição"
+    },
+    {
+      "id": "9",
+      "name": "Escolha o ponto da carne"
+    },
+    {
+      "id": "10",
+      "name": "Ponto do salmão"
+    },
+    {
+      "id": "11",
+      "name": "Proteína principal"
+    },
+    {
+      "id": "12",
+      "name": "Proteína secundária"
+    },
+    {
+      "id": "13",
+      "name": "Guarnição 1"
+    },
+    {
+      "id": "14",
+      "name": "Proteína"
+    },
+    {
+      "id": "15",
+      "name": "Guarnição 1"
+    },
+    {
+      "id": "16",
+      "name": "Guarnição 2"
+    },
+    {
+      "id": "17",
+      "name": "Molho para o churrasco?"
+    },
+    {
+      "id": "18",
+      "name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "19",
+      "name": "Precisa de talheres?"
+    },
+    {
+      "id": "20",
+      "name": "Escolha o ponto da carne"
+    },
+    {
+      "id": "21",
+      "name": "Molho para o churrasco?"
+    },
+    {
+      "id": "22",
+      "name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "23",
+      "name": "Precisa de talheres?"
+    },
+    {
+      "id": "24",
+      "name": "Escolha o ponto da carne"
+    },
+    {
+      "id": "25",
+      "name": "Molho para o churrasco?"
+    },
+    {
+      "id": "26",
+      "name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "27",
+      "name": "Precisa de talheres?"
+    },
+    {
+      "id": "28",
+      "name": "Molho para o churrasco?"
+    },
+    {
+      "id": "29",
+      "name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30",
+      "name": "Precisa de talheres?"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n1\tEscolha as carnes\n2\tEscolha as carnes\n3\tGuarnição 1\n4\tGuarnição 2\n5\tEscolha a proteína\n6\tGuarnição 1\n7\tGuarnição 2\n8\tGuarnição\n9\tEscolha o ponto da carne\n10\tPonto do salmão\n11\tProteína principal\n12\tProteína secundária\n13\tGuarnição 1\n14\tProteína\n15\tGuarnição 1\n16\tGuarnição 2\n17\tMolho para o churrasco?\n18\t\"Turbine\" seu pedido!\n19\tPrecisa de talheres?\n20\tEscolha o ponto da carne\n21\tMolho para o churrasco?\n22\t\"Turbine\" seu pedido!\n23\tPrecisa de talheres?\n24\tEscolha o ponto da carne\n25\tMolho para o churrasco?\n26\t\"Turbine\" seu pedido!\n27\tPrecisa de talheres?\n28\tMolho para o churrasco?\n29\t\"Turbine\" seu pedido!\n30\tPrecisa de talheres?\n",
+  "stderr": "",
+  "execution_time_ms": 79
+}

@@ -1,0 +1,87 @@
+{
+  "query": "SELECT id, name FROM menu_categories ORDER BY displayOrder; SELECT id, categoryId, name, price FROM menu_items ORDER BY categoryId, id LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name FROM menu_categories ORDER BY displayOrder; SELECT id, categoryId, name, price FROM menu_items ORDER BY categoryId, id LIMIT 50;",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Executivos premium - Estrela do Sul"
+    },
+    {
+      "id": "180001",
+      "name": "Pizzas"
+    },
+    {
+      "id": "180002",
+      "name": "Bebidas"
+    },
+    {
+      "id": "150002",
+      "name": "Marmitex c/ churrasco à moda"
+    },
+    {
+      "id": "150003",
+      "name": "Guarnições do Estrela"
+    },
+    {
+      "id": "150004",
+      "name": "Marmitex econômicas"
+    },
+    {
+      "id": "150005",
+      "name": "Churrasco do Estrela"
+    },
+    {
+      "id": "150006",
+      "name": "Saladas Especiais"
+    },
+    {
+      "id": "150007",
+      "name": "Bebidas"
+    }
+  ],
+  "messages": [
+    "id\tcategoryId\tname\tprice",
+    "150001\t150001\tCowboy individual\t4990",
+    "150002\t150001\tExecutivo Fit Premium\t4490",
+    "150003\t150001\tLaçador individual\t5190",
+    "150004\t150001\tTropeiro individual\t4590",
+    "150005\t150001\tPescador individual\t5690",
+    "150006\t150001\tPeãozinho - infantil\t3390",
+    "150007\t150001\tEstrelinha - infantil\t3390",
+    "150008\t150002\tMarmitex Completa P\t3390",
+    "150009\t150002\tMarmitex Completa M\t3790",
+    "150010\t150002\tTradicional Marmitex G\t4090",
+    "150011\t150003\tBanana Empanada (2 unidades)\t1490",
+    "150012\t150003\tPorções de mini pastéis\t2490",
+    "150013\t150003\tQueijinho bola Assado (unidade)\t699",
+    "150014\t150003\tAnéis de cebola empanados\t1790",
+    "150015\t150003\tNuggets de frango\t1690",
+    "150016\t150003\tBatatas chips\t1690",
+    "150017\t150003\tBatatas fritas\t1890",
+    "150018\t150003\tArroz\t2290",
+    "150019\t150004\tMarmitex econômica 1 (individual)\t2790",
+    "150020\t150005\tKit de churrasco nobre\t26990",
+    "150021\t150005\tKit de churrasco tradicional\t23490",
+    "150022\t150005\tMix de churrasco nobre\t15490",
+    "150023\t150005\tMix de churrasco tradicional\t9990",
+    "150024\t150006\tSalada Caprese\t2799",
+    "150025\t150006\tSalada Simples\t2199",
+    "150026\t150006\tSalada Caesar\t2799",
+    "150027\t150006\tSalada Estrela\t2799",
+    "150028\t150007\tRefrigerantes 2 Litros\t1800",
+    "150029\t150007\tRefrigerantes Econômicos\t1400",
+    "150030\t150007\tSuco de abacaxi natural\t1400",
+    "150031\t150007\tSuco de Laranja Natural\t1600",
+    "150032\t150007\tSucos Del Valle lata\t1200",
+    "150033\t150007\tRefrigerantes lata\t990",
+    "150034\t150007\tSuco de limão natural\t1600",
+    "150035\t150007\tÁgua mineral\t900",
+    "150036\t150007\tCervejas Long Neck\t1500",
+    "150037\t150007\tCervejas lata\t1200",
+    "150038\t150009\tCoca-Cola\t500",
+    "180001\t180002\tCoca-Cola\t500"
+  ],
+  "stdout": "id\tname\n150001\tExecutivos premium - Estrela do Sul\n180001\tPizzas\n180002\tBebidas\n150002\tMarmitex c/ churrasco à moda\n150003\tGuarnições do Estrela\n150004\tMarmitex econômicas\n150005\tChurrasco do Estrela\n150006\tSaladas Especiais\n150007\tBebidas\nid\tcategoryId\tname\tprice\n150001\t150001\tCowboy individual\t4990\n150002\t150001\tExecutivo Fit Premium\t4490\n150003\t150001\tLaçador individual\t5190\n150004\t150001\tTropeiro individual\t4590\n150005\t150001\tPescador individual\t5690\n150006\t150001\tPeãozinho - infantil\t3390\n150007\t150001\tEstrelinha - infantil\t3390\n150008\t150002\tMarmitex Completa P\t3390\n150009\t150002\tMarmitex Completa M\t3790\n150010\t150002\tTradicional Marmitex G\t4090\n150011\t150003\tBanana Empanada (2 unidades)\t1490\n150012\t150003\tPorções de mini pastéis\t2490\n150013\t150003\tQueijinho bola Assado (unidade)\t699\n150014\t150003\tAnéis de cebola empanados\t1790\n150015\t150003\tNuggets de frango\t1690\n150016\t150003\tBatatas chips\t1690\n150017\t150003\tBatatas fritas\t1890\n150018\t150003\tArroz\t2290\n150019\t150004\tMarmitex econômica 1 (individual)\t2790\n150020\t150005\tKit de churrasco nobre\t26990\n150021\t150005\tKit de churrasco tradicional\t23490\n150022\t150005\tMix de churrasco nobre\t15490\n150023\t150005\tMix de churrasco tradicional\t9990\n150024\t150006\tSalada Caprese\t2799\n150025\t150006\tSalada Simples\t2199\n150026\t150006\tSalada Caesar\t2799\n150027\t150006\tSalada Estrela\t2799\n150028\t150007\tRefrigerantes 2 Litros\t1800\n150029\t150007\tRefrigerantes Econômicos\t1400\n150030\t150007\tSuco de abacaxi natural\t1400\n150031\t150007\tSuco de Laranja Natural\t1600\n150032\t150007\tSucos Del Valle lata\t1200\n150033\t150007\tRefrigerantes lata\t990\n150034\t150007\tSuco de limão natural\t1600\n150035\t150007\tÁgua mineral\t900\n150036\t150007\tCervejas Long Neck\t1500\n150037\t150007\tCervejas lata\t1200\n150038\t150009\tCoca-Cola\t500\n180001\t180002\tCoca-Cola\t500\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

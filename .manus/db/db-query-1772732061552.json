@@ -1,0 +1,58 @@
+{
+  "query": "SELECT g.menuItemId, o.name FROM menu_addon_groups g JOIN menu_addon_options o ON o.groupId = g.id WHERE g.menuItemId IN (150024, 150025, 150026, 150027) AND g.name LIKE '%molho%' ORDER BY g.menuItemId, o.displayOrder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT g.menuItemId, o.name FROM menu_addon_groups g JOIN menu_addon_options o ON o.groupId = g.id WHERE g.menuItemId IN (150024, 150025, 150026, 150027) AND g.name LIKE '%molho%' ORDER BY g.menuItemId, o.displayOrder;",
+  "rows": [
+    {
+      "menuItemId": "150024",
+      "name": "Molho Italian"
+    },
+    {
+      "menuItemId": "150024",
+      "name": "Molho French"
+    },
+    {
+      "menuItemId": "150024",
+      "name": "Molho Caesar"
+    },
+    {
+      "menuItemId": "150025",
+      "name": "Molho Italian"
+    },
+    {
+      "menuItemId": "150025",
+      "name": "Molho French"
+    },
+    {
+      "menuItemId": "150025",
+      "name": "Molho Caesar"
+    },
+    {
+      "menuItemId": "150026",
+      "name": "Molho Italian"
+    },
+    {
+      "menuItemId": "150026",
+      "name": "Molho French"
+    },
+    {
+      "menuItemId": "150026",
+      "name": "Molho Caesar"
+    },
+    {
+      "menuItemId": "150027",
+      "name": "Molho Italian"
+    },
+    {
+      "menuItemId": "150027",
+      "name": "Molho French"
+    },
+    {
+      "menuItemId": "150027",
+      "name": "Molho Caesar"
+    }
+  ],
+  "messages": [],
+  "stdout": "menuItemId\tname\n150024\tMolho Italian\n150024\tMolho French\n150024\tMolho Caesar\n150025\tMolho Italian\n150025\tMolho French\n150025\tMolho Caesar\n150026\tMolho Italian\n150026\tMolho French\n150026\tMolho Caesar\n150027\tMolho Italian\n150027\tMolho French\n150027\tMolho Caesar\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

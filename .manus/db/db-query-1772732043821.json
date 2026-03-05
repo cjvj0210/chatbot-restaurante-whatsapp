@@ -1,0 +1,50 @@
+{
+  "query": "UPDATE menu_addon_groups SET name = 'Peça seu molho favorito!', minSelections = 1, maxSelections = 2 WHERE menuItemId IN (150024, 150025, 150026, 150027) AND (name LIKE '%Molho%' OR name LIKE '%molho%'); SELECT g.id, g.menuItemId, g.name FROM menu_addon_groups g WHERE g.menuItemId IN (150024, 150025, 150026, 150027) ORDER BY g.menuItemId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute UPDATE menu_addon_groups SET name = 'Peça seu molho favorito!', minSelections = 1, maxSelections = 2 WHERE menuItemId IN (150024, 150025, 150026, 150027) AND (name LIKE '%Molho%' OR name LIKE '%molho%'); SELECT g.id, g.menuItemId, g.name FROM menu_addon_groups g WHERE g.menuItemId IN (150024, 150025, 150026, 150027) ORDER BY g.menuItemId;",
+  "rows": [
+    {
+      "id": "86",
+      "menuItemId": "150024",
+      "name": "Peça seu molho favorito!"
+    },
+    {
+      "id": "30014",
+      "menuItemId": "150024",
+      "name": "Precisa de talheres?"
+    },
+    {
+      "id": "87",
+      "menuItemId": "150025",
+      "name": "Peça seu molho favorito!"
+    },
+    {
+      "id": "30015",
+      "menuItemId": "150025",
+      "name": "Precisa de talheres?"
+    },
+    {
+      "id": "88",
+      "menuItemId": "150026",
+      "name": "Peça seu molho favorito!"
+    },
+    {
+      "id": "30016",
+      "menuItemId": "150026",
+      "name": "Precisa de talheres?"
+    },
+    {
+      "id": "89",
+      "menuItemId": "150027",
+      "name": "Peça seu molho favorito!"
+    },
+    {
+      "id": "30017",
+      "menuItemId": "150027",
+      "name": "Precisa de talheres?"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmenuItemId\tname\n86\t150024\tPeça seu molho favorito!\n30014\t150024\tPrecisa de talheres?\n87\t150025\tPeça seu molho favorito!\n30015\t150025\tPrecisa de talheres?\n88\t150026\tPeça seu molho favorito!\n30016\t150026\tPrecisa de talheres?\n89\t150027\tPeça seu molho favorito!\n30017\t150027\tPrecisa de talheres?\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}
