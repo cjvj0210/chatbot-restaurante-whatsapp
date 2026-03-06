@@ -33,6 +33,9 @@ export const appRouter = router({
     listItems: publicProcedure.query(async () => {
       return await db.getMenuItems();
     }),
+    listFeatured: publicProcedure.query(async () => {
+      return await db.getFeaturedMenuItems();
+    }),
   }),
   
   // Debug - Monitoramento de Webhooks

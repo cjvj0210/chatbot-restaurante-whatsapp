@@ -216,6 +216,17 @@ export async function getMenuItems(categoryId?: number): Promise<MenuItem[]> {
   return await db.select().from(menuItems).where(eq(menuItems.isAvailable, true));
 }
 
+export async function getFeaturedMenuItems(): Promise<MenuItem[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(menuItems)
+    .where(and(eq(menuItems.isAvailable, true), eq(menuItems.isFeatured, true)))
+    .limit(10);
+}
+
 export async function getMenuItemById(id: number): Promise<MenuItem | undefined> {
   const db = await getDb();
   if (!db) return undefined;

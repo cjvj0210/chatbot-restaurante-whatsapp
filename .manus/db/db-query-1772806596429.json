@@ -1,0 +1,64 @@
+{
+  "query": "SELECT id, name, isFeatured, imageUrl IS NOT NULL as hasImage FROM menu_items WHERE isFeatured = true ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name, isFeatured, imageUrl IS NOT NULL as hasImage FROM menu_items WHERE isFeatured = true ORDER BY id;",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Cowboy individual",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150002",
+      "name": "Executivo Fit Premium",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150003",
+      "name": "Laçador individual",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150004",
+      "name": "Tropeiro individual",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150008",
+      "name": "Marmitex Completa P",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150009",
+      "name": "Marmitex Completa M",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150010",
+      "name": "Tradicional Marmitex G",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150021",
+      "name": "Kit de churrasco tradicional",
+      "isFeatured": "1",
+      "hasImage": "1"
+    },
+    {
+      "id": "150023",
+      "name": "Mix de churrasco tradicional",
+      "isFeatured": "1",
+      "hasImage": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tisFeatured\thasImage\n150001\tCowboy individual\t1\t1\n150002\tExecutivo Fit Premium\t1\t1\n150003\tLaçador individual\t1\t1\n150004\tTropeiro individual\t1\t1\n150008\tMarmitex Completa P\t1\t1\n150009\tMarmitex Completa M\t1\t1\n150010\tTradicional Marmitex G\t1\t1\n150021\tKit de churrasco tradicional\t1\t1\n150023\tMix de churrasco tradicional\t1\t1\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

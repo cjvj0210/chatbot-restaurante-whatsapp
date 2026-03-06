@@ -83,6 +83,7 @@ export const menuItems = mysqlTable("menu_items", {
   price: int("price").notNull(), // em centavos
   imageUrl: text("imageUrl"),
   isAvailable: boolean("isAvailable").default(true).notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(), // destaque na seção Mais Pedidos
   preparationTime: int("preparationTime").default(30).notNull(), // em minutos
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

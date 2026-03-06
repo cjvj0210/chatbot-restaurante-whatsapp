@@ -670,3 +670,14 @@
 - [x] Redesenhar cards de itens: mais limpos, nome em destaque
 - [x] Clique no item abre painel de detalhes (drawer/expandir)
 - [ ] Verificar todos os produtos/complementos/preços conforme iFood
+
+## Seção Mais Pedidos no Cardápio
+- [x] Adicionar campo isFeatured no schema menu_items e migrar banco
+- [x] Marcar itens populares como destaque no banco (9 itens marcados)
+- [x] Implementar seção "Mais Pedidos" no topo do cardápio (Pedido.tsx)
+- [x] Adicionar rota/procedure para buscar itens em destaque (menu.listFeatured)
+
+## Correção do Link do Cardápio no Bot
+- [x] Corrigir prompt do bot: injetar URL real do cardápio digital dinamicamente
+- [x] Bot não deve dizer "link indisponível" — deve enviar o link correto
+- [x] Testado: bot gera link clicável "Abrir Cardápio Digital" corretamente

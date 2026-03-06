@@ -309,6 +309,7 @@ export default function Pedido() {
   // Buscar categorias e itens do menu
   const { data: categories, isLoading: loadingCategories } = trpc.menu.listCategories.useQuery();
   const { data: menuItems, isLoading: loadingItems } = trpc.menu.listItems.useQuery();
+  const { data: featuredItems = [] } = trpc.menu.listFeatured.useQuery();
 
   useEffect(() => {
     if (validation && !validation.valid) {
@@ -576,6 +577,58 @@ export default function Pedido() {
                 <Search className="w-12 h-12 mb-3 opacity-20" />
                 <p className="text-base font-medium text-gray-500">Nenhum item encontrado</p>
                 <p className="text-sm mt-1">Tente outro termo de busca</p>
+              </div>
+            )}
+
+            {/* ===== SEÇÃO MAIS PEDIDOS ===== */}
+            {!searchQuery && featuredItems.length > 0 && (
+              <div className="mb-2">
+                <div className="bg-white px-4 pt-5 pb-3">
+                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <span className="text-lg">🔥</span> Mais Pedidos
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Os favoritos dos nossos clientes</p>
+                </div>
+                <div className="overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                  <div className="flex gap-3 px-4 pb-4" style={{ minWidth: "max-content" }}>
+                    {featuredItems.map((item) => {
+                      const cartEntries = cart.filter((c) => c.menuItemId === item.id);
+                      const totalQty = cartEntries.reduce((s, c) => s + c.quantity, 0);
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setSelectedItem(item)}
+                          className="flex-shrink-0 w-36 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:scale-95 transition-transform text-left"
+                        >
+                          {/* Imagem */}
+                          <div className="relative">
+                            {item.imageUrl ? (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-28 object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-28 bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center text-4xl">
+                                🍖
+                              </div>
+                            )}
+                            {totalQty > 0 && (
+                              <span className="absolute top-1.5 right-1.5 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                {totalQty}
+                              </span>
+                            )}
+                          </div>
+                          {/* Info */}
+                          <div className="p-2.5">
+                            <p className="font-semibold text-gray-900 text-xs leading-snug line-clamp-2">{item.name}</p>
+                            <p className="text-red-600 font-bold text-xs mt-1.5">{formatPrice(item.price)}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
