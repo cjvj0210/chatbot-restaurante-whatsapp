@@ -681,3 +681,8 @@
 - [x] Corrigir prompt do bot: injetar URL real do cardápio digital dinamicamente
 - [x] Bot não deve dizer "link indisponível" — deve enviar o link correto
 - [x] Testado: bot gera link clicável "Abrir Cardápio Digital" corretamente
+## Botão Voltar do Celular no Cardápio Digital
+- [x] Implementar History API: ao abrir drawer de item, fazer pushState para criar entrada no histórico
+- [x] Capturar evento popstate (botão voltar) para fechar drawer em vez de sair do app
+- [x] Garantir que ao fechar o drawer manualmente (X ou fundo), o histórico seja limpo corretamente
+- [x] Botão voltar também funciona na aba Carrinho (volta para o Cardápio)

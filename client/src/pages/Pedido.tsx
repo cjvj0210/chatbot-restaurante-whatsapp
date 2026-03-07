@@ -294,6 +294,77 @@ export default function Pedido() {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const categoryBarRef = useRef<HTMLDivElement | null>(null);
 
+  // ===== HISTORY API: suporte ao botão voltar do celular =====
+  // Quando um drawer/modal abre, empurra uma entrada no histórico.
+  // O evento popstate (botão voltar) fecha o estado ativo em vez de sair do app.
+  const historyStateRef = useRef<string | null>(null);
+
+  const pushHistoryState = useCallback((state: string) => {
+    historyStateRef.current = state;
+    window.history.pushState({ modal: state }, "");
+  }, []);
+
+  const popHistoryState = useCallback(() => {
+    historyStateRef.current = null;
+  }, []);
+
+  // Abre o drawer de item e registra no histórico
+  const openItem = useCallback((item: any) => {
+    setSelectedItem(item);
+    pushHistoryState("item-drawer");
+  }, [pushHistoryState]);
+
+  // Fecha o drawer de item sem disparar popstate (chamado pelo botão X ou fundo)
+  const closeItem = useCallback(() => {
+    setSelectedItem(null);
+    if (historyStateRef.current === "item-drawer") {
+      popHistoryState();
+      window.history.back();
+    }
+  }, [popHistoryState]);
+
+  // Muda para aba carrinho e registra no histórico (apenas se ainda não estiver no carrinho)
+  const openCart = useCallback(() => {
+    setActiveTab((prev) => {
+      if (prev !== "cart") {
+        pushHistoryState("cart-tab");
+      }
+      return "cart";
+    });
+  }, [pushHistoryState]);
+
+  // Volta para aba menu sem disparar popstate (apenas se estiver no carrinho)
+  const closeCart = useCallback(() => {
+    setActiveTab((prev) => {
+      if (prev === "cart" && historyStateRef.current === "cart-tab") {
+        popHistoryState();
+        window.history.back();
+      }
+      return "menu";
+    });
+  }, [popHistoryState]);
+
+  // Captura o evento popstate (botão voltar físico/gesto do celular)
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      // Se havia um drawer de item aberto, fecha-o
+      if (selectedItem) {
+        setSelectedItem(null);
+        historyStateRef.current = null;
+        return;
+      }
+      // Se estava na aba carrinho, volta para o menu
+      if (activeTab === "cart") {
+        setActiveTab("menu");
+        historyStateRef.current = null;
+        return;
+      }
+      // Nenhum estado modal ativo: deixa o navegador agir normalmente
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedItem, activeTab]);
+
   // Buscar complementos do item selecionado
   const { data: addonGroups = [], isLoading: loadingAddons } = trpc.menuAddons.getByItem.useQuery(
     { menuItemId: selectedItem?.id || 0 },
@@ -471,7 +542,7 @@ export default function Pedido() {
 
           {/* Botão carrinho */}
           <button
-            onClick={() => setActiveTab("cart")}
+            onClick={openCart}
             className="relative p-2 rounded-full bg-white/15 active:bg-white/25 transition-colors"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -511,7 +582,7 @@ export default function Pedido() {
       <div className="bg-white border-b border-gray-100 flex-shrink-0" style={{ zIndex: 20 }}>
         <div className="flex">
           <button
-            onClick={() => setActiveTab("menu")}
+            onClick={closeCart}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               activeTab === "menu"
                 ? "text-red-600 border-b-2 border-red-600"
@@ -521,7 +592,7 @@ export default function Pedido() {
             Cardápio
           </button>
           <button
-            onClick={() => setActiveTab("cart")}
+            onClick={openCart}
             className={`flex-1 py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
               activeTab === "cart"
                 ? "text-red-600 border-b-2 border-red-600"
@@ -597,7 +668,7 @@ export default function Pedido() {
                       return (
                         <button
                           key={item.id}
-                          onClick={() => setSelectedItem(item)}
+                          onClick={() => openItem(item)}
                           className="flex-shrink-0 w-36 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:scale-95 transition-transform text-left"
                         >
                           {/* Imagem */}
@@ -653,7 +724,7 @@ export default function Pedido() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setSelectedItem(item)}
+                        onClick={() => openItem(item)}
                         className="w-full px-4 py-4 flex items-start gap-3 active:bg-gray-50 transition-colors text-left"
                       >
                         {/* Info do item */}
@@ -714,7 +785,7 @@ export default function Pedido() {
               <p className="text-lg font-semibold text-gray-600">Carrinho vazio</p>
               <p className="text-sm mt-1 text-center text-gray-400">Adicione itens do cardápio para continuar</p>
               <button
-                onClick={() => setActiveTab("menu")}
+                onClick={closeCart}
                 className="mt-6 px-6 py-3 bg-red-600 text-white rounded-full font-semibold text-sm active:bg-red-700 transition-colors"
               >
                 Ver Cardápio
@@ -786,7 +857,7 @@ export default function Pedido() {
               {/* Adicionar mais */}
               <div className="px-4 mt-3">
                 <button
-                  onClick={() => setActiveTab("menu")}
+                  onClick={closeCart}
                   className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-sm font-medium active:border-red-300 active:text-red-500 transition-colors flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
@@ -827,7 +898,7 @@ export default function Pedido() {
       {activeTab === "menu" && cartCount > 0 && (
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-5 pt-2 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" style={{ zIndex: 25 }}>
           <button
-            onClick={() => setActiveTab("cart")}
+            onClick={openCart}
             className="w-full bg-red-600 text-white py-4 rounded-2xl shadow-xl flex items-center justify-between px-5 active:bg-red-700 transition-colors pointer-events-auto"
           >
             <span className="bg-red-500 rounded-lg px-2.5 py-1 font-bold text-sm min-w-[32px] text-center">
@@ -862,7 +933,7 @@ export default function Pedido() {
           item={selectedItem}
           addonGroups={addonGroups as AddonGroup[]}
           loadingAddons={loadingAddons}
-          onClose={() => setSelectedItem(null)}
+          onClose={closeItem}
           onAdd={addToCart}
         />
       )}
