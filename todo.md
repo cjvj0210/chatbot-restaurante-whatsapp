@@ -692,3 +692,8 @@
 - [x] Ocultar campos de endereço no checkout quando tipo for Retirada
 - [x] Passar tipo de pedido para o resumo final e impressão via localStorage
 - [x] Taxa de entrega zerada para Retirada no carrinho e checkout
+
+## Botão Alterar Tipo de Pedido no Cardápio
+- [x] Exibir tipo atual (Entrega/Retirada) no header do cardápio como botão clicável
+- [x] Ao clicar, abrir modal/sheet de seleção para trocar o tipo sem recarregar
+- [x] Atualizar taxa de entrega no carrinho em tempo real ao trocar o tipo

@@ -290,6 +290,7 @@ export default function Pedido() {
   const [activeTab, setActiveTab] = useState<Tab>("menu");
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [deliveryType, setDeliveryType] = useState<DeliveryType | null>(null);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const categoryRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -612,6 +613,24 @@ export default function Pedido() {
             </div>
           </div>
 
+          {/* Botão tipo de pedido + carrinho */}
+          <div className="flex items-center gap-2">
+          {/* Badge tipo de pedido */}
+          <button
+            onClick={() => setShowDeliveryModal(true)}
+            className="flex items-center gap-1.5 bg-white/15 active:bg-white/25 transition-colors rounded-full px-3 py-1.5"
+          >
+            {deliveryType === "delivery" ? (
+              <Bike className="w-3.5 h-3.5" />
+            ) : (
+              <Store className="w-3.5 h-3.5" />
+            )}
+            <span className="text-xs font-semibold">
+              {deliveryType === "delivery" ? "Entrega" : "Retirada"}
+            </span>
+            <ChevronDown className="w-3 h-3 opacity-70" />
+          </button>
+
           {/* Botão carrinho */}
           <button
             onClick={openCart}
@@ -624,6 +643,7 @@ export default function Pedido() {
               </span>
             )}
           </button>
+          </div>
         </div>
 
         {/* Barra de busca */}
@@ -999,6 +1019,80 @@ export default function Pedido() {
             <span className="font-bold text-base">Finalizar Pedido</span>
             <span className="font-bold text-base">{formatPrice(total)}</span>
           </button>
+        </div>
+      )}
+
+      {/* ===== MODAL ALTERAR TIPO DE PEDIDO ===== */}
+      {showDeliveryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: "rgba(0,0,0,0.45)" }}
+          onClick={() => setShowDeliveryModal(false)}
+        >
+          <div
+            className="bg-white w-full max-w-md rounded-t-3xl px-5 pt-5 pb-8 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <h3 className="font-bold text-gray-900 text-base mb-4 text-center">Como quer receber seu pedido?</h3>
+
+            <div className="space-y-3">
+              {/* Delivery */}
+              <button
+                onClick={() => { setDeliveryType("delivery"); setShowDeliveryModal(false); }}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                  deliveryType === "delivery"
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-100 bg-gray-50 active:border-gray-200"
+                }`}
+              >
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  deliveryType === "delivery" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-500"
+                }`}>
+                  <Bike className="w-5 h-5" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-bold text-gray-900 text-sm">Entrega (Delivery)</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Receba no seu endereço · Taxa R$ 8,50</p>
+                </div>
+                {deliveryType === "delivery" && (
+                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+
+              {/* Retirada */}
+              <button
+                onClick={() => { setDeliveryType("pickup"); setShowDeliveryModal(false); }}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                  deliveryType === "pickup"
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-100 bg-gray-50 active:border-gray-200"
+                }`}
+              >
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  deliveryType === "pickup" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-500"
+                }`}>
+                  <Store className="w-5 h-5" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-bold text-gray-900 text-sm">Retirada no local</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Retire no restaurante · Grátis</p>
+                </div>
+                {deliveryType === "pickup" && (
+                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
