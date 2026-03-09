@@ -1,0 +1,40 @@
+{
+  "query": "\nSELECT \n  mi.id,\n  mi.name,\n  ROUND(mi.price / 100, 2) AS price_reais,\n  mc.name AS category_name\nFROM menu_items mi\nLEFT JOIN menu_categories mc ON mi.categoryId = mc.id\nWHERE mi.imageUrl IS NULL OR mi.imageUrl = ''\nORDER BY mc.displayOrder, mi.name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT \n  mi.id,\n  mi.name,\n  ROUND(mi.price / 100, 2) AS price_reais,\n  mc.name AS category_name\nFROM menu_items mi\nLEFT JOIN menu_categories mc ON mi.categoryId = mc.id\nWHERE mi.imageUrl IS NULL OR mi.imageUrl = ''\nORDER BY mc.displayOrder, mi.name;\n",
+  "rows": [
+    {
+      "id": "150014",
+      "name": "Anéis de cebola empanados",
+      "price_reais": "17.90",
+      "category_name": "Guarnições do Estrela"
+    },
+    {
+      "id": "150012",
+      "name": "Mini Pastéis",
+      "price_reais": "24.90",
+      "category_name": "Guarnições do Estrela"
+    },
+    {
+      "id": "150015",
+      "name": "Nuggets de frango",
+      "price_reais": "16.90",
+      "category_name": "Guarnições do Estrela"
+    },
+    {
+      "id": "150019",
+      "name": "Marmitex econômica 1 (individual)",
+      "price_reais": "27.90",
+      "category_name": "Marmitex econômicas"
+    },
+    {
+      "id": "150025",
+      "name": "Salada Simples",
+      "price_reais": "21.99",
+      "category_name": "Saladas Especiais"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tprice_reais\tcategory_name\n150014\tAnéis de cebola empanados\t17.90\tGuarnições do Estrela\n150012\tMini Pastéis\t24.90\tGuarnições do Estrela\n150015\tNuggets de frango\t16.90\tGuarnições do Estrela\n150019\tMarmitex econômica 1 (individual)\t27.90\tMarmitex econômicas\n150025\tSalada Simples\t21.99\tSaladas Especiais\n",
+  "stderr": "",
+  "execution_time_ms": 163
+}

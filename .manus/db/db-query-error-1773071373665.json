@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT \n  mi.id,\n  mi.name,\n  mi.price,\n  mi.is_available,\n  mc.name AS category_name\nFROM menu_items mi\nLEFT JOIN menu_categories mc ON mi.category_id = mc.id\nWHERE mi.image_url IS NULL OR mi.image_url = ''\nORDER BY mc.sort_order, mi.name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT \n  mi.id,\n  mi.name,\n  mi.price,\n  mi.is_available,\n  mc.name AS category_name\nFROM menu_items mi\nLEFT JOIN menu_categories mc ON mi.category_id = mc.id\nWHERE mi.image_url IS NULL OR mi.image_url = ''\nORDER BY mc.sort_order, mi.name;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'mi.category_id' in 'on clause'"
+  ]
+}
