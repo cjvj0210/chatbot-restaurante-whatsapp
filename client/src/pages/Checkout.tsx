@@ -35,7 +35,11 @@ export default function Checkout() {
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1=dados, 2=entrega, 3=pagamento
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [deliveryType, setDeliveryType] = useState<DeliveryType>("delivery");
+  const [deliveryType, setDeliveryType] = useState<DeliveryType>(() => {
+    // Lê o tipo de entrega escolhido na tela inicial do cardápio
+    const saved = localStorage.getItem(`deliveryType_${sessionId}`);
+    return (saved as DeliveryType) || "delivery";
+  });
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
   const [changeFor, setChangeFor] = useState("");
@@ -66,6 +70,7 @@ export default function Checkout() {
   const createOrderMutation = trpc.order.create.useMutation({
     onSuccess: () => {
       localStorage.removeItem(`cart_${sessionId}`);
+      localStorage.removeItem(`deliveryType_${sessionId}`);
       setLocation(`/pedido/${sessionId}/confirmacao`);
     },
     onError: (error) => {

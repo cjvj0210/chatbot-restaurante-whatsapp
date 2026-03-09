@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store } from "lucide-react";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/logo-estrela-do-sul_aa66ec3f.png";
 
@@ -48,6 +48,7 @@ interface CartItem {
 }
 
 type Tab = "menu" | "cart";
+type DeliveryType = "delivery" | "pickup";
 
 // Drawer de detalhes do item (desliza de baixo para cima)
 function ItemDrawer({
@@ -288,6 +289,7 @@ export default function Pedido() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>("menu");
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [deliveryType, setDeliveryType] = useState<DeliveryType | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const categoryRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -475,11 +477,81 @@ export default function Pedido() {
 
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const deliveryFee = 850;
+  const deliveryFee = deliveryType === "delivery" ? 850 : 0;
   const total = subtotal + deliveryFee;
 
   const formatPrice = (cents: number) =>
     `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
+
+  // ===== TELA DE SELEÇÃO ENTREGA/RETIRADA =====
+  if (!deliveryType) {
+    return (
+      <div
+        className="min-h-screen bg-gray-50 max-w-md mx-auto flex flex-col"
+        style={{ fontFamily: "'Inter', sans-serif" }}
+      >
+        {/* Header */}
+        <div className="bg-red-700 text-white px-4 py-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-white overflow-hidden flex items-center justify-center flex-shrink-0">
+              <img src={LOGO_URL} alt="Estrela do Sul" className="w-full h-full object-contain p-1" />
+            </div>
+            <div>
+              <h1 className="font-bold text-base leading-tight">Churrascaria Estrela do Sul</h1>
+              <p className="text-xs text-red-200 mt-0.5">Desde 1998 · Barretos/SP</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Conteúdo */}
+        <div className="flex-1 flex flex-col justify-center px-5 py-8">
+          <div className="text-center mb-8">
+            <div className="text-5xl mb-4">🥩</div>
+            <h2 className="text-xl font-bold text-gray-900">Bem-vindo ao nosso cardápio!</h2>
+            <p className="text-gray-500 text-sm mt-2">Como você prefere receber seu pedido?</p>
+          </div>
+
+          <div className="space-y-3">
+            {/* Opção Delivery */}
+            <button
+              onClick={() => setDeliveryType("delivery")}
+              className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-gray-100 bg-white shadow-sm active:scale-[0.98] transition-all active:border-red-300"
+            >
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                <Bike className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="font-bold text-gray-900 text-base">Entrega (Delivery)</p>
+                <p className="text-sm text-gray-500 mt-0.5">Receba no seu endereço · Taxa R$ 8,50</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+            </button>
+
+            {/* Opção Retirada */}
+            <button
+              onClick={() => setDeliveryType("pickup")}
+              className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-gray-100 bg-white shadow-sm active:scale-[0.98] transition-all active:border-red-300"
+            >
+              <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <Store className="w-6 h-6 text-orange-500" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="font-bold text-gray-900 text-base">Retirada no local</p>
+                <p className="text-sm text-gray-500 mt-0.5">Retire no restaurante · Grátis</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+            </button>
+          </div>
+
+          {/* Endereço do restaurante */}
+          <div className="mt-8 flex items-start gap-2 text-xs text-gray-400 justify-center">
+            <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+            <span>Av. 7 nº 1885 · Barretos/SP · (17) 9 8183-2767</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Loading
   if (validating || loadingCategories || loadingItems) {
@@ -873,10 +945,12 @@ export default function Pedido() {
                 </div>
                 <div className="flex justify-between text-sm text-gray-500">
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5" />
-                    Taxa de entrega
+                    {deliveryType === "delivery" ? <MapPin className="w-3.5 h-3.5" /> : <Store className="w-3.5 h-3.5" />}
+                    {deliveryType === "delivery" ? "Taxa de entrega" : "Retirada no local"}
                   </span>
-                  <span className="text-gray-700 font-medium">{formatPrice(deliveryFee)}</span>
+                  <span className={deliveryType === "pickup" ? "text-green-600 font-medium" : "text-gray-700 font-medium"}>
+                    {deliveryType === "pickup" ? "Grátis" : formatPrice(deliveryFee)}
+                  </span>
                 </div>
                 <div className="border-t border-gray-100 pt-2.5 flex justify-between font-bold text-gray-900">
                   <span>Total</span>
@@ -916,6 +990,7 @@ export default function Pedido() {
           <button
             onClick={() => {
               localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cart));
+              localStorage.setItem(`deliveryType_${sessionId}`, deliveryType || "delivery");
               setLocation(`/pedido/${sessionId}/checkout`);
             }}
             className="w-full bg-red-600 text-white py-4 rounded-2xl shadow-xl flex items-center justify-between px-5 active:bg-red-700 transition-colors pointer-events-auto"

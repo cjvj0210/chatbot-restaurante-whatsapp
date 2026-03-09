@@ -686,3 +686,9 @@
 - [x] Capturar evento popstate (botão voltar) para fechar drawer em vez de sair do app
 - [x] Garantir que ao fechar o drawer manualmente (X ou fundo), o histórico seja limpo corretamente
 - [x] Botão voltar também funciona na aba Carrinho (volta para o Cardápio)
+
+## Tela de Seleção Entrega/Retirada no Cardápio Digital
+- [x] Tela inicial de boas-vindas com seleção de tipo de pedido (Entrega ou Retirada)
+- [x] Ocultar campos de endereço no checkout quando tipo for Retirada
+- [x] Passar tipo de pedido para o resumo final e impressão via localStorage
+- [x] Taxa de entrega zerada para Retirada no carrinho e checkout
