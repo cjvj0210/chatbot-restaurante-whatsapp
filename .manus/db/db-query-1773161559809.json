@@ -1,0 +1,67 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "bot_messages"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "conversations"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "customers"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "feedback"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "menu_addon_groups"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "menu_addon_options"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "menu_categories"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "menu_items"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "messages"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "order_items"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "order_sessions"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "orders"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "reservations"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "restaurant_settings"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "test_messages"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "test_sessions"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "users"
+    },
+    {
+      "Tables_in_hEsNGYEonud5ngJEe9CdHq": "whatsapp_settings"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_hEsNGYEonud5ngJEe9CdHq\n__drizzle_migrations\nbot_messages\nconversations\ncustomers\nfeedback\nmenu_addon_groups\nmenu_addon_options\nmenu_categories\nmenu_items\nmessages\norder_items\norder_sessions\norders\nreservations\nrestaurant_settings\ntest_messages\ntest_sessions\nusers\nwhatsapp_settings\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

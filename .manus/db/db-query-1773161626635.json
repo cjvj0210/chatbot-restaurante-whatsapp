@@ -1,0 +1,26 @@
+{
+  "query": "SELECT id, name FROM menu_items WHERE name LIKE '%Marmitex%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name FROM menu_items WHERE name LIKE '%Marmitex%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "150008",
+      "name": "Marmitex Completa P"
+    },
+    {
+      "id": "150009",
+      "name": "Marmitex Completa M"
+    },
+    {
+      "id": "150010",
+      "name": "Tradicional Marmitex G"
+    },
+    {
+      "id": "150019",
+      "name": "Marmitex econômica 1 (individual)"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n150008\tMarmitex Completa P\n150009\tMarmitex Completa M\n150010\tTradicional Marmitex G\n150019\tMarmitex econômica 1 (individual)\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

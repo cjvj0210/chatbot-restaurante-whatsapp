@@ -723,3 +723,7 @@
 ## Correções de Impressão Térmica (10/03/2026)
 - [x] Corrigir margem esquerda da comanda — padding-left 6mm na impressão para evitar corte de texto pela margem física da impressora
 - [x] Criar guia completo de configuração do corte automático para Epson TM-T20X
+
+## Correções de Compatibilidade e Cardápio (10/03/2026)
+- [x] Corrigir link do cardápio no chatbot para ser enviado em linha separada (compatível iOS/Android/Windows)
+- [x] Ativar e reposicionar grupo "Substitua a sua maneira" nas marmitex P, M e G (displayOrder=1, logo após alterar mix de carnes)

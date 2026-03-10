@@ -1,0 +1,52 @@
+{
+  "query": "SELECT o.id, o.groupId, o.name, o.priceExtra, o.isActive \nFROM menu_addon_options o \nWHERE o.groupId IN (30004, 30006, 30008) \nORDER BY o.groupId, o.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT o.id, o.groupId, o.name, o.priceExtra, o.isActive \nFROM menu_addon_options o \nWHERE o.groupId IN (30004, 30006, 30008) \nORDER BY o.groupId, o.id;",
+  "rows": [
+    {
+      "id": "30018",
+      "groupId": "30004",
+      "name": "Trocar: batata frita por mandioca frita",
+      "priceExtra": "0",
+      "isActive": "1"
+    },
+    {
+      "id": "30019",
+      "groupId": "30004",
+      "name": "Trocar: (arroz + feijão) por mandioca cozida",
+      "priceExtra": "0",
+      "isActive": "1"
+    },
+    {
+      "id": "30039",
+      "groupId": "30006",
+      "name": "Trocar: batata frita por mandioca frita",
+      "priceExtra": "0",
+      "isActive": "1"
+    },
+    {
+      "id": "30040",
+      "groupId": "30006",
+      "name": "Trocar: (arroz + feijão) por mandioca cozida",
+      "priceExtra": "0",
+      "isActive": "1"
+    },
+    {
+      "id": "30060",
+      "groupId": "30008",
+      "name": "Trocar: batata frita por mandioca frita",
+      "priceExtra": "0",
+      "isActive": "1"
+    },
+    {
+      "id": "30061",
+      "groupId": "30008",
+      "name": "Trocar: (arroz + feijão) por mandioca cozida",
+      "priceExtra": "0",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tgroupId\tname\tpriceExtra\tisActive\n30018\t30004\tTrocar: batata frita por mandioca frita\t0\t1\n30019\t30004\tTrocar: (arroz + feijão) por mandioca cozida\t0\t1\n30039\t30006\tTrocar: batata frita por mandioca frita\t0\t1\n30040\t30006\tTrocar: (arroz + feijão) por mandioca cozida\t0\t1\n30060\t30008\tTrocar: batata frita por mandioca frita\t0\t1\n30061\t30008\tTrocar: (arroz + feijão) por mandioca cozida\t0\t1\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

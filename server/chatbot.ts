@@ -199,14 +199,16 @@ async function generateResponse(
         });
         const siteUrl = getSiteUrl();
         const orderLink = `${siteUrl}/pedido/${sessionId}`;
-        aiResponse = aiResponse.replace("[GERAR_LINK_PEDIDO]", orderLink);
+        // Garante que o link fique em linha isolada (iOS exige URL sozinha na linha para ser clicavel)
+        aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
+        aiResponse = aiResponse.replace(/\n{3,}/g, '\n\n');
         console.log(`[Chatbot] Link de pedido gerado para ${phone}: ${orderLink}`);
       } else {
-        aiResponse = aiResponse.replace("[GERAR_LINK_PEDIDO]", "(link temporariamente indisponível)");
+        aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
       }
     } catch (err) {
       console.error("[Chatbot] Erro ao gerar link de pedido:", err);
-      aiResponse = aiResponse.replace("[GERAR_LINK_PEDIDO]", "(link temporariamente indisponível)");
+      aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
     }
   }
 

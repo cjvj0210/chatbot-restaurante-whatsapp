@@ -98,7 +98,10 @@ export const publicTestRouter = router({
         const orderLink = `${protocol}://${host}/pedido/${sessionIdPedido}`;
 
         // Substituir placeholder pelo link real
-        botMessage = botMessage.replace('[GERAR_LINK_PEDIDO]', orderLink);
+        // Garante que o link fique em linha isolada (iOS exige URL sozinha na linha para ser clicavel)
+        botMessage = botMessage.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
+        // Limpar linhas em branco duplas excessivas
+        botMessage = botMessage.replace(/\n{3,}/g, '\n\n');
       }
 
       // Adicionar resposta do bot ao histórico
@@ -232,7 +235,10 @@ export const publicTestRouter = router({
         const orderLink = `${protocol}://${host}/pedido/${sessionIdPedido}`;
 
         // Substituir placeholder pelo link real
-        botMessage = botMessage.replace('[GERAR_LINK_PEDIDO]', orderLink);
+        // Garante que o link fique em linha isolada (iOS exige URL sozinha na linha para ser clicavel)
+        botMessage = botMessage.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
+        // Limpar linhas em branco duplas excessivas
+        botMessage = botMessage.replace(/\n{3,}/g, '\n\n');
       }
 
       // Adicionar resposta do bot ao histórico
