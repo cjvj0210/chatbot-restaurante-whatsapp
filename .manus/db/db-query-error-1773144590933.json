@@ -1,0 +1,8 @@
+{
+  "query": "SELECT g.id, g.name, g.is_required, g.min_selections, g.max_selections, COUNT(o.id) as num_options FROM menu_addon_groups g LEFT JOIN menu_addon_options o ON o.group_id = g.id GROUP BY g.id, g.name, g.is_required, g.min_selections, g.max_selections ORDER BY g.name LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT g.id, g.name, g.is_required, g.min_selections, g.max_selections, COUNT(o.id) as num_options FROM menu_addon_groups g LEFT JOIN menu_addon_options o ON o.group_id = g.id GROUP BY g.id, g.name, g.is_required, g.min_selections, g.max_selections ORDER BY g.name LIMIT 30;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'o.group_id' in 'on clause'"
+  ]
+}

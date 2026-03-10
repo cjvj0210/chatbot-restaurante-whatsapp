@@ -1,0 +1,1042 @@
+{
+  "query": "-- Primeiro verificar os complementos existentes\nSELECT mao.id, mao.name, mao.priceExtra, mag.name as group_name \nFROM menu_addon_options mao \nJOIN menu_addon_groups mag ON mao.groupId = mag.id \nWHERE mag.name LIKE '%Turbine%' OR mag.name LIKE '%turbine%'\nORDER BY mao.name;\n\n-- Atualizar preços conforme tabela fornecida\nUPDATE menu_addon_options SET priceExtra = 449 WHERE name LIKE '%Chimichurri%';\nUPDATE menu_addon_options SET priceExtra = 449 WHERE name LIKE '%Barbecue%' OR name LIKE '%barbecue%';\nUPDATE menu_addon_options SET priceExtra = 299 WHERE name LIKE '%Lim%o%' OR name LIKE '%lim%o%';\nUPDATE menu_addon_options SET priceExtra = 449 WHERE name LIKE '%Alho Frito%' OR name LIKE '%alho frito%';\nUPDATE menu_addon_options SET priceExtra = 999 WHERE name LIKE '%Mandioca Frita%' OR name LIKE '%mandioca frita%';\nUPDATE menu_addon_options SET priceExtra = 949 WHERE name LIKE '%Batata Frita%' OR name LIKE '%batata frita%';\nUPDATE menu_addon_options SET priceExtra = 599 WHERE name LIKE '%Maionese%' OR name LIKE '%maionese%';\nUPDATE menu_addon_options SET priceExtra = 399 WHERE name LIKE '%Vinagrete%' OR name LIKE '%vinagrete%';\nUPDATE menu_addon_options SET priceExtra = 149 WHERE name LIKE '%Talheres%' OR name LIKE '%talheres%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute -- Primeiro verificar os complementos existentes\nSELECT mao.id, mao.name, mao.priceExtra, mag.name as group_name \nFROM menu_addon_options mao \nJOIN menu_addon_groups mag ON mao.groupId = mag.id \nWHERE mag.name LIKE '%Turbine%' OR mag.name LIKE '%turbine%'\nORDER BY mao.name;\n\n-- Atualizar preços conforme tabela fornecida\nUPDATE menu_addon_options SET priceExtra = 449 WHERE name LIKE '%Chimichurri%';\nUPDATE menu_addon_options SET priceExtra = 449 WHERE name LIKE '%Barbecue%' OR name LIKE '%barbecue%';\nUPDATE menu_addon_options SET priceExtra = 299 WHERE name LIKE '%Lim%o%' OR name LIKE '%lim%o%';\nUPDATE menu_addon_options SET priceExtra = 449 WHERE name LIKE '%Alho Frito%' OR name LIKE '%alho frito%';\nUPDATE menu_addon_options SET priceExtra = 999 WHERE name LIKE '%Mandioca Frita%' OR name LIKE '%mandioca frita%';\nUPDATE menu_addon_options SET priceExtra = 949 WHERE name LIKE '%Batata Frita%' OR name LIKE '%batata frita%';\nUPDATE menu_addon_options SET priceExtra = 599 WHERE name LIKE '%Maionese%' OR name LIKE '%maionese%';\nUPDATE menu_addon_options SET priceExtra = 399 WHERE name LIKE '%Vinagrete%' OR name LIKE '%vinagrete%';\nUPDATE menu_addon_options SET priceExtra = 149 WHERE name LIKE '%Talheres%' OR name LIKE '%talheres%';",
+  "rows": [
+    {
+      "id": "30070",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30049",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30028",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30160",
+      "name": "Alho frito extra individual",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30174",
+      "name": "Alho frito extra individual",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "98",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "134",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "46",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "64",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "82",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "152",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "170",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "116",
+      "name": "Anéis de cebola empanados",
+      "priceExtra": "1790",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "252",
+      "name": "Arroz extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30043",
+      "name": "Banana empanada (2 unidades)",
+      "priceExtra": "1699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30022",
+      "name": "Banana empanada (2 unidades)",
+      "priceExtra": "1699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30064",
+      "name": "Banana empanada (2 unidades)",
+      "priceExtra": "1699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "164",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "146",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "40",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "110",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "76",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "128",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "92",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "58",
+      "name": "Bananas empanadas (2un)",
+      "priceExtra": "1490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30180",
+      "name": "Bananas empanadas 2 unidades",
+      "priceExtra": "1299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30188",
+      "name": "Bananas empanadas 2 unidades",
+      "priceExtra": "949",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30167",
+      "name": "Bananas empanadas extra 2 unidades",
+      "priceExtra": "1499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30153",
+      "name": "Bananas empanadas extra 2 unidades",
+      "priceExtra": "1699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "62",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "150",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "80",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "132",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "250",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "96",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "44",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "168",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "114",
+      "name": "Batata frita extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30048",
+      "name": "Com queijinho assado (1 unidade)",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30027",
+      "name": "Com queijinho assado (1 unidade)",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30069",
+      "name": "Com queijinho assado (1 unidade)",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "78",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "42",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "112",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "94",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "60",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "148",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "130",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "166",
+      "name": "Farofa à moda extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30032",
+      "name": "Farofa extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30074",
+      "name": "Farofa extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30053",
+      "name": "Farofa extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30190",
+      "name": "Farofa extra individual",
+      "priceExtra": "349",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30177",
+      "name": "Farofa extra individual",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30182",
+      "name": "Farofa extra individual",
+      "priceExtra": "349",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30163",
+      "name": "Farofa extra individual",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30165",
+      "name": "Kit para 5 pessoas",
+      "priceExtra": "8000",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30151",
+      "name": "Kit para 5 pessoas",
+      "priceExtra": "7000",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "251",
+      "name": "Legumes extras",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30051",
+      "name": "Limão para espremer",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30030",
+      "name": "Limão para espremer",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30072",
+      "name": "Limão para espremer",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30176",
+      "name": "Limão para espremer",
+      "priceExtra": "349",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30162",
+      "name": "Limão para espremer",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "77",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "165",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "93",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "41",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "129",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "111",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "59",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "147",
+      "name": "Maionese de ovos extra",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30189",
+      "name": "Maionese de ovos extra individual",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30158",
+      "name": "Maionese de ovos extra individual",
+      "priceExtra": "899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30181",
+      "name": "Maionese de ovos extra individual",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30172",
+      "name": "Maionese de ovos individual",
+      "priceExtra": "899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30020",
+      "name": "Mandioca cozida extra (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30041",
+      "name": "Mandioca cozida extra (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30062",
+      "name": "Mandioca cozida extra (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30156",
+      "name": "Mandioca cozida extra individual",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30187",
+      "name": "Mandioca cozida extra individual",
+      "priceExtra": "549",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30179",
+      "name": "Mandioca cozida extra individual",
+      "priceExtra": "649",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30170",
+      "name": "Mandioca cozida individual",
+      "priceExtra": "1199",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "145",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "57",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "39",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "91",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "75",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "127",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "163",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "109",
+      "name": "Mandioca extra",
+      "priceExtra": "599",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30021",
+      "name": "Mandioca frita extra (individual)",
+      "priceExtra": "1399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30063",
+      "name": "Mandioca frita extra (individual)",
+      "priceExtra": "1399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30042",
+      "name": "Mandioca frita extra (individual)",
+      "priceExtra": "1399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30157",
+      "name": "Mandioca frita extra individual",
+      "priceExtra": "1399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30171",
+      "name": "Mandioca frita individual",
+      "priceExtra": "1399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30023",
+      "name": "Mini-pastéis de Catupiry (4 unidades)",
+      "priceExtra": "1899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30065",
+      "name": "Mini-pastéis de Catupiry (4 unidades)",
+      "priceExtra": "1899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30044",
+      "name": "Mini-pastéis de Catupiry (4 unidades)",
+      "priceExtra": "1899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30024",
+      "name": "Mini-pastéis de queijo c/ goiabada (4 unidades)",
+      "priceExtra": "1999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30066",
+      "name": "Mini-pastéis de queijo c/ goiabada (4 unidades)",
+      "priceExtra": "1999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30045",
+      "name": "Mini-pastéis de queijo c/ goiabada (4 unidades)",
+      "priceExtra": "1999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30073",
+      "name": "Molho barbecue extra (individual)",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30031",
+      "name": "Molho barbecue extra (individual)",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30052",
+      "name": "Molho barbecue extra (individual)",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30175",
+      "name": "Molho barbecue extra individual",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30161",
+      "name": "Molho barbecue extra individual",
+      "priceExtra": "549",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30050",
+      "name": "Molho chimichurri extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30071",
+      "name": "Molho chimichurri extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30029",
+      "name": "Molho chimichurri extra (individual)",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30173",
+      "name": "Molho chimichurri extra individual",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30159",
+      "name": "Molho chimichurri extra individual",
+      "priceExtra": "499",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30035",
+      "name": "Mousse de maracujá (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30056",
+      "name": "Mousse de maracujá (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30077",
+      "name": "Mousse de maracujá (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30186",
+      "name": "Mousse de maracujá individual",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "65",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "171",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "83",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "47",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "99",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "117",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "135",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "153",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30055",
+      "name": "Pavê de brigadeiro (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30076",
+      "name": "Pavê de brigadeiro (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30034",
+      "name": "Pavê de brigadeiro (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30185",
+      "name": "Pavê de brigadeiro individual",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30047",
+      "name": "Porção de chips (individual)",
+      "priceExtra": "899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30068",
+      "name": "Porção de chips (individual)",
+      "priceExtra": "899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30026",
+      "name": "Porção de chips (individual)",
+      "priceExtra": "899",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30154",
+      "name": "Porção de chips extra individual",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30168",
+      "name": "Porção de chips individual",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30155",
+      "name": "Porção de fritas extra individual",
+      "priceExtra": "1199",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30169",
+      "name": "Porção de fritas individual",
+      "priceExtra": "1199",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "172",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "136",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "66",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "48",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "118",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "84",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "154",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "100",
+      "name": "Porção de mini pastéis",
+      "priceExtra": "2490",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30067",
+      "name": "Porção extra de fritas (individual)",
+      "priceExtra": "1199",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30025",
+      "name": "Porção extra de fritas (individual)",
+      "priceExtra": "1199",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30046",
+      "name": "Porção extra de fritas (individual)",
+      "priceExtra": "1199",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30033",
+      "name": "Pudim de leite condensado (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30075",
+      "name": "Pudim de leite condensado (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30054",
+      "name": "Pudim de leite condensado (individual)",
+      "priceExtra": "999",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30184",
+      "name": "Pudim de leite individual",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30152",
+      "name": "Queijinho assado extra 1 unidade",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30166",
+      "name": "Queijinho assado extra 1 unidade",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "115",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "151",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "169",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "45",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "81",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "133",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "63",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "97",
+      "name": "Queijinho bola assado",
+      "priceExtra": "699",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "61",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "113",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "167",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "149",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "131",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "79",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "95",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "43",
+      "name": "Vinagrete extra",
+      "priceExtra": "299",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30164",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30178",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "399",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30183",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "349",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30191",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "349",
+      "group_name": "\"Turbine\" seu pedido!"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgroup_name\n30070\tAlho frito extra (individual)\t399\t\"Turbine\" seu pedido!\n30049\tAlho frito extra (individual)\t399\t\"Turbine\" seu pedido!\n30028\tAlho frito extra (individual)\t399\t\"Turbine\" seu pedido!\n30160\tAlho frito extra individual\t499\t\"Turbine\" seu pedido!\n30174\tAlho frito extra individual\t399\t\"Turbine\" seu pedido!\n98\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n134\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n46\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n64\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n82\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n152\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n170\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n116\tAnéis de cebola empanados\t1790\t\"Turbine\" seu pedido!\n252\tArroz extra\t399\t\"Turbine\" seu pedido!\n30043\tBanana empanada (2 unidades)\t1699\t\"Turbine\" seu pedido!\n30022\tBanana empanada (2 unidades)\t1699\t\"Turbine\" seu pedido!\n30064\tBanana empanada (2 unidades)\t1699\t\"Turbine\" seu pedido!\n164\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n146\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n40\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n110\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n76\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n128\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n92\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n58\tBananas empanadas (2un)\t1490\t\"Turbine\" seu pedido!\n30180\tBananas empanadas 2 unidades\t1299\t\"Turbine\" seu pedido!\n30188\tBananas empanadas 2 unidades\t949\t\"Turbine\" seu pedido!\n30167\tBananas empanadas extra 2 unidades\t1499\t\"Turbine\" seu pedido!\n30153\tBananas empanadas extra 2 unidades\t1699\t\"Turbine\" seu pedido!\n62\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n150\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n80\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n132\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n250\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n96\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n44\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n168\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n114\tBatata frita extra\t599\t\"Turbine\" seu pedido!\n30048\tCom queijinho assado (1 unidade)\t699\t\"Turbine\" seu pedido!\n30027\tCom queijinho assado (1 unidade)\t699\t\"Turbine\" seu pedido!\n30069\tCom queijinho assado (1 unidade)\t699\t\"Turbine\" seu pedido!\n78\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n42\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n112\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n94\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n60\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n148\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n130\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n166\tFarofa à moda extra\t399\t\"Turbine\" seu pedido!\n30032\tFarofa extra (individual)\t399\t\"Turbine\" seu pedido!\n30074\tFarofa extra (individual)\t399\t\"Turbine\" seu pedido!\n30053\tFarofa extra (individual)\t399\t\"Turbine\" seu pedido!\n30190\tFarofa extra individual\t349\t\"Turbine\" seu pedido!\n30177\tFarofa extra individual\t399\t\"Turbine\" seu pedido!\n30182\tFarofa extra individual\t349\t\"Turbine\" seu pedido!\n30163\tFarofa extra individual\t499\t\"Turbine\" seu pedido!\n30165\tKit para 5 pessoas\t8000\t\"Turbine\" seu pedido!\n30151\tKit para 5 pessoas\t7000\t\"Turbine\" seu pedido!\n251\tLegumes extras\t399\t\"Turbine\" seu pedido!\n30051\tLimão para espremer\t399\t\"Turbine\" seu pedido!\n30030\tLimão para espremer\t399\t\"Turbine\" seu pedido!\n30072\tLimão para espremer\t399\t\"Turbine\" seu pedido!\n30176\tLimão para espremer\t349\t\"Turbine\" seu pedido!\n30162\tLimão para espremer\t399\t\"Turbine\" seu pedido!\n77\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n165\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n93\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n41\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n129\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n111\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n59\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n147\tMaionese de ovos extra\t399\t\"Turbine\" seu pedido!\n30189\tMaionese de ovos extra individual\t399\t\"Turbine\" seu pedido!\n30158\tMaionese de ovos extra individual\t899\t\"Turbine\" seu pedido!\n30181\tMaionese de ovos extra individual\t599\t\"Turbine\" seu pedido!\n30172\tMaionese de ovos individual\t899\t\"Turbine\" seu pedido!\n30020\tMandioca cozida extra (individual)\t999\t\"Turbine\" seu pedido!\n30041\tMandioca cozida extra (individual)\t999\t\"Turbine\" seu pedido!\n30062\tMandioca cozida extra (individual)\t999\t\"Turbine\" seu pedido!\n30156\tMandioca cozida extra individual\t999\t\"Turbine\" seu pedido!\n30187\tMandioca cozida extra individual\t549\t\"Turbine\" seu pedido!\n30179\tMandioca cozida extra individual\t649\t\"Turbine\" seu pedido!\n30170\tMandioca cozida individual\t1199\t\"Turbine\" seu pedido!\n145\tMandioca extra\t599\t\"Turbine\" seu pedido!\n57\tMandioca extra\t599\t\"Turbine\" seu pedido!\n39\tMandioca extra\t599\t\"Turbine\" seu pedido!\n91\tMandioca extra\t599\t\"Turbine\" seu pedido!\n75\tMandioca extra\t599\t\"Turbine\" seu pedido!\n127\tMandioca extra\t599\t\"Turbine\" seu pedido!\n163\tMandioca extra\t599\t\"Turbine\" seu pedido!\n109\tMandioca extra\t599\t\"Turbine\" seu pedido!\n30021\tMandioca frita extra (individual)\t1399\t\"Turbine\" seu pedido!\n30063\tMandioca frita extra (individual)\t1399\t\"Turbine\" seu pedido!\n30042\tMandioca frita extra (individual)\t1399\t\"Turbine\" seu pedido!\n30157\tMandioca frita extra individual\t1399\t\"Turbine\" seu pedido!\n30171\tMandioca frita individual\t1399\t\"Turbine\" seu pedido!\n30023\tMini-pastéis de Catupiry (4 unidades)\t1899\t\"Turbine\" seu pedido!\n30065\tMini-pastéis de Catupiry (4 unidades)\t1899\t\"Turbine\" seu pedido!\n30044\tMini-pastéis de Catupiry (4 unidades)\t1899\t\"Turbine\" seu pedido!\n30024\tMini-pastéis de queijo c/ goiabada (4 unidades)\t1999\t\"Turbine\" seu pedido!\n30066\tMini-pastéis de queijo c/ goiabada (4 unidades)\t1999\t\"Turbine\" seu pedido!\n30045\tMini-pastéis de queijo c/ goiabada (4 unidades)\t1999\t\"Turbine\" seu pedido!\n30073\tMolho barbecue extra (individual)\t499\t\"Turbine\" seu pedido!\n30031\tMolho barbecue extra (individual)\t499\t\"Turbine\" seu pedido!\n30052\tMolho barbecue extra (individual)\t499\t\"Turbine\" seu pedido!\n30175\tMolho barbecue extra individual\t499\t\"Turbine\" seu pedido!\n30161\tMolho barbecue extra individual\t549\t\"Turbine\" seu pedido!\n30050\tMolho chimichurri extra (individual)\t399\t\"Turbine\" seu pedido!\n30071\tMolho chimichurri extra (individual)\t399\t\"Turbine\" seu pedido!\n30029\tMolho chimichurri extra (individual)\t399\t\"Turbine\" seu pedido!\n30173\tMolho chimichurri extra individual\t399\t\"Turbine\" seu pedido!\n30159\tMolho chimichurri extra individual\t499\t\"Turbine\" seu pedido!\n30035\tMousse de maracujá (individual)\t999\t\"Turbine\" seu pedido!\n30056\tMousse de maracujá (individual)\t999\t\"Turbine\" seu pedido!\n30077\tMousse de maracujá (individual)\t999\t\"Turbine\" seu pedido!\n30186\tMousse de maracujá individual\t999\t\"Turbine\" seu pedido!\n65\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n171\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n83\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n47\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n99\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n117\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n135\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n153\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\n30055\tPavê de brigadeiro (individual)\t999\t\"Turbine\" seu pedido!\n30076\tPavê de brigadeiro (individual)\t999\t\"Turbine\" seu pedido!\n30034\tPavê de brigadeiro (individual)\t999\t\"Turbine\" seu pedido!\n30185\tPavê de brigadeiro individual\t999\t\"Turbine\" seu pedido!\n30047\tPorção de chips (individual)\t899\t\"Turbine\" seu pedido!\n30068\tPorção de chips (individual)\t899\t\"Turbine\" seu pedido!\n30026\tPorção de chips (individual)\t899\t\"Turbine\" seu pedido!\n30154\tPorção de chips extra individual\t999\t\"Turbine\" seu pedido!\n30168\tPorção de chips individual\t999\t\"Turbine\" seu pedido!\n30155\tPorção de fritas extra individual\t1199\t\"Turbine\" seu pedido!\n30169\tPorção de fritas individual\t1199\t\"Turbine\" seu pedido!\n172\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n136\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n66\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n48\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n118\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n84\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n154\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n100\tPorção de mini pastéis\t2490\t\"Turbine\" seu pedido!\n30067\tPorção extra de fritas (individual)\t1199\t\"Turbine\" seu pedido!\n30025\tPorção extra de fritas (individual)\t1199\t\"Turbine\" seu pedido!\n30046\tPorção extra de fritas (individual)\t1199\t\"Turbine\" seu pedido!\n30033\tPudim de leite condensado (individual)\t999\t\"Turbine\" seu pedido!\n30075\tPudim de leite condensado (individual)\t999\t\"Turbine\" seu pedido!\n30054\tPudim de leite condensado (individual)\t999\t\"Turbine\" seu pedido!\n30184\tPudim de leite individual\t699\t\"Turbine\" seu pedido!\n30152\tQueijinho assado extra 1 unidade\t699\t\"Turbine\" seu pedido!\n30166\tQueijinho assado extra 1 unidade\t699\t\"Turbine\" seu pedido!\n115\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n151\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n169\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n45\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n81\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n133\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n63\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n97\tQueijinho bola assado\t699\t\"Turbine\" seu pedido!\n61\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n113\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n167\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n149\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n131\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n79\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n95\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n43\tVinagrete extra\t299\t\"Turbine\" seu pedido!\n30164\tVinagrete extra individual\t399\t\"Turbine\" seu pedido!\n30178\tVinagrete extra individual\t399\t\"Turbine\" seu pedido!\n30183\tVinagrete extra individual\t349\t\"Turbine\" seu pedido!\n30191\tVinagrete extra individual\t349\t\"Turbine\" seu pedido!\n",
+  "stderr": "",
+  "execution_time_ms": 147
+}

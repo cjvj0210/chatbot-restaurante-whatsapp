@@ -39,10 +39,13 @@ const statusConfig: Record<string, { label: string; bg: string; text: string; do
 const statusFlow = ["pending", "confirmed", "preparing", "ready", "delivering", "delivered"];
 
 interface OrderItem {
+  id?: number;
+  menuItemId?: number;
   name: string;
   quantity: number;
   price: number;
-  observations?: string;
+  observations?: string | null;
+  addons?: string | null;
 }
 
 export default function Orders() {
@@ -148,7 +151,11 @@ export default function Orders() {
           {orders.map((order) => {
             const status = statusConfig[order.status] ?? statusConfig.pending;
             const isExpanded = expandedId === order.id;
+            // Usar itens normalizados com nomes (orderItemsList) ou fallback para JSON legado
             const items: OrderItem[] = (() => {
+              if ((order as any).orderItemsList && (order as any).orderItemsList.length > 0) {
+                return (order as any).orderItemsList;
+              }
               try { return JSON.parse(order.items); } catch { return []; }
             })();
             const nextStatus = getNextStatus(order.status, order.orderType ?? "delivery");

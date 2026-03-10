@@ -40,7 +40,13 @@ export default function Checkout() {
     const saved = localStorage.getItem(`deliveryType_${sessionId}`);
     return (saved as DeliveryType) || "delivery";
   });
-  const [address, setAddress] = useState("");
+  const [addressStreet, setAddressStreet] = useState(""); // Rua/Avenida
+  const [addressNumber, setAddressNumber] = useState(""); // Número
+  const [addressNeighborhood, setAddressNeighborhood] = useState(""); // Bairro
+  const [addressReference, setAddressReference] = useState(""); // Referência
+  const [addressComplement, setAddressComplement] = useState(""); // Complemento (opcional)
+  // Endereço completo montado para compatibilidade
+  const address = [addressStreet, addressNumber, addressNeighborhood, addressReference, addressComplement].filter(Boolean).join(" - ");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
   const [changeFor, setChangeFor] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
@@ -84,9 +90,11 @@ export default function Checkout() {
       alert("Por favor, preencha nome e telefone");
       return;
     }
-    if (deliveryType === "delivery" && !address.trim()) {
-      alert("Por favor, preencha o endereço de entrega");
-      return;
+    if (deliveryType === "delivery") {
+      if (!addressStreet.trim()) { alert("Por favor, preencha o endereço (Rua/Avenida)"); return; }
+      if (!addressNumber.trim()) { alert("Por favor, preencha o número"); return; }
+      if (!addressNeighborhood.trim()) { alert("Por favor, preencha o bairro"); return; }
+      if (!addressReference.trim()) { alert("Por favor, preencha a referência"); return; }
     }
     setIsSubmitting(true);
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -130,7 +138,7 @@ export default function Checkout() {
   ];
 
   const canProceedStep1 = customerName.trim().length >= 2 && customerPhone.replace(/\D/g, "").length >= 10;
-  const canProceedStep2 = deliveryType === "pickup" || address.trim().length > 5;
+  const canProceedStep2 = deliveryType === "pickup" || (addressStreet.trim().length > 2 && addressNumber.trim().length > 0 && addressNeighborhood.trim().length > 2 && addressReference.trim().length > 2);
 
   if (validating || cart.length === 0) {
     return (
@@ -316,20 +324,69 @@ export default function Checkout() {
               </button>
             </div>
 
-            {/* Campo de endereço */}
+            {/* Campos de endereço separados */}
             {deliveryType === "delivery" && (
               <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
                 <h3 className="font-semibold text-gray-800 text-sm flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-red-600" />
                   Endereço de entrega
                 </h3>
-                <textarea
-                  placeholder="Rua, número, bairro, complemento..."
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
-                />
+                {/* Rua/Avenida */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">Endereço (Rua, Avenida) <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Av. Sete de Setembro"
+                    value={addressStreet}
+                    onChange={(e) => setAddressStreet(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                  />
+                </div>
+                {/* Número e Bairro lado a lado */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Número <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      placeholder="Ex: 1885"
+                      value={addressNumber}
+                      onChange={(e) => setAddressNumber(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Bairro <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Centro"
+                      value={addressNeighborhood}
+                      onChange={(e) => setAddressNeighborhood(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                    />
+                  </div>
+                </div>
+                {/* Referência */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">Referência <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Próximo ao mercado X, portão azul"
+                    value={addressReference}
+                    onChange={(e) => setAddressReference(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                  />
+                </div>
+                {/* Complemento (opcional) */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">Complemento <span className="text-gray-400 font-normal">(opcional)</span></label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Apto 91, Bloco B"
+                    value={addressComplement}
+                    onChange={(e) => setAddressComplement(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                  />
+                </div>
               </div>
             )}
 
@@ -375,8 +432,8 @@ export default function Checkout() {
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-semibold text-gray-800 text-sm">PIX</p>
-                  <p className="text-xs text-gray-500">Pagamento instantâneo</p>
+                  <p className="font-semibold text-gray-800 text-sm">Pix na Entrega (Maquininha)</p>
+                  <p className="text-xs text-gray-500">O entregador possui maquininha com Pix</p>
                 </div>
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${

@@ -34,6 +34,7 @@ interface SelectedAddon {
   optionId: number;
   optionName: string;
   priceExtra: number;
+  quantity?: number; // Para adicionais com seleção de quantidade
 }
 
 interface CartItem {
@@ -72,6 +73,10 @@ function ItemDrawer({
   const formatPrice = (cents: number) =>
     `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 
+  // Verifica se um grupo é do tipo "quantidade livre" (ex: Turbine seu pedido)
+  const isQuantityGroup = (group: AddonGroup) =>
+    !group.isRequired && group.maxSelections >= 5;
+
   const toggleAddon = (group: AddonGroup, option: AddonOption) => {
     setSelectedAddons((prev) => {
       const current = prev[group.id] || [];
@@ -89,15 +94,41 @@ function ItemDrawer({
         if (current.length >= group.maxSelections) return prev;
         return {
           ...prev,
-          [group.id]: [...current, { groupId: group.id, groupName: group.name, optionId: option.id, optionName: option.name, priceExtra: option.priceExtra }],
+          [group.id]: [...current, { groupId: group.id, groupName: group.name, optionId: option.id, optionName: option.name, priceExtra: option.priceExtra, quantity: 1 }],
         };
       }
     });
     setError(null);
   };
 
+  // Altera a quantidade de um adicional do tipo quantidade livre
+  const changeAddonQty = (group: AddonGroup, option: AddonOption, delta: number) => {
+    setSelectedAddons((prev) => {
+      const current = prev[group.id] || [];
+      const existing = current.find((a) => a.optionId === option.id);
+      if (!existing) {
+        if (delta > 0) {
+          return {
+            ...prev,
+            [group.id]: [...current, { groupId: group.id, groupName: group.name, optionId: option.id, optionName: option.name, priceExtra: option.priceExtra, quantity: 1 }],
+          };
+        }
+        return prev;
+      }
+      const newQty = (existing.quantity || 1) + delta;
+      if (newQty <= 0) {
+        return { ...prev, [group.id]: current.filter((a) => a.optionId !== option.id) };
+      }
+      return {
+        ...prev,
+        [group.id]: current.map((a) => a.optionId === option.id ? { ...a, quantity: newQty } : a),
+      };
+    });
+    setError(null);
+  };
+
   const allAddons = Object.values(selectedAddons).flat();
-  const addonsExtra = allAddons.reduce((sum, a) => sum + a.priceExtra, 0);
+  const addonsExtra = allAddons.reduce((sum, a) => sum + a.priceExtra * (a.quantity || 1), 0);
   const totalPrice = (item.price + addonsExtra) * qty;
 
   const handleAdd = () => {
@@ -177,8 +208,45 @@ function ItemDrawer({
                   </div>
                   <div className="divide-y divide-gray-50">
                     {group.options.map((option) => {
-                      const isSelected = selected.some((a) => a.optionId === option.id);
+                      const selectedEntry = selected.find((a) => a.optionId === option.id);
+                      const isSelected = !!selectedEntry;
+                      const addonQty = selectedEntry?.quantity || 0;
                       const isDisabled = !isSelected && isMaxReached;
+
+                      // Grupos do tipo "Turbine seu pedido" mostram controle +/-
+                      if (isQuantityGroup(group)) {
+                        return (
+                          <div key={option.id} className="px-5 py-3.5 flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{option.name}</p>
+                              {option.description && (
+                                <p className="text-xs text-gray-500 mt-0.5">{option.description}</p>
+                              )}
+                              {option.priceExtra > 0 && (
+                                <p className="text-sm text-red-600 font-semibold mt-0.5">+ {formatPrice(option.priceExtra)}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                              <button
+                                onClick={() => changeAddonQty(group, option, -1)}
+                                className="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 active:bg-gray-100 disabled:opacity-30"
+                                disabled={addonQty === 0}
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="w-5 text-center text-sm font-bold text-gray-800">{addonQty}</span>
+                              <button
+                                onClick={() => changeAddonQty(group, option, 1)}
+                                className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white active:bg-red-700"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Grupos normais (radio/checkbox)
                       return (
                         <button
                           key={option.id}

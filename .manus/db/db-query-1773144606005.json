@@ -1,0 +1,75 @@
+{
+  "query": "SELECT * FROM menu_addon_groups LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT * FROM menu_addon_groups LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "menuItemId": "150001",
+      "name": "Escolha as carnes",
+      "description": "NULL",
+      "isRequired": "1",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "displayOrder": "1",
+      "isActive": "1",
+      "createdAt": "2026-03-04 18:35:43",
+      "updatedAt": "2026-03-05 17:33:37"
+    },
+    {
+      "id": "2",
+      "menuItemId": "150004",
+      "name": "Escolha as carnes",
+      "description": "NULL",
+      "isRequired": "1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "1",
+      "isActive": "1",
+      "createdAt": "2026-03-04 18:35:43",
+      "updatedAt": "2026-03-04 18:35:43"
+    },
+    {
+      "id": "3",
+      "menuItemId": "150001",
+      "name": "Guarnição 1",
+      "description": "Escolha sua guarnição principal",
+      "isRequired": "1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "2",
+      "isActive": "1",
+      "createdAt": "2026-03-04 18:35:43",
+      "updatedAt": "2026-03-04 18:35:43"
+    },
+    {
+      "id": "4",
+      "menuItemId": "150001",
+      "name": "Guarnição 2",
+      "description": "Escolha seu acompanhamento",
+      "isRequired": "1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "3",
+      "isActive": "1",
+      "createdAt": "2026-03-04 18:35:43",
+      "updatedAt": "2026-03-04 18:35:43"
+    },
+    {
+      "id": "5",
+      "menuItemId": "150002",
+      "name": "Escolha as carnes",
+      "description": "NULL",
+      "isRequired": "1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "1",
+      "isActive": "1",
+      "createdAt": "2026-03-04 18:35:43",
+      "updatedAt": "2026-03-05 17:33:37"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmenuItemId\tname\tdescription\tisRequired\tminSelections\tmaxSelections\tdisplayOrder\tisActive\tcreatedAt\tupdatedAt\n1\t150001\tEscolha as carnes\tNULL\t1\t1\t2\t1\t1\t2026-03-04 18:35:43\t2026-03-05 17:33:37\n2\t150004\tEscolha as carnes\tNULL\t1\t1\t1\t1\t1\t2026-03-04 18:35:43\t2026-03-04 18:35:43\n3\t150001\tGuarnição 1\tEscolha sua guarnição principal\t1\t1\t1\t2\t1\t2026-03-04 18:35:43\t2026-03-04 18:35:43\n4\t150001\tGuarnição 2\tEscolha seu acompanhamento\t1\t1\t1\t3\t1\t2026-03-04 18:35:43\t2026-03-04 18:35:43\n5\t150002\tEscolha as carnes\tNULL\t1\t1\t1\t1\t1\t2026-03-04 18:35:43\t2026-03-05 17:33:37\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

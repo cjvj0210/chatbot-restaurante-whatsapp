@@ -287,7 +287,27 @@ export const orderRouter = router({
         .limit(limit)
         .offset(offset);
 
-      return ordersList;
+      // Buscar itens normalizados com nomes para cada pedido
+      const ordersWithItems = await Promise.all(
+        ordersList.map(async (order) => {
+          const items = await db
+            .select({
+              id: orderItems.id,
+              menuItemId: orderItems.menuItemId,
+              name: menuItems.name,
+              quantity: orderItems.quantity,
+              price: orderItems.unitPrice,
+              observations: orderItems.observations,
+              addons: orderItems.addons,
+            })
+            .from(orderItems)
+            .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+            .where(eq(orderItems.orderId, order.id));
+          return { ...order, orderItemsList: items };
+        })
+      );
+
+      return ordersWithItems;
     }),
 
   /**

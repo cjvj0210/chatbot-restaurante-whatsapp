@@ -1,0 +1,130 @@
+{
+  "query": "SELECT mao.id, mao.name, mao.priceExtra, mag.name as group_name \nFROM menu_addon_options mao \nJOIN menu_addon_groups mag ON mao.groupId = mag.id \nWHERE mao.name LIKE '%Chimichurri%' OR mao.name LIKE '%Barbecue%' OR mao.name LIKE '%Lim%o%' \n   OR mao.name LIKE '%Alho Frito%' OR mao.name LIKE '%Mandioca Frita%' OR mao.name LIKE '%Batata Frita%'\n   OR mao.name LIKE '%Maionese%' OR mao.name LIKE '%Vinagrete%' OR mao.name LIKE '%Talheres%'\nORDER BY mao.name\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT mao.id, mao.name, mao.priceExtra, mag.name as group_name \nFROM menu_addon_options mao \nJOIN menu_addon_groups mag ON mao.groupId = mag.id \nWHERE mao.name LIKE '%Chimichurri%' OR mao.name LIKE '%Barbecue%' OR mao.name LIKE '%Lim%o%' \n   OR mao.name LIKE '%Alho Frito%' OR mao.name LIKE '%Mandioca Frita%' OR mao.name LIKE '%Batata Frita%'\n   OR mao.name LIKE '%Maionese%' OR mao.name LIKE '%Vinagrete%' OR mao.name LIKE '%Talheres%'\nORDER BY mao.name\nLIMIT 20;",
+  "rows": [
+    {
+      "id": "90",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "180",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "198",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "56",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "126",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "38",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "144",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "162",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "108",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "216",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "74",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "234",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "group_name": "Molho para o churrasco?"
+    },
+    {
+      "id": "30028",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "449",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30049",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "449",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30070",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "449",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30174",
+      "name": "Alho frito extra individual",
+      "priceExtra": "449",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30160",
+      "name": "Alho frito extra individual",
+      "priceExtra": "449",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "44",
+      "name": "Batata frita extra",
+      "priceExtra": "949",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "96",
+      "name": "Batata frita extra",
+      "priceExtra": "949",
+      "group_name": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "150",
+      "name": "Batata frita extra",
+      "priceExtra": "949",
+      "group_name": "\"Turbine\" seu pedido!"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgroup_name\n90\tAlho frito\t449\tMolho para o churrasco?\n180\tAlho frito\t449\tMolho para o churrasco?\n198\tAlho frito\t449\tMolho para o churrasco?\n56\tAlho frito\t449\tMolho para o churrasco?\n126\tAlho frito\t449\tMolho para o churrasco?\n38\tAlho frito\t449\tMolho para o churrasco?\n144\tAlho frito\t449\tMolho para o churrasco?\n162\tAlho frito\t449\tMolho para o churrasco?\n108\tAlho frito\t449\tMolho para o churrasco?\n216\tAlho frito\t449\tMolho para o churrasco?\n74\tAlho frito\t449\tMolho para o churrasco?\n234\tAlho frito\t449\tMolho para o churrasco?\n30028\tAlho frito extra (individual)\t449\t\"Turbine\" seu pedido!\n30049\tAlho frito extra (individual)\t449\t\"Turbine\" seu pedido!\n30070\tAlho frito extra (individual)\t449\t\"Turbine\" seu pedido!\n30174\tAlho frito extra individual\t449\t\"Turbine\" seu pedido!\n30160\tAlho frito extra individual\t449\t\"Turbine\" seu pedido!\n44\tBatata frita extra\t949\t\"Turbine\" seu pedido!\n96\tBatata frita extra\t949\t\"Turbine\" seu pedido!\n150\tBatata frita extra\t949\t\"Turbine\" seu pedido!\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

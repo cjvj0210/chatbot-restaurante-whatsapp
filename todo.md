@@ -697,3 +697,14 @@
 - [x] Exibir tipo atual (Entrega/Retirada) no header do cardápio como botão clicável
 - [x] Ao clicar, abrir modal/sheet de seleção para trocar o tipo sem recarregar
 - [x] Atualizar taxa de entrega no carrinho em tempo real ao trocar o tipo
+
+## Melhorias Múltiplas (10/03/2026)
+- [ ] Corrigir nomes dos itens no dashboard (aparecem apenas quantidades e preços)
+- [ ] Corrigir cidade de "São José do Rio Preto" para "Barretos/SP" na tela de confirmação
+- [ ] Botão "Acompanhe pelo WhatsApp" clicável: redireciona ao WhatsApp com número do pedido
+- [ ] Bot localiza pedido pelo número identificador e envia resumo + status ao cliente
+- [ ] Tempo de entrega dinâmico por dia da semana e período (almoço/noite)
+- [ ] Seleção de quantidade nos adicionais (ex: 3x Mandioca Frita extra)
+- [ ] Renomear "Pix" para "Pix na Entrega (Maquininha)"
+- [ ] Separar campos de endereço: Rua, Bairro, Número, Referência (obrigatórios) + Complemento (opcional)
+- [ ] Corrigir preços dos complementos adicionais conforme tabela fornecida
