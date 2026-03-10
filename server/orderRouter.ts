@@ -21,7 +21,7 @@ export const orderRouter = router({
         deliveryType: z.enum(["delivery", "pickup"]),
         address: z.string().optional(),
         paymentMethod: z.enum(["dinheiro", "cartao", "pix"]),
-        changeFor: z.number().optional(),
+        changeFor: z.number().optional(), // valor em centavos para troco
         additionalNotes: z.string().optional(),
         totalAmount: z.number(),
         items: z.array(
@@ -115,6 +115,7 @@ export const orderRouter = router({
           deliveryAddress: input.address || null,
           customerNotes: input.additionalNotes || null,
           paymentMethod: input.paymentMethod,
+          changeFor: input.changeFor || null,
           estimatedTime: 40, // 40 minutos padrão
         });
 
