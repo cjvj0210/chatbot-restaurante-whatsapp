@@ -95,7 +95,7 @@ export default function PrintOrder() {
       width: 68mm;
       max-width: 68mm;
       margin: 0 auto;
-      padding: 3mm 0;
+      padding: 3mm 4mm 3mm 5mm;
       font-size: 13px;
       line-height: 1.6;
     }
@@ -224,10 +224,12 @@ export default function PrintOrder() {
       }
 
       .print-wrap {
-        width: 74mm !important;
-        max-width: 74mm !important;
-        padding: 0 !important;
+        width: 80mm !important;
+        max-width: 80mm !important;
+        /* padding-left: 5mm garante que o texto não seja cortado pela margem física da impressora */
+        padding: 2mm 3mm 2mm 6mm !important;
         margin: 0 !important;
+        box-sizing: border-box !important;
       }
 
       /*

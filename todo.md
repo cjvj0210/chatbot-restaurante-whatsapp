@@ -718,3 +718,8 @@
 ## Melhorias - 10/03/2026
 - [ ] Notificação WhatsApp automática ao aceitar pedido com tempo estimado
 - [ ] Controle de horário de funcionamento fixo por dia/turno com regra de pedido antecipado
+
+
+## Correções de Impressão Térmica (10/03/2026)
+- [x] Corrigir margem esquerda da comanda — padding-left 6mm na impressão para evitar corte de texto pela margem física da impressora
+- [x] Criar guia completo de configuração do corte automático para Epson TM-T20X
