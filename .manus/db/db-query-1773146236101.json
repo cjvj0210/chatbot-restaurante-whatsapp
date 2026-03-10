@@ -1,0 +1,297 @@
+{
+  "query": "\n-- Verificar duplicações no Turbine dos Kits e Mixes\nSELECT co.id, co.name, co.priceExtra, cg.id as gid, mi.name as item\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nJOIN menu_items mi ON mi.id = cg.menuItemId\nWHERE cg.name LIKE '%Turbine%' \n  AND cg.menuItemId IN (150020, 150021, 150022, 150023)\n  AND co.id >= 30000\nORDER BY cg.menuItemId, co.id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- Verificar duplicações no Turbine dos Kits e Mixes\nSELECT co.id, co.name, co.priceExtra, cg.id as gid, mi.name as item\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nJOIN menu_items mi ON mi.id = cg.menuItemId\nWHERE cg.name LIKE '%Turbine%' \n  AND cg.menuItemId IN (150020, 150021, 150022, 150023)\n  AND co.id >= 30000\nORDER BY cg.menuItemId, co.id;\n",
+  "rows": [
+    {
+      "id": "30165",
+      "name": "Kit para 5 pessoas",
+      "priceExtra": "8000",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30166",
+      "name": "Queijinho assado extra 1 unidade",
+      "priceExtra": "699",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30167",
+      "name": "Bananas empanadas extra 2 unidades",
+      "priceExtra": "1499",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30168",
+      "name": "Porção de chips individual",
+      "priceExtra": "999",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30169",
+      "name": "Porção de fritas individual",
+      "priceExtra": "1199",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30170",
+      "name": "Mandioca cozida individual",
+      "priceExtra": "1199",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30171",
+      "name": "Mandioca frita individual",
+      "priceExtra": "999",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30172",
+      "name": "Maionese de ovos individual",
+      "priceExtra": "599",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30173",
+      "name": "Molho chimichurri extra individual",
+      "priceExtra": "449",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30174",
+      "name": "Alho frito extra individual",
+      "priceExtra": "449",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30175",
+      "name": "Molho barbecue extra individual",
+      "priceExtra": "449",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30176",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30177",
+      "name": "Farofa extra individual",
+      "priceExtra": "399",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30178",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "399",
+      "gid": "49",
+      "item": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30151",
+      "name": "Kit para 5 pessoas",
+      "priceExtra": "7000",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30152",
+      "name": "Queijinho assado extra 1 unidade",
+      "priceExtra": "699",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30153",
+      "name": "Bananas empanadas extra 2 unidades",
+      "priceExtra": "1699",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30154",
+      "name": "Porção de chips extra individual",
+      "priceExtra": "999",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30155",
+      "name": "Porção de fritas extra individual",
+      "priceExtra": "1199",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30156",
+      "name": "Mandioca cozida extra individual",
+      "priceExtra": "999",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30157",
+      "name": "Mandioca frita extra individual",
+      "priceExtra": "999",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30158",
+      "name": "Maionese de ovos extra individual",
+      "priceExtra": "599",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30159",
+      "name": "Molho chimichurri extra individual",
+      "priceExtra": "449",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30160",
+      "name": "Alho frito extra individual",
+      "priceExtra": "449",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30161",
+      "name": "Molho barbecue extra individual",
+      "priceExtra": "449",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30162",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30163",
+      "name": "Farofa extra individual",
+      "priceExtra": "499",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30164",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "399",
+      "gid": "53",
+      "item": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30179",
+      "name": "Mandioca cozida extra individual",
+      "priceExtra": "649",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30180",
+      "name": "Bananas empanadas 2 unidades",
+      "priceExtra": "1299",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30181",
+      "name": "Maionese de ovos extra individual",
+      "priceExtra": "599",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30182",
+      "name": "Farofa extra individual",
+      "priceExtra": "349",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30183",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "399",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30184",
+      "name": "Pudim de leite individual",
+      "priceExtra": "699",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30185",
+      "name": "Pavê de brigadeiro individual",
+      "priceExtra": "999",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30186",
+      "name": "Mousse de maracujá individual",
+      "priceExtra": "999",
+      "gid": "57",
+      "item": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30187",
+      "name": "Mandioca cozida extra individual",
+      "priceExtra": "549",
+      "gid": "61",
+      "item": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "30188",
+      "name": "Bananas empanadas 2 unidades",
+      "priceExtra": "949",
+      "gid": "61",
+      "item": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "30189",
+      "name": "Maionese de ovos extra individual",
+      "priceExtra": "599",
+      "gid": "61",
+      "item": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "30190",
+      "name": "Farofa extra individual",
+      "priceExtra": "349",
+      "gid": "61",
+      "item": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "30191",
+      "name": "Vinagrete extra individual",
+      "priceExtra": "399",
+      "gid": "61",
+      "item": "Mix de churrasco tradicional"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgid\titem\n30165\tKit para 5 pessoas\t8000\t49\tKit de churrasco nobre\n30166\tQueijinho assado extra 1 unidade\t699\t49\tKit de churrasco nobre\n30167\tBananas empanadas extra 2 unidades\t1499\t49\tKit de churrasco nobre\n30168\tPorção de chips individual\t999\t49\tKit de churrasco nobre\n30169\tPorção de fritas individual\t1199\t49\tKit de churrasco nobre\n30170\tMandioca cozida individual\t1199\t49\tKit de churrasco nobre\n30171\tMandioca frita individual\t999\t49\tKit de churrasco nobre\n30172\tMaionese de ovos individual\t599\t49\tKit de churrasco nobre\n30173\tMolho chimichurri extra individual\t449\t49\tKit de churrasco nobre\n30174\tAlho frito extra individual\t449\t49\tKit de churrasco nobre\n30175\tMolho barbecue extra individual\t449\t49\tKit de churrasco nobre\n30176\tLimão para espremer\t299\t49\tKit de churrasco nobre\n30177\tFarofa extra individual\t399\t49\tKit de churrasco nobre\n30178\tVinagrete extra individual\t399\t49\tKit de churrasco nobre\n30151\tKit para 5 pessoas\t7000\t53\tKit de churrasco tradicional\n30152\tQueijinho assado extra 1 unidade\t699\t53\tKit de churrasco tradicional\n30153\tBananas empanadas extra 2 unidades\t1699\t53\tKit de churrasco tradicional\n30154\tPorção de chips extra individual\t999\t53\tKit de churrasco tradicional\n30155\tPorção de fritas extra individual\t1199\t53\tKit de churrasco tradicional\n30156\tMandioca cozida extra individual\t999\t53\tKit de churrasco tradicional\n30157\tMandioca frita extra individual\t999\t53\tKit de churrasco tradicional\n30158\tMaionese de ovos extra individual\t599\t53\tKit de churrasco tradicional\n30159\tMolho chimichurri extra individual\t449\t53\tKit de churrasco tradicional\n30160\tAlho frito extra individual\t449\t53\tKit de churrasco tradicional\n30161\tMolho barbecue extra individual\t449\t53\tKit de churrasco tradicional\n30162\tLimão para espremer\t299\t53\tKit de churrasco tradicional\n30163\tFarofa extra individual\t499\t53\tKit de churrasco tradicional\n30164\tVinagrete extra individual\t399\t53\tKit de churrasco tradicional\n30179\tMandioca cozida extra individual\t649\t57\tMix de churrasco nobre\n30180\tBananas empanadas 2 unidades\t1299\t57\tMix de churrasco nobre\n30181\tMaionese de ovos extra individual\t599\t57\tMix de churrasco nobre\n30182\tFarofa extra individual\t349\t57\tMix de churrasco nobre\n30183\tVinagrete extra individual\t399\t57\tMix de churrasco nobre\n30184\tPudim de leite individual\t699\t57\tMix de churrasco nobre\n30185\tPavê de brigadeiro individual\t999\t57\tMix de churrasco nobre\n30186\tMousse de maracujá individual\t999\t57\tMix de churrasco nobre\n30187\tMandioca cozida extra individual\t549\t61\tMix de churrasco tradicional\n30188\tBananas empanadas 2 unidades\t949\t61\tMix de churrasco tradicional\n30189\tMaionese de ovos extra individual\t599\t61\tMix de churrasco tradicional\n30190\tFarofa extra individual\t349\t61\tMix de churrasco tradicional\n30191\tVinagrete extra individual\t399\t61\tMix de churrasco tradicional\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

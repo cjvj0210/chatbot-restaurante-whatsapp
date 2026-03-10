@@ -1,0 +1,100 @@
+{
+  "query": "\n-- 1. Zerar preços de todas as opções de troca (grupos \"Trocar\", \"Substitua a sua maneira\")\n-- Marmitex P (item 150008): grupos 30004 e 72\n-- Marmitex M (item 150009): grupos 30006 e 73  \n-- Marmitex G (item 150010): grupos 30008 e 74\n\nUPDATE menu_addon_options SET priceExtra = 0\nWHERE groupId IN (30004, 30006, 30008, 72, 73, 74);\n\n-- Verificar resultado\nSELECT co.id, co.name, co.priceExtra, cg.name as group_name\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nWHERE co.groupId IN (30004, 30006, 30008, 72, 73, 74)\nORDER BY co.groupId, co.displayOrder;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- 1. Zerar preços de todas as opções de troca (grupos \"Trocar\", \"Substitua a sua maneira\")\n-- Marmitex P (item 150008): grupos 30004 e 72\n-- Marmitex M (item 150009): grupos 30006 e 73  \n-- Marmitex G (item 150010): grupos 30008 e 74\n\nUPDATE menu_addon_options SET priceExtra = 0\nWHERE groupId IN (30004, 30006, 30008, 72, 73, 74);\n\n-- Verificar resultado\nSELECT co.id, co.name, co.priceExtra, cg.name as group_name\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nWHERE co.groupId IN (30004, 30006, 30008, 72, 73, 74)\nORDER BY co.groupId, co.displayOrder;\n",
+  "rows": [
+    {
+      "id": "287",
+      "name": "Trocar batata frita por mandioca frita",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "288",
+      "name": "Trocar farofa por vinagrete",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "289",
+      "name": "Trocar maionese por vinagrete",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "290",
+      "name": "Trocar batata frita por mandioca frita",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "291",
+      "name": "Trocar farofa por vinagrete",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "292",
+      "name": "Trocar maionese por vinagrete",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "293",
+      "name": "Trocar batata frita por mandioca frita",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "294",
+      "name": "Trocar farofa por vinagrete",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "295",
+      "name": "Trocar maionese por vinagrete",
+      "priceExtra": "0",
+      "group_name": "Trocar"
+    },
+    {
+      "id": "30018",
+      "name": "Trocar: batata frita por mandioca frita",
+      "priceExtra": "0",
+      "group_name": "Substitua a sua maneira"
+    },
+    {
+      "id": "30019",
+      "name": "Trocar: (arroz + feijão) por mandioca cozida",
+      "priceExtra": "0",
+      "group_name": "Substitua a sua maneira"
+    },
+    {
+      "id": "30039",
+      "name": "Trocar: batata frita por mandioca frita",
+      "priceExtra": "0",
+      "group_name": "Substitua a sua maneira"
+    },
+    {
+      "id": "30040",
+      "name": "Trocar: (arroz + feijão) por mandioca cozida",
+      "priceExtra": "0",
+      "group_name": "Substitua a sua maneira"
+    },
+    {
+      "id": "30060",
+      "name": "Trocar: batata frita por mandioca frita",
+      "priceExtra": "0",
+      "group_name": "Substitua a sua maneira"
+    },
+    {
+      "id": "30061",
+      "name": "Trocar: (arroz + feijão) por mandioca cozida",
+      "priceExtra": "0",
+      "group_name": "Substitua a sua maneira"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgroup_name\n287\tTrocar batata frita por mandioca frita\t0\tTrocar\n288\tTrocar farofa por vinagrete\t0\tTrocar\n289\tTrocar maionese por vinagrete\t0\tTrocar\n290\tTrocar batata frita por mandioca frita\t0\tTrocar\n291\tTrocar farofa por vinagrete\t0\tTrocar\n292\tTrocar maionese por vinagrete\t0\tTrocar\n293\tTrocar batata frita por mandioca frita\t0\tTrocar\n294\tTrocar farofa por vinagrete\t0\tTrocar\n295\tTrocar maionese por vinagrete\t0\tTrocar\n30018\tTrocar: batata frita por mandioca frita\t0\tSubstitua a sua maneira\n30019\tTrocar: (arroz + feijão) por mandioca cozida\t0\tSubstitua a sua maneira\n30039\tTrocar: batata frita por mandioca frita\t0\tSubstitua a sua maneira\n30040\tTrocar: (arroz + feijão) por mandioca cozida\t0\tSubstitua a sua maneira\n30060\tTrocar: batata frita por mandioca frita\t0\tSubstitua a sua maneira\n30061\tTrocar: (arroz + feijão) por mandioca cozida\t0\tSubstitua a sua maneira\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

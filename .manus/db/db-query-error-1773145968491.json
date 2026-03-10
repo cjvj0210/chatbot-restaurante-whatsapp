@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT \n  mi.id as item_id,\n  mi.name as item_name,\n  cg.id as group_id,\n  cg.name as group_name,\n  cg.is_required,\n  cg.min_selections,\n  cg.max_selections,\n  co.id as option_id,\n  co.name as option_name,\n  co.price_extra as option_price\nFROM menu_items mi\nJOIN menu_addon_groups cg ON cg.menu_item_id = mi.id\nJOIN menu_addon_options co ON co.group_id = cg.id\nWHERE mi.name LIKE '%Marmitex%' OR mi.name LIKE '%marmitex%'\nORDER BY mi.name, cg.display_order, co.display_order;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT \n  mi.id as item_id,\n  mi.name as item_name,\n  cg.id as group_id,\n  cg.name as group_name,\n  cg.is_required,\n  cg.min_selections,\n  cg.max_selections,\n  co.id as option_id,\n  co.name as option_name,\n  co.price_extra as option_price\nFROM menu_items mi\nJOIN menu_addon_groups cg ON cg.menu_item_id = mi.id\nJOIN menu_addon_options co ON co.group_id = cg.id\nWHERE mi.name LIKE '%Marmitex%' OR mi.name LIKE '%marmitex%'\nORDER BY mi.name, cg.display_order, co.display_order;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'cg.menu_item_id' in 'on clause'"
+  ]
+}

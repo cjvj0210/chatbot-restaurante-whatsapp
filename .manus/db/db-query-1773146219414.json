@@ -1,0 +1,346 @@
+{
+  "query": "\n-- Analisar duplicações: os grupos \"Turbine\" originais (33, 37, 41) têm opções 109-154\n-- Os novos grupos (30003 a 30008 etc.) adicionaram opções 30020-30077 que são duplicatas\n-- Vamos desativar as opções duplicadas com IDs >= 30020 nos grupos de Turbine das marmitex\n\n-- Primeiro verificar quais são as opções duplicadas nos grupos de Turbine das marmitex P, M, G\nSELECT co.id, co.name, co.priceExtra, cg.id as gid, cg.name as gname\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nWHERE cg.name LIKE '%Turbine%' \n  AND cg.menuItemId IN (150008, 150009, 150010)\n  AND co.id >= 30000\nORDER BY cg.id, co.id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- Analisar duplicações: os grupos \"Turbine\" originais (33, 37, 41) têm opções 109-154\n-- Os novos grupos (30003 a 30008 etc.) adicionaram opções 30020-30077 que são duplicatas\n-- Vamos desativar as opções duplicadas com IDs >= 30020 nos grupos de Turbine das marmitex\n\n-- Primeiro verificar quais são as opções duplicadas nos grupos de Turbine das marmitex P, M, G\nSELECT co.id, co.name, co.priceExtra, cg.id as gid, cg.name as gname\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nWHERE cg.name LIKE '%Turbine%' \n  AND cg.menuItemId IN (150008, 150009, 150010)\n  AND co.id >= 30000\nORDER BY cg.id, co.id;\n",
+  "rows": [
+    {
+      "id": "30020",
+      "name": "Mandioca cozida extra (individual)",
+      "priceExtra": "999",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30021",
+      "name": "Mandioca frita extra (individual)",
+      "priceExtra": "999",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30022",
+      "name": "Banana empanada (2 unidades)",
+      "priceExtra": "1699",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30023",
+      "name": "Mini-pastéis de Catupiry (4 unidades)",
+      "priceExtra": "1899",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30024",
+      "name": "Mini-pastéis de queijo c/ goiabada (4 unidades)",
+      "priceExtra": "1999",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30025",
+      "name": "Porção extra de fritas (individual)",
+      "priceExtra": "1199",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30026",
+      "name": "Porção de chips (individual)",
+      "priceExtra": "899",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30027",
+      "name": "Com queijinho assado (1 unidade)",
+      "priceExtra": "699",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30028",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "449",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30029",
+      "name": "Molho chimichurri extra (individual)",
+      "priceExtra": "449",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30030",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30031",
+      "name": "Molho barbecue extra (individual)",
+      "priceExtra": "449",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30032",
+      "name": "Farofa extra (individual)",
+      "priceExtra": "399",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30033",
+      "name": "Pudim de leite condensado (individual)",
+      "priceExtra": "999",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30034",
+      "name": "Pavê de brigadeiro (individual)",
+      "priceExtra": "999",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30035",
+      "name": "Mousse de maracujá (individual)",
+      "priceExtra": "999",
+      "gid": "33",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30041",
+      "name": "Mandioca cozida extra (individual)",
+      "priceExtra": "999",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30042",
+      "name": "Mandioca frita extra (individual)",
+      "priceExtra": "999",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30043",
+      "name": "Banana empanada (2 unidades)",
+      "priceExtra": "1699",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30044",
+      "name": "Mini-pastéis de Catupiry (4 unidades)",
+      "priceExtra": "1899",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30045",
+      "name": "Mini-pastéis de queijo c/ goiabada (4 unidades)",
+      "priceExtra": "1999",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30046",
+      "name": "Porção extra de fritas (individual)",
+      "priceExtra": "1199",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30047",
+      "name": "Porção de chips (individual)",
+      "priceExtra": "899",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30048",
+      "name": "Com queijinho assado (1 unidade)",
+      "priceExtra": "699",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30049",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "449",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30050",
+      "name": "Molho chimichurri extra (individual)",
+      "priceExtra": "449",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30051",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30052",
+      "name": "Molho barbecue extra (individual)",
+      "priceExtra": "449",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30053",
+      "name": "Farofa extra (individual)",
+      "priceExtra": "399",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30054",
+      "name": "Pudim de leite condensado (individual)",
+      "priceExtra": "999",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30055",
+      "name": "Pavê de brigadeiro (individual)",
+      "priceExtra": "999",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30056",
+      "name": "Mousse de maracujá (individual)",
+      "priceExtra": "999",
+      "gid": "37",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30062",
+      "name": "Mandioca cozida extra (individual)",
+      "priceExtra": "999",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30063",
+      "name": "Mandioca frita extra (individual)",
+      "priceExtra": "999",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30064",
+      "name": "Banana empanada (2 unidades)",
+      "priceExtra": "1699",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30065",
+      "name": "Mini-pastéis de Catupiry (4 unidades)",
+      "priceExtra": "1899",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30066",
+      "name": "Mini-pastéis de queijo c/ goiabada (4 unidades)",
+      "priceExtra": "1999",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30067",
+      "name": "Porção extra de fritas (individual)",
+      "priceExtra": "1199",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30068",
+      "name": "Porção de chips (individual)",
+      "priceExtra": "899",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30069",
+      "name": "Com queijinho assado (1 unidade)",
+      "priceExtra": "699",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30070",
+      "name": "Alho frito extra (individual)",
+      "priceExtra": "449",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30071",
+      "name": "Molho chimichurri extra (individual)",
+      "priceExtra": "449",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30072",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30073",
+      "name": "Molho barbecue extra (individual)",
+      "priceExtra": "449",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30074",
+      "name": "Farofa extra (individual)",
+      "priceExtra": "399",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30075",
+      "name": "Pudim de leite condensado (individual)",
+      "priceExtra": "999",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30076",
+      "name": "Pavê de brigadeiro (individual)",
+      "priceExtra": "999",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    },
+    {
+      "id": "30077",
+      "name": "Mousse de maracujá (individual)",
+      "priceExtra": "999",
+      "gid": "41",
+      "gname": "\"Turbine\" seu pedido!"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgid\tgname\n30020\tMandioca cozida extra (individual)\t999\t33\t\"Turbine\" seu pedido!\n30021\tMandioca frita extra (individual)\t999\t33\t\"Turbine\" seu pedido!\n30022\tBanana empanada (2 unidades)\t1699\t33\t\"Turbine\" seu pedido!\n30023\tMini-pastéis de Catupiry (4 unidades)\t1899\t33\t\"Turbine\" seu pedido!\n30024\tMini-pastéis de queijo c/ goiabada (4 unidades)\t1999\t33\t\"Turbine\" seu pedido!\n30025\tPorção extra de fritas (individual)\t1199\t33\t\"Turbine\" seu pedido!\n30026\tPorção de chips (individual)\t899\t33\t\"Turbine\" seu pedido!\n30027\tCom queijinho assado (1 unidade)\t699\t33\t\"Turbine\" seu pedido!\n30028\tAlho frito extra (individual)\t449\t33\t\"Turbine\" seu pedido!\n30029\tMolho chimichurri extra (individual)\t449\t33\t\"Turbine\" seu pedido!\n30030\tLimão para espremer\t299\t33\t\"Turbine\" seu pedido!\n30031\tMolho barbecue extra (individual)\t449\t33\t\"Turbine\" seu pedido!\n30032\tFarofa extra (individual)\t399\t33\t\"Turbine\" seu pedido!\n30033\tPudim de leite condensado (individual)\t999\t33\t\"Turbine\" seu pedido!\n30034\tPavê de brigadeiro (individual)\t999\t33\t\"Turbine\" seu pedido!\n30035\tMousse de maracujá (individual)\t999\t33\t\"Turbine\" seu pedido!\n30041\tMandioca cozida extra (individual)\t999\t37\t\"Turbine\" seu pedido!\n30042\tMandioca frita extra (individual)\t999\t37\t\"Turbine\" seu pedido!\n30043\tBanana empanada (2 unidades)\t1699\t37\t\"Turbine\" seu pedido!\n30044\tMini-pastéis de Catupiry (4 unidades)\t1899\t37\t\"Turbine\" seu pedido!\n30045\tMini-pastéis de queijo c/ goiabada (4 unidades)\t1999\t37\t\"Turbine\" seu pedido!\n30046\tPorção extra de fritas (individual)\t1199\t37\t\"Turbine\" seu pedido!\n30047\tPorção de chips (individual)\t899\t37\t\"Turbine\" seu pedido!\n30048\tCom queijinho assado (1 unidade)\t699\t37\t\"Turbine\" seu pedido!\n30049\tAlho frito extra (individual)\t449\t37\t\"Turbine\" seu pedido!\n30050\tMolho chimichurri extra (individual)\t449\t37\t\"Turbine\" seu pedido!\n30051\tLimão para espremer\t299\t37\t\"Turbine\" seu pedido!\n30052\tMolho barbecue extra (individual)\t449\t37\t\"Turbine\" seu pedido!\n30053\tFarofa extra (individual)\t399\t37\t\"Turbine\" seu pedido!\n30054\tPudim de leite condensado (individual)\t999\t37\t\"Turbine\" seu pedido!\n30055\tPavê de brigadeiro (individual)\t999\t37\t\"Turbine\" seu pedido!\n30056\tMousse de maracujá (individual)\t999\t37\t\"Turbine\" seu pedido!\n30062\tMandioca cozida extra (individual)\t999\t41\t\"Turbine\" seu pedido!\n30063\tMandioca frita extra (individual)\t999\t41\t\"Turbine\" seu pedido!\n30064\tBanana empanada (2 unidades)\t1699\t41\t\"Turbine\" seu pedido!\n30065\tMini-pastéis de Catupiry (4 unidades)\t1899\t41\t\"Turbine\" seu pedido!\n30066\tMini-pastéis de queijo c/ goiabada (4 unidades)\t1999\t41\t\"Turbine\" seu pedido!\n30067\tPorção extra de fritas (individual)\t1199\t41\t\"Turbine\" seu pedido!\n30068\tPorção de chips (individual)\t899\t41\t\"Turbine\" seu pedido!\n30069\tCom queijinho assado (1 unidade)\t699\t41\t\"Turbine\" seu pedido!\n30070\tAlho frito extra (individual)\t449\t41\t\"Turbine\" seu pedido!\n30071\tMolho chimichurri extra (individual)\t449\t41\t\"Turbine\" seu pedido!\n30072\tLimão para espremer\t299\t41\t\"Turbine\" seu pedido!\n30073\tMolho barbecue extra (individual)\t449\t41\t\"Turbine\" seu pedido!\n30074\tFarofa extra (individual)\t399\t41\t\"Turbine\" seu pedido!\n30075\tPudim de leite condensado (individual)\t999\t41\t\"Turbine\" seu pedido!\n30076\tPavê de brigadeiro (individual)\t999\t41\t\"Turbine\" seu pedido!\n30077\tMousse de maracujá (individual)\t999\t41\t\"Turbine\" seu pedido!\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

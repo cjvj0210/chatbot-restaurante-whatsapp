@@ -1,0 +1,25 @@
+{
+  "query": "\n-- Desativar os grupos \"Substitua a sua maneira\" (30004, 30006, 30008) que são duplicatas dos grupos \"Trocar\" (72, 73, 74)\n-- O usuário disse que as opções de troca do 2o anexo NÃO devem aparecer nas marmitas tradicionais\n-- Vamos desativar AMBOS os grupos de troca duplicados e manter apenas o grupo \"Trocar\" original (72, 73, 74) com preços zerados\n\nUPDATE menu_addon_groups SET isActive = 0\nWHERE id IN (30004, 30006, 30008);\n\n-- Confirmar\nSELECT id, name, isActive FROM menu_addon_groups WHERE id IN (30004, 30006, 30008);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- Desativar os grupos \"Substitua a sua maneira\" (30004, 30006, 30008) que são duplicatas dos grupos \"Trocar\" (72, 73, 74)\n-- O usuário disse que as opções de troca do 2o anexo NÃO devem aparecer nas marmitas tradicionais\n-- Vamos desativar AMBOS os grupos de troca duplicados e manter apenas o grupo \"Trocar\" original (72, 73, 74) com preços zerados\n\nUPDATE menu_addon_groups SET isActive = 0\nWHERE id IN (30004, 30006, 30008);\n\n-- Confirmar\nSELECT id, name, isActive FROM menu_addon_groups WHERE id IN (30004, 30006, 30008);\n",
+  "rows": [
+    {
+      "id": "30004",
+      "name": "Substitua a sua maneira",
+      "isActive": "0"
+    },
+    {
+      "id": "30006",
+      "name": "Substitua a sua maneira",
+      "isActive": "0"
+    },
+    {
+      "id": "30008",
+      "name": "Substitua a sua maneira",
+      "isActive": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tisActive\n30004\tSubstitua a sua maneira\t0\n30006\tSubstitua a sua maneira\t0\n30008\tSubstitua a sua maneira\t0\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

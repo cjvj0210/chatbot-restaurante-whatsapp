@@ -1,0 +1,178 @@
+{
+  "query": "\n-- Verificar todos os grupos de ponto da carne e suas opções atuais\nSELECT cg.id, cg.name, mi.name as item_name, co.id as opt_id, co.name as opt_name\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nJOIN menu_addon_options co ON co.groupId = cg.id\nWHERE cg.name LIKE '%ponto%' OR cg.name LIKE '%Ponto%'\nORDER BY cg.id, co.displayOrder;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- Verificar todos os grupos de ponto da carne e suas opções atuais\nSELECT cg.id, cg.name, mi.name as item_name, co.id as opt_id, co.name as opt_name\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nJOIN menu_addon_options co ON co.groupId = cg.id\nWHERE cg.name LIKE '%ponto%' OR cg.name LIKE '%Ponto%'\nORDER BY cg.id, co.displayOrder;\n",
+  "rows": [
+    {
+      "id": "9",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Tropeiro individual",
+      "opt_id": "19",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "9",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Tropeiro individual",
+      "opt_id": "20",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "10",
+      "name": "Ponto do salmão",
+      "item_name": "Pescador individual",
+      "opt_id": "21",
+      "opt_name": "Ao ponto"
+    },
+    {
+      "id": "10",
+      "name": "Ponto do salmão",
+      "item_name": "Pescador individual",
+      "opt_id": "22",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "20",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Executivo Fit Premium",
+      "opt_id": "51",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "20",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Executivo Fit Premium",
+      "opt_id": "52",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "24",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Laçador individual",
+      "opt_id": "69",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "24",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Laçador individual",
+      "opt_id": "70",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "31",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Marmitex Completa P",
+      "opt_id": "103",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "31",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Marmitex Completa P",
+      "opt_id": "104",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "35",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Marmitex Completa M",
+      "opt_id": "121",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "35",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Marmitex Completa M",
+      "opt_id": "122",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "39",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Tradicional Marmitex G",
+      "opt_id": "139",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "39",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Tradicional Marmitex G",
+      "opt_id": "140",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "43",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Marmitex econômica 1 (individual)",
+      "opt_id": "157",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "43",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Marmitex econômica 1 (individual)",
+      "opt_id": "158",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "47",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Kit de churrasco nobre",
+      "opt_id": "175",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "47",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Kit de churrasco nobre",
+      "opt_id": "176",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "51",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Kit de churrasco tradicional",
+      "opt_id": "193",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "51",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Kit de churrasco tradicional",
+      "opt_id": "194",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "55",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Mix de churrasco nobre",
+      "opt_id": "211",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "55",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Mix de churrasco nobre",
+      "opt_id": "212",
+      "opt_name": "Mal passado"
+    },
+    {
+      "id": "59",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Mix de churrasco tradicional",
+      "opt_id": "229",
+      "opt_name": "Bem passado"
+    },
+    {
+      "id": "59",
+      "name": "Escolha o ponto da carne",
+      "item_name": "Mix de churrasco tradicional",
+      "opt_id": "230",
+      "opt_name": "Mal passado"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titem_name\topt_id\topt_name\n9\tEscolha o ponto da carne\tTropeiro individual\t19\tBem passado\n9\tEscolha o ponto da carne\tTropeiro individual\t20\tMal passado\n10\tPonto do salmão\tPescador individual\t21\tAo ponto\n10\tPonto do salmão\tPescador individual\t22\tBem passado\n20\tEscolha o ponto da carne\tExecutivo Fit Premium\t51\tBem passado\n20\tEscolha o ponto da carne\tExecutivo Fit Premium\t52\tMal passado\n24\tEscolha o ponto da carne\tLaçador individual\t69\tBem passado\n24\tEscolha o ponto da carne\tLaçador individual\t70\tMal passado\n31\tEscolha o ponto da carne\tMarmitex Completa P\t103\tBem passado\n31\tEscolha o ponto da carne\tMarmitex Completa P\t104\tMal passado\n35\tEscolha o ponto da carne\tMarmitex Completa M\t121\tBem passado\n35\tEscolha o ponto da carne\tMarmitex Completa M\t122\tMal passado\n39\tEscolha o ponto da carne\tTradicional Marmitex G\t139\tBem passado\n39\tEscolha o ponto da carne\tTradicional Marmitex G\t140\tMal passado\n43\tEscolha o ponto da carne\tMarmitex econômica 1 (individual)\t157\tBem passado\n43\tEscolha o ponto da carne\tMarmitex econômica 1 (individual)\t158\tMal passado\n47\tEscolha o ponto da carne\tKit de churrasco nobre\t175\tBem passado\n47\tEscolha o ponto da carne\tKit de churrasco nobre\t176\tMal passado\n51\tEscolha o ponto da carne\tKit de churrasco tradicional\t193\tBem passado\n51\tEscolha o ponto da carne\tKit de churrasco tradicional\t194\tMal passado\n55\tEscolha o ponto da carne\tMix de churrasco nobre\t211\tBem passado\n55\tEscolha o ponto da carne\tMix de churrasco nobre\t212\tMal passado\n59\tEscolha o ponto da carne\tMix de churrasco tradicional\t229\tBem passado\n59\tEscolha o ponto da carne\tMix de churrasco tradicional\t230\tMal passado\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

@@ -1,0 +1,25 @@
+{
+  "query": "\n-- O usuário disse que as opções de troca do 2o anexo NÃO devem aparecer nas marmitas tradicionais\n-- O 2o anexo mostra: \"Trocar batata frita por mandioca frita +R$9,49\", \"Trocar farofa por vinagrete +R$3,99\", \"Trocar maionese por vinagrete +R$3,99\"\n-- Esses são os grupos 72, 73, 74 (que já zeramos os preços)\n-- Mas o usuário quer que essas opções NÃO apareçam nas marmitas tradicionais\n-- Vamos desativar também os grupos 72, 73, 74\n\nUPDATE menu_addon_groups SET isActive = 0\nWHERE id IN (72, 73, 74);\n\n-- Confirmar\nSELECT id, name, isActive FROM menu_addon_groups WHERE id IN (72, 73, 74);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- O usuário disse que as opções de troca do 2o anexo NÃO devem aparecer nas marmitas tradicionais\n-- O 2o anexo mostra: \"Trocar batata frita por mandioca frita +R$9,49\", \"Trocar farofa por vinagrete +R$3,99\", \"Trocar maionese por vinagrete +R$3,99\"\n-- Esses são os grupos 72, 73, 74 (que já zeramos os preços)\n-- Mas o usuário quer que essas opções NÃO apareçam nas marmitas tradicionais\n-- Vamos desativar também os grupos 72, 73, 74\n\nUPDATE menu_addon_groups SET isActive = 0\nWHERE id IN (72, 73, 74);\n\n-- Confirmar\nSELECT id, name, isActive FROM menu_addon_groups WHERE id IN (72, 73, 74);\n",
+  "rows": [
+    {
+      "id": "72",
+      "name": "Trocar",
+      "isActive": "0"
+    },
+    {
+      "id": "73",
+      "name": "Trocar",
+      "isActive": "0"
+    },
+    {
+      "id": "74",
+      "name": "Trocar",
+      "isActive": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tisActive\n72\tTrocar\t0\n73\tTrocar\t0\n74\tTrocar\t0\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

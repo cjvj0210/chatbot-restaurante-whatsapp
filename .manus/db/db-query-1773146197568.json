@@ -1,0 +1,190 @@
+{
+  "query": "\nSELECT co.id, co.name, cg.id as group_id, mi.name as item_name\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nJOIN menu_items mi ON mi.id = cg.menuItemId\nWHERE (cg.name LIKE '%ponto da carne%') AND co.isActive = 1\nORDER BY cg.id, co.displayOrder\nLIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT co.id, co.name, cg.id as group_id, mi.name as item_name\nFROM menu_addon_options co\nJOIN menu_addon_groups cg ON cg.id = co.groupId\nJOIN menu_items mi ON mi.id = cg.menuItemId\nWHERE (cg.name LIKE '%ponto da carne%') AND co.isActive = 1\nORDER BY cg.id, co.displayOrder\nLIMIT 30;\n",
+  "rows": [
+    {
+      "id": "19",
+      "name": "Bem passado",
+      "group_id": "9",
+      "item_name": "Tropeiro individual"
+    },
+    {
+      "id": "20",
+      "name": "Mal passado",
+      "group_id": "9",
+      "item_name": "Tropeiro individual"
+    },
+    {
+      "id": "60001",
+      "name": "Ao ponto da casa",
+      "group_id": "9",
+      "item_name": "Tropeiro individual"
+    },
+    {
+      "id": "51",
+      "name": "Bem passado",
+      "group_id": "20",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "52",
+      "name": "Mal passado",
+      "group_id": "20",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "60002",
+      "name": "Ao ponto da casa",
+      "group_id": "20",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "69",
+      "name": "Bem passado",
+      "group_id": "24",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "70",
+      "name": "Mal passado",
+      "group_id": "24",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "60003",
+      "name": "Ao ponto da casa",
+      "group_id": "24",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "103",
+      "name": "Bem passado",
+      "group_id": "31",
+      "item_name": "Marmitex Completa P"
+    },
+    {
+      "id": "104",
+      "name": "Mal passado",
+      "group_id": "31",
+      "item_name": "Marmitex Completa P"
+    },
+    {
+      "id": "60004",
+      "name": "Ao ponto da casa",
+      "group_id": "31",
+      "item_name": "Marmitex Completa P"
+    },
+    {
+      "id": "121",
+      "name": "Bem passado",
+      "group_id": "35",
+      "item_name": "Marmitex Completa M"
+    },
+    {
+      "id": "122",
+      "name": "Mal passado",
+      "group_id": "35",
+      "item_name": "Marmitex Completa M"
+    },
+    {
+      "id": "60005",
+      "name": "Ao ponto da casa",
+      "group_id": "35",
+      "item_name": "Marmitex Completa M"
+    },
+    {
+      "id": "139",
+      "name": "Bem passado",
+      "group_id": "39",
+      "item_name": "Tradicional Marmitex G"
+    },
+    {
+      "id": "140",
+      "name": "Mal passado",
+      "group_id": "39",
+      "item_name": "Tradicional Marmitex G"
+    },
+    {
+      "id": "60006",
+      "name": "Ao ponto da casa",
+      "group_id": "39",
+      "item_name": "Tradicional Marmitex G"
+    },
+    {
+      "id": "157",
+      "name": "Bem passado",
+      "group_id": "43",
+      "item_name": "Marmitex econômica 1 (individual)"
+    },
+    {
+      "id": "158",
+      "name": "Mal passado",
+      "group_id": "43",
+      "item_name": "Marmitex econômica 1 (individual)"
+    },
+    {
+      "id": "60007",
+      "name": "Ao ponto da casa",
+      "group_id": "43",
+      "item_name": "Marmitex econômica 1 (individual)"
+    },
+    {
+      "id": "175",
+      "name": "Bem passado",
+      "group_id": "47",
+      "item_name": "Kit de churrasco nobre"
+    },
+    {
+      "id": "176",
+      "name": "Mal passado",
+      "group_id": "47",
+      "item_name": "Kit de churrasco nobre"
+    },
+    {
+      "id": "60008",
+      "name": "Ao ponto da casa",
+      "group_id": "47",
+      "item_name": "Kit de churrasco nobre"
+    },
+    {
+      "id": "193",
+      "name": "Bem passado",
+      "group_id": "51",
+      "item_name": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "194",
+      "name": "Mal passado",
+      "group_id": "51",
+      "item_name": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "60009",
+      "name": "Ao ponto da casa",
+      "group_id": "51",
+      "item_name": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "211",
+      "name": "Bem passado",
+      "group_id": "55",
+      "item_name": "Mix de churrasco nobre"
+    },
+    {
+      "id": "212",
+      "name": "Mal passado",
+      "group_id": "55",
+      "item_name": "Mix de churrasco nobre"
+    },
+    {
+      "id": "60010",
+      "name": "Ao ponto da casa",
+      "group_id": "55",
+      "item_name": "Mix de churrasco nobre"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tgroup_id\titem_name\n19\tBem passado\t9\tTropeiro individual\n20\tMal passado\t9\tTropeiro individual\n60001\tAo ponto da casa\t9\tTropeiro individual\n51\tBem passado\t20\tExecutivo Fit Premium\n52\tMal passado\t20\tExecutivo Fit Premium\n60002\tAo ponto da casa\t20\tExecutivo Fit Premium\n69\tBem passado\t24\tLaçador individual\n70\tMal passado\t24\tLaçador individual\n60003\tAo ponto da casa\t24\tLaçador individual\n103\tBem passado\t31\tMarmitex Completa P\n104\tMal passado\t31\tMarmitex Completa P\n60004\tAo ponto da casa\t31\tMarmitex Completa P\n121\tBem passado\t35\tMarmitex Completa M\n122\tMal passado\t35\tMarmitex Completa M\n60005\tAo ponto da casa\t35\tMarmitex Completa M\n139\tBem passado\t39\tTradicional Marmitex G\n140\tMal passado\t39\tTradicional Marmitex G\n60006\tAo ponto da casa\t39\tTradicional Marmitex G\n157\tBem passado\t43\tMarmitex econômica 1 (individual)\n158\tMal passado\t43\tMarmitex econômica 1 (individual)\n60007\tAo ponto da casa\t43\tMarmitex econômica 1 (individual)\n175\tBem passado\t47\tKit de churrasco nobre\n176\tMal passado\t47\tKit de churrasco nobre\n60008\tAo ponto da casa\t47\tKit de churrasco nobre\n193\tBem passado\t51\tKit de churrasco tradicional\n194\tMal passado\t51\tKit de churrasco tradicional\n60009\tAo ponto da casa\t51\tKit de churrasco tradicional\n211\tBem passado\t55\tMix de churrasco nobre\n212\tMal passado\t55\tMix de churrasco nobre\n60010\tAo ponto da casa\t55\tMix de churrasco nobre\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

@@ -299,15 +299,20 @@ export default function Orders() {
                         <button
                           onClick={() => handleStatusChange(order.id, nextStatus)}
                           disabled={updateStatus.isPending}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+                          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-60 ${
+                            order.status === "pending"
+                              ? "bg-green-600 text-white hover:bg-green-700 shadow-md ring-2 ring-green-300 animate-pulse"
+                              : "bg-primary text-white hover:bg-primary/90"
+                          }`}
                         >
                           {updateStatus.isPending ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : order.status === "pending" ? (
+                            <CheckCircle2 className="w-4 h-4" />
                           ) : (
                             <Send className="w-4 h-4" />
                           )}
-                          Avançar para{" "}
-                          {statusConfig[nextStatus]?.label}
+                          {order.status === "pending" ? "✅ Aceitar Pedido" : `Avançar para ${statusConfig[nextStatus]?.label}`}
                         </button>
                       )}
 

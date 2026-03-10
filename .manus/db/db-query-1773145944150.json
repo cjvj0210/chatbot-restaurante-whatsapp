@@ -1,0 +1,67 @@
+{
+  "query": "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME;",
+  "rows": [
+    {
+      "TABLE_NAME": "__drizzle_migrations"
+    },
+    {
+      "TABLE_NAME": "bot_messages"
+    },
+    {
+      "TABLE_NAME": "conversations"
+    },
+    {
+      "TABLE_NAME": "customers"
+    },
+    {
+      "TABLE_NAME": "feedback"
+    },
+    {
+      "TABLE_NAME": "menu_addon_groups"
+    },
+    {
+      "TABLE_NAME": "menu_addon_options"
+    },
+    {
+      "TABLE_NAME": "menu_categories"
+    },
+    {
+      "TABLE_NAME": "menu_items"
+    },
+    {
+      "TABLE_NAME": "messages"
+    },
+    {
+      "TABLE_NAME": "order_items"
+    },
+    {
+      "TABLE_NAME": "order_sessions"
+    },
+    {
+      "TABLE_NAME": "orders"
+    },
+    {
+      "TABLE_NAME": "reservations"
+    },
+    {
+      "TABLE_NAME": "restaurant_settings"
+    },
+    {
+      "TABLE_NAME": "test_messages"
+    },
+    {
+      "TABLE_NAME": "test_sessions"
+    },
+    {
+      "TABLE_NAME": "users"
+    },
+    {
+      "TABLE_NAME": "whatsapp_settings"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\n__drizzle_migrations\nbot_messages\nconversations\ncustomers\nfeedback\nmenu_addon_groups\nmenu_addon_options\nmenu_categories\nmenu_items\nmessages\norder_items\norder_sessions\norders\nreservations\nrestaurant_settings\ntest_messages\ntest_sessions\nusers\nwhatsapp_settings\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

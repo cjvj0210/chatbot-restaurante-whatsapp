@@ -1,0 +1,338 @@
+{
+  "query": "\n-- Os Kits e Mixes não têm mais opções no Turbine (foram desativadas)\n-- Vamos verificar se os grupos Turbine dos Kits/Mixes originais (47-62) ainda têm opções ativas\nSELECT cg.id, cg.name, mi.name as item, co.id as opt_id, co.name as opt_name, co.isActive\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nJOIN menu_addon_options co ON co.groupId = cg.id\nWHERE cg.name LIKE '%Turbine%' AND cg.menuItemId IN (150020, 150021, 150022, 150023)\nORDER BY cg.id, co.id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- Os Kits e Mixes não têm mais opções no Turbine (foram desativadas)\n-- Vamos verificar se os grupos Turbine dos Kits/Mixes originais (47-62) ainda têm opções ativas\nSELECT cg.id, cg.name, mi.name as item, co.id as opt_id, co.name as opt_name, co.isActive\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nJOIN menu_addon_options co ON co.groupId = cg.id\nWHERE cg.name LIKE '%Turbine%' AND cg.menuItemId IN (150020, 150021, 150022, 150023)\nORDER BY cg.id, co.id;\n",
+  "rows": [
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30165",
+      "opt_name": "Kit para 5 pessoas",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30166",
+      "opt_name": "Queijinho assado extra 1 unidade",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30167",
+      "opt_name": "Bananas empanadas extra 2 unidades",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30168",
+      "opt_name": "Porção de chips individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30169",
+      "opt_name": "Porção de fritas individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30170",
+      "opt_name": "Mandioca cozida individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30171",
+      "opt_name": "Mandioca frita individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30172",
+      "opt_name": "Maionese de ovos individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30173",
+      "opt_name": "Molho chimichurri extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30174",
+      "opt_name": "Alho frito extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30175",
+      "opt_name": "Molho barbecue extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30176",
+      "opt_name": "Limão para espremer",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30177",
+      "opt_name": "Farofa extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "opt_id": "30178",
+      "opt_name": "Vinagrete extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30151",
+      "opt_name": "Kit para 5 pessoas",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30152",
+      "opt_name": "Queijinho assado extra 1 unidade",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30153",
+      "opt_name": "Bananas empanadas extra 2 unidades",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30154",
+      "opt_name": "Porção de chips extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30155",
+      "opt_name": "Porção de fritas extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30156",
+      "opt_name": "Mandioca cozida extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30157",
+      "opt_name": "Mandioca frita extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30158",
+      "opt_name": "Maionese de ovos extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30159",
+      "opt_name": "Molho chimichurri extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30160",
+      "opt_name": "Alho frito extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30161",
+      "opt_name": "Molho barbecue extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30162",
+      "opt_name": "Limão para espremer",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30163",
+      "opt_name": "Farofa extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "opt_id": "30164",
+      "opt_name": "Vinagrete extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30179",
+      "opt_name": "Mandioca cozida extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30180",
+      "opt_name": "Bananas empanadas 2 unidades",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30181",
+      "opt_name": "Maionese de ovos extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30182",
+      "opt_name": "Farofa extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30183",
+      "opt_name": "Vinagrete extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30184",
+      "opt_name": "Pudim de leite individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30185",
+      "opt_name": "Pavê de brigadeiro individual",
+      "isActive": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "opt_id": "30186",
+      "opt_name": "Mousse de maracujá individual",
+      "isActive": "0"
+    },
+    {
+      "id": "61",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco tradicional",
+      "opt_id": "30187",
+      "opt_name": "Mandioca cozida extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "61",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco tradicional",
+      "opt_id": "30188",
+      "opt_name": "Bananas empanadas 2 unidades",
+      "isActive": "0"
+    },
+    {
+      "id": "61",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco tradicional",
+      "opt_id": "30189",
+      "opt_name": "Maionese de ovos extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "61",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco tradicional",
+      "opt_id": "30190",
+      "opt_name": "Farofa extra individual",
+      "isActive": "0"
+    },
+    {
+      "id": "61",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco tradicional",
+      "opt_id": "30191",
+      "opt_name": "Vinagrete extra individual",
+      "isActive": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titem\topt_id\topt_name\tisActive\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30165\tKit para 5 pessoas\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30166\tQueijinho assado extra 1 unidade\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30167\tBananas empanadas extra 2 unidades\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30168\tPorção de chips individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30169\tPorção de fritas individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30170\tMandioca cozida individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30171\tMandioca frita individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30172\tMaionese de ovos individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30173\tMolho chimichurri extra individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30174\tAlho frito extra individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30175\tMolho barbecue extra individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30176\tLimão para espremer\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30177\tFarofa extra individual\t0\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t30178\tVinagrete extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30151\tKit para 5 pessoas\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30152\tQueijinho assado extra 1 unidade\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30153\tBananas empanadas extra 2 unidades\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30154\tPorção de chips extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30155\tPorção de fritas extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30156\tMandioca cozida extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30157\tMandioca frita extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30158\tMaionese de ovos extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30159\tMolho chimichurri extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30160\tAlho frito extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30161\tMolho barbecue extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30162\tLimão para espremer\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30163\tFarofa extra individual\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t30164\tVinagrete extra individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30179\tMandioca cozida extra individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30180\tBananas empanadas 2 unidades\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30181\tMaionese de ovos extra individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30182\tFarofa extra individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30183\tVinagrete extra individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30184\tPudim de leite individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30185\tPavê de brigadeiro individual\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t30186\tMousse de maracujá individual\t0\n61\t\"Turbine\" seu pedido!\tMix de churrasco tradicional\t30187\tMandioca cozida extra individual\t0\n61\t\"Turbine\" seu pedido!\tMix de churrasco tradicional\t30188\tBananas empanadas 2 unidades\t0\n61\t\"Turbine\" seu pedido!\tMix de churrasco tradicional\t30189\tMaionese de ovos extra individual\t0\n61\t\"Turbine\" seu pedido!\tMix de churrasco tradicional\t30190\tFarofa extra individual\t0\n61\t\"Turbine\" seu pedido!\tMix de churrasco tradicional\t30191\tVinagrete extra individual\t0\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

@@ -1,0 +1,38 @@
+{
+  "query": "\n-- Verificar se os grupos originais de Turbine dos Kits/Mixes (47, 49, 51, 53, 55, 57, 59, 61) têm opções\nSELECT cg.id, cg.name, mi.name as item, COUNT(co.id) as total, SUM(co.isActive) as active\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nLEFT JOIN menu_addon_options co ON co.groupId = cg.id\nWHERE cg.name LIKE '%Turbine%' AND cg.menuItemId IN (150020, 150021, 150022, 150023)\nGROUP BY cg.id, cg.name, mi.name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \n-- Verificar se os grupos originais de Turbine dos Kits/Mixes (47, 49, 51, 53, 55, 57, 59, 61) têm opções\nSELECT cg.id, cg.name, mi.name as item, COUNT(co.id) as total, SUM(co.isActive) as active\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nLEFT JOIN menu_addon_options co ON co.groupId = cg.id\nWHERE cg.name LIKE '%Turbine%' AND cg.menuItemId IN (150020, 150021, 150022, 150023)\nGROUP BY cg.id, cg.name, mi.name;\n",
+  "rows": [
+    {
+      "id": "49",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco nobre",
+      "total": "14",
+      "active": "0"
+    },
+    {
+      "id": "61",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco tradicional",
+      "total": "5",
+      "active": "0"
+    },
+    {
+      "id": "53",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Kit de churrasco tradicional",
+      "total": "14",
+      "active": "0"
+    },
+    {
+      "id": "57",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Mix de churrasco nobre",
+      "total": "8",
+      "active": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titem\ttotal\tactive\n49\t\"Turbine\" seu pedido!\tKit de churrasco nobre\t14\t0\n61\t\"Turbine\" seu pedido!\tMix de churrasco tradicional\t5\t0\n53\t\"Turbine\" seu pedido!\tKit de churrasco tradicional\t14\t0\n57\t\"Turbine\" seu pedido!\tMix de churrasco nobre\t8\t0\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

@@ -42,7 +42,7 @@ export async function formatOrderForWhatsApp(orderId: number): Promise<string> {
     .where(eq(orderItems.orderId, orderId));
 
   // Montar mensagem
-  let message = `✅ *Pedido #${order.orderNumber} Confirmado!*\n\n`;
+  let message = `⏳ *Pedido #${order.orderNumber} Recebido!*\n\n`;
   
   message += `👤 *Cliente:* ${order.customerName}\n`;
   message += `📱 *Telefone:* ${order.customerPhone}\n\n`;
@@ -78,8 +78,8 @@ export async function formatOrderForWhatsApp(orderId: number): Promise<string> {
     message += `📝 *Observações:*\n${order.customerNotes}\n\n`;
   }
 
-  message += `🔥 *Seu pedido já está sendo preparado!*\n\n`;
-  message += `_Você receberá atualizações sobre o status do seu pedido._`;
+  message += `⏳ *Aguardando aceite do restaurante...*\n\n`;
+  message += `_Você será avisado assim que o restaurante confirmar seu pedido._`;
 
   return message;
 }
@@ -120,7 +120,7 @@ export function formatStatusUpdateForWhatsApp(
   estimatedTime?: number
 ): string {
   const statusMessages: Record<string, string> = {
-    confirmed: `✅ *Pedido #${orderNumber} Confirmado!*\n\nSeu pedido foi confirmado e já está sendo preparado! 🔥`,
+    confirmed: `✅ *Pedido #${orderNumber} Aceito e Confirmado!*\n\nO restaurante aceitou seu pedido e já está sendo preparado! 🔥`,
     preparing: `👨‍🍳 *Pedido #${orderNumber} em Preparo*\n\nNossa equipe está preparando seu pedido com todo carinho! 🍖`,
     ready: `✨ *Pedido #${orderNumber} Pronto!*\n\nSeu pedido está pronto para retirada! 🎉`,
     delivering: `🚚 *Pedido #${orderNumber} Saiu para Entrega*\n\nSeu pedido está a caminho! ${estimatedTime ? `Previsão: ${estimatedTime} minutos` : ""}`,

@@ -1,0 +1,64 @@
+{
+  "query": "\nSELECT cg.id, cg.name, mi.name as item, COUNT(co.id) as active_opts\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nJOIN menu_addon_options co ON co.groupId = cg.id AND co.isActive = 1\nWHERE cg.name LIKE '%Turbine%'\nGROUP BY cg.id, cg.name, mi.name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT cg.id, cg.name, mi.name as item, COUNT(co.id) as active_opts\nFROM menu_addon_groups cg\nJOIN menu_items mi ON mi.id = cg.menuItemId\nJOIN menu_addon_options co ON co.groupId = cg.id AND co.isActive = 1\nWHERE cg.name LIKE '%Turbine%'\nGROUP BY cg.id, cg.name, mi.name;\n",
+  "rows": [
+    {
+      "id": "33",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Marmitex Completa P",
+      "active_opts": "10"
+    },
+    {
+      "id": "41",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Tradicional Marmitex G",
+      "active_opts": "10"
+    },
+    {
+      "id": "18",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Cowboy individual",
+      "active_opts": "10"
+    },
+    {
+      "id": "26",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Laçador individual",
+      "active_opts": "10"
+    },
+    {
+      "id": "37",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Marmitex Completa M",
+      "active_opts": "10"
+    },
+    {
+      "id": "45",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Marmitex econômica 1 (individual)",
+      "active_opts": "10"
+    },
+    {
+      "id": "22",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Executivo Fit Premium",
+      "active_opts": "10"
+    },
+    {
+      "id": "29",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Tropeiro individual",
+      "active_opts": "10"
+    },
+    {
+      "id": "64",
+      "name": "\"Turbine\" seu pedido!",
+      "item": "Pescador individual",
+      "active_opts": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\titem\tactive_opts\n33\t\"Turbine\" seu pedido!\tMarmitex Completa P\t10\n41\t\"Turbine\" seu pedido!\tTradicional Marmitex G\t10\n18\t\"Turbine\" seu pedido!\tCowboy individual\t10\n26\t\"Turbine\" seu pedido!\tLaçador individual\t10\n37\t\"Turbine\" seu pedido!\tMarmitex Completa M\t10\n45\t\"Turbine\" seu pedido!\tMarmitex econômica 1 (individual)\t10\n22\t\"Turbine\" seu pedido!\tExecutivo Fit Premium\t10\n29\t\"Turbine\" seu pedido!\tTropeiro individual\t10\n64\t\"Turbine\" seu pedido!\tPescador individual\t3\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

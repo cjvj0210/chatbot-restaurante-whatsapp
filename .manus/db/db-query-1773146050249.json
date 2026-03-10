@@ -1,0 +1,190 @@
+{
+  "query": "SELECT id, name, categoryId FROM menu_items ORDER BY categoryId, name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name, categoryId FROM menu_items ORDER BY categoryId, name;",
+  "rows": [
+    {
+      "id": "150001",
+      "name": "Cowboy individual",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150007",
+      "name": "Estrelinha - infantil",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150002",
+      "name": "Executivo Fit Premium",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150003",
+      "name": "Laçador individual",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150006",
+      "name": "Peãozinho - infantil",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150005",
+      "name": "Pescador individual",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150004",
+      "name": "Tropeiro individual",
+      "categoryId": "150001"
+    },
+    {
+      "id": "150009",
+      "name": "Marmitex Completa M",
+      "categoryId": "150002"
+    },
+    {
+      "id": "150008",
+      "name": "Marmitex Completa P",
+      "categoryId": "150002"
+    },
+    {
+      "id": "150010",
+      "name": "Tradicional Marmitex G",
+      "categoryId": "150002"
+    },
+    {
+      "id": "150014",
+      "name": "Anéis de cebola empanados",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150018",
+      "name": "Arroz",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150011",
+      "name": "Banana Empanada (2 unidades)",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150016",
+      "name": "Batatas chips",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150017",
+      "name": "Batatas fritas",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150012",
+      "name": "Mini Pastéis",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150013",
+      "name": "Queijinho bola Assado (unidade)",
+      "categoryId": "150003"
+    },
+    {
+      "id": "150019",
+      "name": "Marmitex econômica 1 (individual)",
+      "categoryId": "150004"
+    },
+    {
+      "id": "150020",
+      "name": "Kit de churrasco nobre",
+      "categoryId": "150005"
+    },
+    {
+      "id": "150021",
+      "name": "Kit de churrasco tradicional",
+      "categoryId": "150005"
+    },
+    {
+      "id": "150022",
+      "name": "Mix de churrasco nobre",
+      "categoryId": "150005"
+    },
+    {
+      "id": "150023",
+      "name": "Mix de churrasco tradicional",
+      "categoryId": "150005"
+    },
+    {
+      "id": "150026",
+      "name": "Salada Caesar",
+      "categoryId": "150006"
+    },
+    {
+      "id": "150024",
+      "name": "Salada Caprese",
+      "categoryId": "150006"
+    },
+    {
+      "id": "150027",
+      "name": "Salada Estrela",
+      "categoryId": "150006"
+    },
+    {
+      "id": "150025",
+      "name": "Salada Simples",
+      "categoryId": "150006"
+    },
+    {
+      "id": "150035",
+      "name": "Água mineral",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150037",
+      "name": "Cervejas lata",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150036",
+      "name": "Cervejas Long Neck",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150028",
+      "name": "Refrigerantes 2 Litros",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150029",
+      "name": "Refrigerantes Econômicos",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150033",
+      "name": "Refrigerantes lata",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150030",
+      "name": "Suco de abacaxi natural",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150031",
+      "name": "Suco de Laranja Natural",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150034",
+      "name": "Suco de limão natural",
+      "categoryId": "150007"
+    },
+    {
+      "id": "150032",
+      "name": "Sucos Del Valle lata",
+      "categoryId": "150007"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcategoryId\n150001\tCowboy individual\t150001\n150007\tEstrelinha - infantil\t150001\n150002\tExecutivo Fit Premium\t150001\n150003\tLaçador individual\t150001\n150006\tPeãozinho - infantil\t150001\n150005\tPescador individual\t150001\n150004\tTropeiro individual\t150001\n150009\tMarmitex Completa M\t150002\n150008\tMarmitex Completa P\t150002\n150010\tTradicional Marmitex G\t150002\n150014\tAnéis de cebola empanados\t150003\n150018\tArroz\t150003\n150011\tBanana Empanada (2 unidades)\t150003\n150016\tBatatas chips\t150003\n150017\tBatatas fritas\t150003\n150012\tMini Pastéis\t150003\n150013\tQueijinho bola Assado (unidade)\t150003\n150019\tMarmitex econômica 1 (individual)\t150004\n150020\tKit de churrasco nobre\t150005\n150021\tKit de churrasco tradicional\t150005\n150022\tMix de churrasco nobre\t150005\n150023\tMix de churrasco tradicional\t150005\n150026\tSalada Caesar\t150006\n150024\tSalada Caprese\t150006\n150027\tSalada Estrela\t150006\n150025\tSalada Simples\t150006\n150035\tÁgua mineral\t150007\n150037\tCervejas lata\t150007\n150036\tCervejas Long Neck\t150007\n150028\tRefrigerantes 2 Litros\t150007\n150029\tRefrigerantes Econômicos\t150007\n150033\tRefrigerantes lata\t150007\n150030\tSuco de abacaxi natural\t150007\n150031\tSuco de Laranja Natural\t150007\n150034\tSuco de limão natural\t150007\n150032\tSucos Del Valle lata\t150007\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}
