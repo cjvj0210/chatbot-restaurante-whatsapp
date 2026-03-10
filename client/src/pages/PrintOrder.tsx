@@ -199,7 +199,7 @@ export default function PrintOrder() {
     @media print {
       @page {
         size: 80mm auto;
-        margin: 2mm 1mm;
+        margin: 2mm 0mm;
       }
 
       html, body {
@@ -226,8 +226,10 @@ export default function PrintOrder() {
       .print-wrap {
         width: 80mm !important;
         max-width: 80mm !important;
-        /* padding-left: 5mm garante que o texto não seja cortado pela margem física da impressora */
-        padding: 2mm 3mm 2mm 6mm !important;
+        /* padding: top right bottom left */
+        /* left 5mm: evita corte pela margem física esquerda */
+        /* right 5mm: evita corte pela margem física direita */
+        padding: 2mm 5mm 2mm 5mm !important;
         margin: 0 !important;
         box-sizing: border-box !important;
       }
