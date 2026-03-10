@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -48,10 +48,31 @@ interface OrderItem {
   addons?: string | null;
 }
 
+// Gera um beep sintético usando Web Audio API (sem arquivo externo)
+function playAlertBeep() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "square";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.30);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.55);
+  } catch (_) { /* silently ignore if audio not available */ }
+}
+
 export default function Orders() {
   const utils = trpc.useUtils();
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const prevPendingCount = useRef<number>(0);
+  const isFirstLoad = useRef<boolean>(true);
 
   type StatusEnum = "pending" | "confirmed" | "preparing" | "ready" | "delivering" | "delivered" | "cancelled";
   const { data: orders, isLoading } = trpc.order.list.useQuery(
@@ -77,7 +98,36 @@ export default function Orders() {
     return statusFlow[idx + 1];
   };
 
-  const pendingCount = orders?.filter((o) => o.status === "pending").length ?? 0;
+   const pendingCount = orders?.filter((o) => o.status === "pending").length ?? 0;
+
+  // Alerta sonoro quando chegam novos pedidos pendentes
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      // Na primeira carga, apenas registra o count sem tocar som
+      if (!isLoading && orders !== undefined) {
+        prevPendingCount.current = pendingCount;
+        isFirstLoad.current = false;
+      }
+      return;
+    }
+    if (pendingCount > prevPendingCount.current) {
+      // Novos pedidos chegaram — tocar alerta 2x
+      playAlertBeep();
+      setTimeout(playAlertBeep, 700);
+      toast.warning(`🔔 ${pendingCount - prevPendingCount.current} novo(s) pedido(s) aguardando aceite!`, {
+        duration: 6000,
+      });
+    }
+    prevPendingCount.current = pendingCount;
+  }, [pendingCount, isLoading, orders]);
+
+  // Refetch automático a cada 15 segundos para detectar novos pedidos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      utils.order.list.invalidate();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [utils]);
 
   return (
     <div className="space-y-5 max-w-5xl">

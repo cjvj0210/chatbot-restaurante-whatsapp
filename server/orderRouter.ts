@@ -30,6 +30,14 @@ export const orderRouter = router({
             quantity: z.number().min(1),
             price: z.number(),
             observations: z.string().optional(),
+            addons: z.array(z.object({
+              groupId: z.number(),
+              groupName: z.string(),
+              optionId: z.number(),
+              optionName: z.string(),
+              priceExtra: z.number(),
+              quantity: z.number().optional(),
+            })).optional(),
           })
         ).min(1, "Pedido deve ter pelo menos 1 item"),
       })
@@ -84,7 +92,7 @@ export const orderRouter = router({
           quantity: item.quantity,
           unitPrice: menuItem.price,
           observations: item.observations || null,
-          addons: null,
+          addons: item.addons && item.addons.length > 0 ? JSON.stringify(item.addons) : null,
         };
       });
 

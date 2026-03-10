@@ -5,11 +5,23 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 /**
- * Página de impressão de comanda — DUAS VIAS
+ * Página de impressão de comanda — DUAS VIAS DIFERENCIADAS
+ * VIA 1 — COZINHA: itens + complementos/adicionais + observações
+ * VIA 2 — CAIXA:   dados do cliente + endereço + totais + pagamento + troco
+ *
  * Otimizada para impressoras térmicas 80mm
- * - Fonte mínima 13px, negrito em todo o texto para traços mais grossos
- * - Duas vias idênticas separadas por linha de corte
+ * - Fonte mínima 13px, negrito em todo o texto
  */
+
+interface SelectedAddon {
+  groupId: number;
+  groupName: string;
+  optionId: number;
+  optionName: string;
+  priceExtra: number;
+  quantity?: number;
+}
+
 export default function PrintOrder() {
   const { orderId } = useParams<{ orderId: string }>();
   const { data: order, isLoading } = trpc.order.getById.useQuery(
@@ -45,11 +57,102 @@ export default function PrintOrder() {
   const changeFor = (order as any).changeFor as number | null | undefined;
   const trocoValor = changeFor && changeFor > order.total ? changeFor - order.total : null;
 
-  // Componente de uma via
-  const Via = () => (
-    <div className="via">
+  // Parse addons de cada item
+  const parseAddons = (addonsStr: string | null | undefined): SelectedAddon[] => {
+    if (!addonsStr) return [];
+    try {
+      return JSON.parse(addonsStr) as SelectedAddon[];
+    } catch {
+      return [];
+    }
+  };
 
-      {/* CABEÇALHO */}
+  // ======================================================
+  // VIA 1 — COZINHA
+  // ======================================================
+  const ViaCozinha = () => (
+    <div className="via">
+      <div className="via-label">*** VIA COZINHA ***</div>
+
+      <div className="center title">CHURRASCARIA ESTRELA</div>
+      <div className="center title">DO SUL</div>
+      <div className="center sub" style={{ marginTop: "3px" }}>
+        Pedido #{order.orderNumber}
+      </div>
+      <div className="center sub">
+        {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+      </div>
+
+      <div className="line-solid" />
+
+      {/* Tipo de pedido */}
+      <div className="row">
+        <span className="lbl">Tipo:</span>
+        <span className="val">
+          {order.orderType === "delivery" ? "DELIVERY" : "RETIRADA NO BALCAO"}
+        </span>
+      </div>
+      <div className="row">
+        <span className="lbl">Cliente:</span>
+        <span className="val">{order.customerName}</span>
+      </div>
+
+      <div className="line-dash" />
+
+      {/* ITENS COM COMPLEMENTOS */}
+      <div className="section-title">ITENS DO PEDIDO:</div>
+      {order.items?.map((item: any, idx: number) => {
+        const addons = parseAddons(item.addons);
+        return (
+          <div key={item.id ?? idx} style={{ marginBottom: "6px" }}>
+            {/* Item principal */}
+            <div className="item-row">
+              <span className="item-qty">{item.quantity}x</span>
+              <span className="item-name">{item.menuItemName}</span>
+            </div>
+            {/* Complementos/adicionais */}
+            {addons.length > 0 && (
+              <div style={{ paddingLeft: "26px" }}>
+                {addons.map((a, ai) => (
+                  <div key={ai} className="addon-line">
+                    {a.quantity && a.quantity > 1 ? `${a.quantity}x ` : ""}
+                    {a.groupName}: {a.optionName}
+                    {a.priceExtra > 0 ? ` (+${fmt(a.priceExtra)})` : ""}
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Observações do item */}
+            {item.observations && (
+              <div className="obs">Obs: {item.observations}</div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Observações gerais */}
+      {order.customerNotes && (
+        <>
+          <div className="line-dash" />
+          <div className="section-title">OBS. GERAIS:</div>
+          <div style={{ marginTop: "3px", wordBreak: "break-word" }}>
+            {order.customerNotes}
+          </div>
+        </>
+      )}
+
+      <div className="line-solid" style={{ marginTop: "8px" }} />
+      <div className="center sub">Tempo estimado: {order.estimatedTime || 40} min</div>
+    </div>
+  );
+
+  // ======================================================
+  // VIA 2 — CAIXA
+  // ======================================================
+  const ViaCaixa = () => (
+    <div className="via">
+      <div className="via-label">*** VIA CAIXA ***</div>
+
       <div className="center title">CHURRASCARIA ESTRELA</div>
       <div className="center title">DO SUL</div>
       <div className="center sub" style={{ marginTop: "3px" }}>
@@ -87,18 +190,13 @@ export default function PrintOrder() {
 
       <div className="line-dash" />
 
-      {/* ITENS */}
-      <div className="section-title">ITENS DO PEDIDO:</div>
+      {/* RESUMO DOS ITENS (sem detalhes) */}
+      <div className="section-title">RESUMO:</div>
       {order.items?.map((item: any, idx: number) => (
-        <div key={item.id ?? idx}>
-          <div className="item-row">
-            <span className="item-qty">{item.quantity}x</span>
-            <span className="item-name">{item.menuItemName}</span>
-            <span className="item-price">{fmt(item.unitPrice * item.quantity)}</span>
-          </div>
-          {item.observations && (
-            <div className="obs">Obs: {item.observations}</div>
-          )}
+        <div key={item.id ?? idx} className="item-row">
+          <span className="item-qty">{item.quantity}x</span>
+          <span className="item-name">{item.menuItemName}</span>
+          <span className="item-price">{fmt(item.unitPrice * item.quantity)}</span>
         </div>
       ))}
 
@@ -147,19 +245,8 @@ export default function PrintOrder() {
         </div>
       )}
 
-      {/* OBSERVAÇÕES */}
-      {order.customerNotes && (
-        <>
-          <div className="line-dash" />
-          <div className="section-title">OBSERVACOES:</div>
-          <div style={{ marginTop: "3px", wordBreak: "break-word" }}>
-            {order.customerNotes}
-          </div>
-        </>
-      )}
-
       <div className="line-solid" style={{ marginTop: "8px" }} />
-      <div className="center sub">Tempo estimado: {order.estimatedTime || 40} minutos</div>
+      <div className="center sub">Tempo estimado: {order.estimatedTime || 40} min</div>
       <div className="center sub" style={{ marginTop: "3px" }}>Obrigado pela preferencia!</div>
     </div>
   );
@@ -168,8 +255,8 @@ export default function PrintOrder() {
     <>
       <style>{`
         /* =====================================================
-           COMANDA TÉRMICA — DUAS VIAS
-           Fonte mínima 13px, negrito em tudo para traços grossos
+           COMANDA TÉRMICA — VIA COZINHA + VIA CAIXA
+           Fonte mínima 13px, negrito em tudo
            Impressoras ESC/POS 80mm
         ===================================================== */
 
@@ -180,14 +267,12 @@ export default function PrintOrder() {
           color: #000 !important;
         }
 
-        /* Wrapper geral da página */
         .print-page {
           width: 72mm;
           max-width: 72mm;
           margin: 0 auto;
           padding: 4mm 2mm;
           font-family: 'Courier New', Courier, monospace;
-          /* Negrito em TODO o texto para traços mais grossos na térmica */
           font-weight: bold;
           font-size: 13px;
           line-height: 1.55;
@@ -195,9 +280,16 @@ export default function PrintOrder() {
           background: #fff;
         }
 
-        /* Uma via */
-        .via {
-          width: 100%;
+        .via { width: 100%; }
+
+        .via-label {
+          text-align: center;
+          font-size: 12px;
+          font-weight: bold;
+          letter-spacing: 1px;
+          margin-bottom: 5px;
+          border: 2px solid #000;
+          padding: 2px 0;
         }
 
         /* Separador entre vias */
@@ -205,7 +297,6 @@ export default function PrintOrder() {
           border: none;
           border-top: 2px dashed #000;
           margin: 10px 0;
-          text-align: center;
         }
         .corte-label {
           text-align: center;
@@ -215,7 +306,6 @@ export default function PrintOrder() {
           letter-spacing: 2px;
         }
 
-        /* Tipografia */
         .center  { text-align: center; }
         .title   { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
         .sub     { font-size: 12px; font-weight: bold; }
@@ -223,7 +313,6 @@ export default function PrintOrder() {
         .lbl     { font-size: 13px; font-weight: bold; flex: 0 0 auto; margin-right: 4px; }
         .val     { font-size: 13px; font-weight: bold; flex: 1; word-break: break-word; }
 
-        /* Linhas divisórias */
         .line-solid {
           border: none;
           border-top: 2px solid #000;
@@ -235,7 +324,6 @@ export default function PrintOrder() {
           margin: 5px 0;
         }
 
-        /* Layout de linha label/valor */
         .row {
           display: flex;
           justify-content: flex-start;
@@ -243,17 +331,27 @@ export default function PrintOrder() {
           margin: 2px 0;
         }
 
-        /* Itens do pedido */
+        /* Itens */
         .item-row {
           display: flex;
           justify-content: space-between;
-          margin: 3px 0;
+          margin: 2px 0;
           font-size: 13px;
           font-weight: bold;
         }
         .item-qty  { flex: 0 0 26px; }
         .item-name { flex: 1; }
         .item-price { flex: 0 0 62px; text-align: right; white-space: nowrap; }
+
+        /* Complementos/adicionais */
+        .addon-line {
+          font-size: 12px;
+          font-weight: bold;
+          margin: 1px 0;
+          padding-left: 4px;
+          border-left: 2px solid #000;
+        }
+
         .obs {
           font-size: 12px;
           font-weight: bold;
@@ -279,7 +377,7 @@ export default function PrintOrder() {
           border-top: 2px solid #000;
         }
 
-        /* Bloco de troco */
+        /* Troco */
         .troco-box {
           border: 2px solid #000;
           padding: 5px 7px;
@@ -289,7 +387,6 @@ export default function PrintOrder() {
         .troco-valor { font-size: 15px; font-weight: bold; }
         .troco-para  { font-size: 12px; font-weight: bold; }
 
-        /* Botão só aparece na tela */
         .no-print { display: block; }
 
         /* ===== REGRAS DE IMPRESSÃO ===== */
@@ -308,7 +405,6 @@ export default function PrintOrder() {
             print-color-adjust: exact;
           }
 
-          /* Forçar preto absoluto — sem cinza, sem meio-tom */
           * {
             color: #000 !important;
             background: transparent !important;
@@ -317,7 +413,6 @@ export default function PrintOrder() {
             text-shadow: none !important;
             -webkit-filter: none !important;
             filter: none !important;
-            /* Manter negrito forçado na impressão */
             font-weight: bold !important;
           }
 
@@ -332,15 +427,15 @@ export default function PrintOrder() {
 
       <div className="print-page">
 
-        {/* === VIA 1 === */}
-        <Via />
+        {/* === VIA 1 — COZINHA === */}
+        <ViaCozinha />
 
         {/* === SEPARADOR DE CORTE === */}
         <div className="corte" />
         <div className="corte-label">- - - RECORTAR AQUI - - -</div>
 
-        {/* === VIA 2 (idêntica) === */}
-        <Via />
+        {/* === VIA 2 — CAIXA === */}
+        <ViaCaixa />
 
         {/* Espaço para corte da bobina */}
         <div style={{ marginTop: "20px" }}>&nbsp;</div>

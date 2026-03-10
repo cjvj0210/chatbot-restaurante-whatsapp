@@ -17,12 +17,21 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+interface SelectedAddon {
+  groupId: number;
+  groupName: string;
+  optionId: number;
+  optionName: string;
+  priceExtra: number;
+  quantity?: number;
+}
 interface CartItem {
   menuItemId: number;
   name: string;
   price: number;
   quantity: number;
   observations?: string;
+  addons?: SelectedAddon[];
 }
 
 type DeliveryType = "delivery" | "pickup";
@@ -113,6 +122,7 @@ export default function Checkout() {
         quantity: item.quantity,
         price: item.price,
         observations: item.observations,
+        addons: item.addons && item.addons.length > 0 ? item.addons : undefined,
       })),
     });
   };
