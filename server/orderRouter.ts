@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
-import { orders, orderItems, orderSessions, menuItems } from "../drizzle/schema";
-import { eq, desc, inArray } from "drizzle-orm";
+import { orders, orderItems, orderSessions, menuItems, customers } from "../drizzle/schema";
+import { eq, desc, inArray, like } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
 
 /**
@@ -317,6 +317,89 @@ export const orderRouter = router({
       );
 
       return ordersWithItems;
+    }),
+
+  /**
+   * Buscar histórico de pedidos por telefone do cliente (admin)
+   */
+  getByPhone: protectedProcedure
+    .input(
+      z.object({
+        phone: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+      // Normalizar telefone: remover tudo exceto dígitos
+      const digits = input.phone.replace(/\D/g, "");
+      const ordersList = await db
+        .select()
+        .from(orders)
+        .where(like(orders.customerPhone, `%${digits.slice(-8)}%`))
+        .orderBy(desc(orders.createdAt))
+        .limit(20);
+      const ordersWithItems = await Promise.all(
+        ordersList.map(async (order) => {
+          const items = await db
+            .select({
+              id: orderItems.id,
+              name: menuItems.name,
+              quantity: orderItems.quantity,
+              price: orderItems.unitPrice,
+            })
+            .from(orderItems)
+            .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+            .where(eq(orderItems.orderId, order.id));
+          return { ...order, orderItemsList: items };
+        })
+      );
+      return ordersWithItems;
+    }),
+
+  /**
+   * Buscar dados do cliente pelo número de WhatsApp (pré-preenchimento no cardápio)
+   */
+  getCustomerByWhatsapp: publicProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      // Buscar sessão para obter o whatsappNumber
+      const [session] = await db
+        .select()
+        .from(orderSessions)
+        .where(eq(orderSessions.sessionId, input.sessionId))
+        .limit(1);
+      if (!session?.whatsappNumber) return null;
+      // Buscar cliente pelo telefone
+      const phone = session.whatsappNumber.replace(/\D/g, "");
+      const customersList = await db
+        .select()
+        .from(customers)
+        .where(like(customers.phone, `%${phone.slice(-8)}%`))
+        .limit(1);
+      const customer = customersList[0];
+      if (!customer) return null;
+      // Buscar último pedido para pegar o endereço mais recente
+      const lastOrders = await db
+        .select()
+        .from(orders)
+        .where(like(orders.customerPhone, `%${phone.slice(-8)}%`))
+        .orderBy(desc(orders.createdAt))
+        .limit(1);
+      const lastOrder = lastOrders[0];
+      return {
+        name: customer.name || "",
+        phone: customer.phone || session.whatsappNumber,
+        address: lastOrder?.deliveryAddress || customer.address || "",
+        totalOrders: customer.totalOrders,
+        totalSpent: customer.totalSpent,
+      };
     }),
 
   /**

@@ -708,3 +708,8 @@
 - [ ] Renomear "Pix" para "Pix na Entrega (Maquininha)"
 - [ ] Separar campos de endereço: Rua, Bairro, Número, Referência (obrigatórios) + Complemento (opcional)
 - [ ] Corrigir preços dos complementos adicionais conforme tabela fornecida
+
+## Melhorias - Março 2026
+- [ ] Histórico de pedidos por cliente no painel admin (ao expandir pedido, mostrar total de pedidos do telefone)
+- [ ] Pré-preenchimento automático de dados do cliente no cardápio digital quando número de WhatsApp é reconhecido
+- [ ] Confirmação/troca de endereço no checkout antes de finalizar pedido

@@ -14,8 +14,13 @@ import {
   createMessage,
   updateConversation,
   getMessagesByConversation,
+  getDb,
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
+import { getChatbotPrompt } from "./chatbotPrompt";
+import { orderSessions } from "../drizzle/schema";
+import { randomBytes } from "crypto";
+import { getSiteUrl } from "./_core/siteUrl";
 
 interface ChatContext {
   intent?: "order" | "reservation" | "info" | "feedback" | "other";
@@ -23,7 +28,7 @@ interface ChatContext {
   deliveryAddress?: string;
   reservationDate?: string;
   reservationPeople?: number;
-  awaitingInput?: string; // O que estamos esperando do usuário
+  awaitingInput?: string;
 }
 
 /**
@@ -71,8 +76,8 @@ export async function processIncomingMessage(
     // 4. Obter contexto da conversa
     const context: ChatContext = conversation.context ? JSON.parse(conversation.context) : {};
 
-    // 5. Processar mensagem com IA
-    const response = await generateResponse(customer.id, conversation.id, messageText, context);
+    // 5. Processar mensagem com IA usando o prompt completo do restaurante
+    const response = await generateResponse(customer.id, conversation.id, messageText, context, phone);
 
     // 6. Salvar resposta do assistente
     await createMessage({
@@ -120,141 +125,107 @@ interface BotResponse {
 }
 
 /**
- * Gera resposta usando IA baseada no histórico e contexto
+ * Gera resposta usando IA com o prompt completo do restaurante (chatbotPrompt.ts)
+ * Processa [GERAR_LINK_PEDIDO] substituindo pelo link real do cardápio digital
  */
 async function generateResponse(
   customerId: number,
   conversationId: number,
   userMessage: string,
-  context: ChatContext
+  context: ChatContext,
+  phone: string
 ): Promise<BotResponse> {
-  // Obter informações do restaurante
-  const settings = await getRestaurantSettings();
-  const categories = await getMenuCategories();
-  const menuItems = await getMenuItems();
+  // Obter data/hora atual para contexto
+  const hoje = new Date();
+  const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long" });
+  const dataCompleta = hoje.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+  const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  // Construir informações do restaurante para o sistema
-  const restaurantInfo = settings
-    ? `
-Nome: ${settings.name}
-Telefone: ${settings.phone}
-Endereço: ${settings.address}
-Horário: ${settings.openingHours}
-Aceita Delivery: ${settings.acceptsDelivery ? "Sim" : "Não"}
-Aceita Reservas: ${settings.acceptsReservation ? "Sim" : "Não"}
-Taxa de Entrega: R$ ${(settings.deliveryFee / 100).toFixed(2)}
-Pedido Mínimo: R$ ${(settings.minimumOrder / 100).toFixed(2)}
-Formas de Pagamento: ${settings.paymentMethods}
-`
-    : "Informações do restaurante não configuradas.";
-
-  const menuInfo = menuItems.length > 0
-    ? `
-Cardápio:
-${menuItems.map((item) => `- ${item.name}: R$ ${(item.price / 100).toFixed(2)} ${item.description ? `(${item.description})` : ""}`).join("\n")}
-`
-    : "Cardápio não disponível.";
+  // Usar o prompt COMPLETO do restaurante
+  const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
   // Obter histórico de mensagens
   const history = await getMessagesByConversation(conversationId);
+
   const messages: LLMMessage[] = [
-    {
-      role: "system",
-      content: `Você é um assistente virtual inteligente de um restaurante. Seu objetivo é ajudar os clientes com:
-1. Pedidos de delivery ou retirada
-2. Reservas de mesa
-3. Informações sobre o restaurante (horário, localização, cardápio, etc)
-4. Coleta de feedback
-
-Informações do Restaurante:
-${restaurantInfo}
-
-${menuInfo}
-
-Contexto atual da conversa: ${JSON.stringify(context)}
-
-Instruções:
-- Seja cordial, prestativo e profissional
-- Responda de forma clara e objetiva
-- Quando o cliente quiser fazer um pedido, mostre o cardápio e ajude na seleção
-- Para reservas, pergunte data, horário e número de pessoas
-- Sempre confirme os detalhes antes de finalizar pedidos ou reservas
-- Use emojis moderadamente para deixar a conversa mais amigável
-- Mantenha respostas curtas (máximo 300 caracteres quando possível)`,
-    },
+    { role: "system", content: systemPrompt },
   ];
 
-  // Adicionar histórico (últimas 10 mensagens)
-  const recentHistory = history.slice(-10);
+  // Adicionar histórico (últimas 15 mensagens para mais contexto)
+  const recentHistory = history.slice(-15);
   for (const msg of recentHistory) {
     messages.push({
       role: msg.role === "user" ? "user" : "assistant",
-      content: [{ type: "text" as const, text: msg.content }],
+      content: msg.content,
     });
   }
 
   // Adicionar mensagem atual
   messages.push({
     role: "user",
-    content: [{ type: "text" as const, text: userMessage }],
+    content: userMessage,
   });
 
   // Chamar IA
-  const response = await invokeLLM({
-    messages,
-  });
+  const response = await invokeLLM({ messages });
 
   const aiContent = response.choices[0]?.message?.content;
-  const aiResponse = typeof aiContent === "string" 
-    ? aiContent 
-    : Array.isArray(aiContent) 
-      ? aiContent.find(c => c.type === "text")?.text || "Desculpe, não entendi. Pode reformular?"
+  let aiResponse = typeof aiContent === "string"
+    ? aiContent
+    : Array.isArray(aiContent)
+      ? (aiContent.find((c: any) => c.type === "text") as any)?.text || "Desculpe, não entendi. Pode reformular?"
       : "Desculpe, não entendi. Pode reformular?";
 
-  // Detectar intenção e atualizar contexto
-  const updatedContext = await detectIntentAndUpdateContext(userMessage, aiResponse, context, menuItems);
-
-  // Preparar resposta com botões ou listas se apropriado
-  const botResponse: BotResponse = {
-    text: aiResponse,
-    updatedContext,
-  };
-
-  // Se detectou intenção de pedido e não tem itens ainda, mostrar cardápio
-  if (updatedContext.intent === "order" && (!updatedContext.orderItems || updatedContext.orderItems.length === 0)) {
-    if (categories.length > 0) {
-      botResponse.list = {
-        buttonText: "Ver Cardápio",
-        sections: await buildMenuSections(),
-      };
+  // Processar [GERAR_LINK_PEDIDO] — criar sessão e substituir pelo link real
+  if (aiResponse.includes("[GERAR_LINK_PEDIDO]")) {
+    try {
+      const db = await getDb();
+      if (db) {
+        const sessionId = randomBytes(16).toString("hex");
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await db.insert(orderSessions).values({
+          sessionId,
+          whatsappNumber: phone,
+          customerId: null,
+          status: "pending",
+          expiresAt,
+        });
+        const siteUrl = getSiteUrl();
+        const orderLink = `${siteUrl}/pedido/${sessionId}`;
+        aiResponse = aiResponse.replace("[GERAR_LINK_PEDIDO]", orderLink);
+        console.log(`[Chatbot] Link de pedido gerado para ${phone}: ${orderLink}`);
+      } else {
+        aiResponse = aiResponse.replace("[GERAR_LINK_PEDIDO]", "(link temporariamente indisponível)");
+      }
+    } catch (err) {
+      console.error("[Chatbot] Erro ao gerar link de pedido:", err);
+      aiResponse = aiResponse.replace("[GERAR_LINK_PEDIDO]", "(link temporariamente indisponível)");
     }
   }
 
-  // Se detectou intenção de informação geral, oferecer opções
-  if (updatedContext.intent === "info") {
-    botResponse.buttons = [
-      { id: "info_hours", title: "Horário" },
-      { id: "info_location", title: "Localização" },
-      { id: "info_payment", title: "Pagamento" },
-    ];
-  }
+  // Detectar intenção para atualizar contexto
+  const updatedContext = detectIntent(userMessage, context);
 
-  return botResponse;
+  return {
+    text: aiResponse,
+    updatedContext,
+  };
 }
 
 /**
  * Detecta a intenção do usuário e atualiza o contexto
  */
-async function detectIntentAndUpdateContext(
-  userMessage: string,
-  aiResponse: string,
-  currentContext: ChatContext,
-  menuItems: ReturnType<typeof getMenuItems> extends Promise<infer T> ? T : never
-): Promise<ChatContext> {
+function detectIntent(userMessage: string, currentContext: ChatContext): ChatContext {
   const lowerMessage = userMessage.toLowerCase();
   const updatedContext = { ...currentContext };
 
-  // Detectar intenção
   if (
     lowerMessage.includes("pedido") ||
     lowerMessage.includes("pedir") ||
@@ -290,30 +261,6 @@ async function detectIntentAndUpdateContext(
 }
 
 /**
- * Constrói seções do menu para lista interativa
- */
-async function buildMenuSections() {
-  const categories = await getMenuCategories();
-  const sections = [];
-
-  for (const category of categories) {
-    const items = await getMenuItems(category.id);
-    if (items.length > 0) {
-      sections.push({
-        title: category.name,
-        rows: items.slice(0, 10).map((item) => ({
-          id: `item_${item.id}`,
-          title: item.name.substring(0, 24),
-          description: `R$ ${(item.price / 100).toFixed(2)}`,
-        })),
-      });
-    }
-  }
-
-  return sections;
-}
-
-/**
  * Processa seleção de item do menu
  */
 export async function processMenuSelection(
@@ -326,12 +273,11 @@ export async function processMenuSelection(
   if (!conversation) return;
 
   const context: ChatContext = conversation.context ? JSON.parse(conversation.context) : {};
-  
+
   if (!context.orderItems) {
     context.orderItems = [];
   }
 
-  // Adicionar ou atualizar item
   const existingIndex = context.orderItems.findIndex((i) => i.itemId === itemId);
   if (existingIndex >= 0) {
     context.orderItems[existingIndex]!.quantity += quantity;
