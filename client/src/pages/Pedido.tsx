@@ -547,7 +547,7 @@ export default function Pedido() {
           {/* Endereço do restaurante */}
           <div className="mt-8 flex items-start gap-2 text-xs text-gray-400 justify-center">
             <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-            <span>Av. 7 nº 1885 · Barretos/SP · (17) 9 8183-2767</span>
+            <span>Av. 7 nº 1885 · Barretos/SP · (17) 9 8222-2790</span>
           </div>
         </div>
       </div>
