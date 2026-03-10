@@ -728,3 +728,5 @@
 - [x] Corrigir link do cardápio no chatbot para ser enviado em linha separada (compatível iOS/Android/Windows)
 - [x] Ativar e reposicionar grupo "Substitua a sua maneira" nas marmitex P, M e G (displayOrder=1, logo após alterar mix de carnes)
 - [x] Converter URLs em links clicáveis no frontend do chat de teste (PublicTest.tsx)
+- [x] Atualizar horários do rodízio no chatbotPrompt.ts (almoço seg-sex 11h-14h30, sáb 11h-14h45, dom 11h-15h; jantar ter-dom 19h-22h45, fechado seg)
+- [x] Adicionar política da taxa de serviço (10%) na base de conhecimento do chatbot
