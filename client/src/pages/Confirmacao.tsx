@@ -3,33 +3,22 @@ import { useParams } from "wouter";
 import { Clock, MessageCircle, Star, Hourglass } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
-// Calcula o tempo estimado de entrega baseado no dia da semana, horário e tipo de pedido
+// Calcula o tempo estimado de entrega baseado no dia da semana e tipo de pedido
 function calcularTempoEstimado(deliveryType: string): string {
   const now = new Date();
-  const hora = now.getHours();
   const diaSemana = now.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
-
-  const isAlmoco = hora >= 11 && hora < 15;
-  const isNoite = hora >= 18 && hora < 23;
-  const isSegQuiAlmoco = diaSemana >= 1 && diaSemana <= 4; // Seg a Qui
-  const isFimSemanaAlmoco = diaSemana === 5 || diaSemana === 6 || diaSemana === 0; // Sex, Sab, Dom
+  const isFimSemana = diaSemana === 0 || diaSemana === 6; // Domingo ou Sábado
 
   if (deliveryType === "pickup") {
-    if (isAlmoco) {
-      if (isSegQuiAlmoco) return "30 min";
-      if (isFimSemanaAlmoco) return "50 min";
-    }
-    if (isNoite) return "30 a 45 min";
-    return "30 a 45 min";
+    // Retirada: sempre 30 a 50 min independente do dia
+    return "30 a 50 min";
   }
 
   // Delivery
-  if (isAlmoco) {
-    if (isSegQuiAlmoco) return "45 a 70 min";
-    if (isFimSemanaAlmoco) return "60 a 110 min";
+  if (isFimSemana) {
+    return "60 a 110 min"; // Sábado e Domingo — maior movimento
   }
-  if (isNoite) return "45 a 70 min";
-  return "45 a 70 min";
+  return "45 a 70 min"; // Segunda a Sexta
 }
 
 export default function Confirmacao() {

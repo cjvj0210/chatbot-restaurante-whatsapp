@@ -654,7 +654,12 @@ export default function Checkout() {
             <div className="bg-orange-50 rounded-xl p-3 flex items-start gap-2 text-xs text-orange-700">
               <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold">Tempo estimado: 30-50 minutos</p>
+                <p className="font-semibold">Tempo estimado: {(() => {
+                  const d = new Date().getDay();
+                  const fds = d === 0 || d === 6;
+                  if (deliveryType === 'pickup') return '30 a 50 min';
+                  return fds ? '60 a 110 min' : '45 a 70 min';
+                })()}</p>
                 <p className="mt-0.5 text-orange-600">
                   {deliveryType === "delivery"
                     ? `Entrega para: ${address}`

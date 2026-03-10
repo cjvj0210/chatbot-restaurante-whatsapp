@@ -1049,7 +1049,12 @@ export default function Pedido() {
               {/* Info de entrega */}
               <div className="mx-4 mt-3 flex items-center gap-2 text-xs text-gray-400">
                 <Clock className="w-3.5 h-3.5" />
-                <span>Tempo estimado: 30–50 minutos</span>
+                <span>Tempo estimado: {(() => {
+                  const d = new Date().getDay();
+                  const fds = d === 0 || d === 6;
+                  if (deliveryType === 'pickup') return '30 a 50 min';
+                  return fds ? '60 a 110 min' : '45 a 70 min';
+                })()}</span>
               </div>
             </div>
           )}

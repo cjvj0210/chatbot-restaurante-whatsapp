@@ -392,7 +392,7 @@ export default function PrintOrder() {
         /* ===== REGRAS DE IMPRESSÃO ===== */
         @media print {
           @page {
-            margin: 0;
+            margin: 2mm 1mm;
             size: 80mm auto;
           }
 
@@ -417,9 +417,22 @@ export default function PrintOrder() {
           }
 
           .print-page {
-            width: 72mm !important;
-            padding: 2mm !important;
+            width: 76mm !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
+
+          /* Cada via ocupa uma página separada */
+          .via {
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            padding-bottom: 8mm;
+          }
+
+          /* Remover separador visual entre vias na impressão */
+          .corte, .corte-label { display: none !important; }
 
           .no-print { display: none !important; }
         }
