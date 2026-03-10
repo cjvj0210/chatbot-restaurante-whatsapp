@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store } from "lucide-react";
+import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store, AlertTriangle } from "lucide-react";
+import { checkBusinessHours } from "../../../shared/businessHours";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/logo-estrela-do-sul_aa66ec3f.png";
 
@@ -359,6 +360,12 @@ export default function Pedido() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [deliveryType, setDeliveryType] = useState<DeliveryType | null>(null);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+
+  // Status de horário de funcionamento (atualiza ao mudar tipo de pedido)
+  const businessStatus = useMemo(() => {
+    if (!deliveryType) return null;
+    return checkBusinessHours(deliveryType);
+  }, [deliveryType]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const categoryRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -673,10 +680,14 @@ export default function Pedido() {
             <div>
               <h1 className="font-bold text-sm leading-tight">Churrascaria Estrela do Sul</h1>
               <div className="flex items-center gap-1 text-xs text-red-200 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block flex-shrink-0" />
-                <span>Aberto</span>
-                <span className="mx-1 opacity-50">·</span>
-                <span>Mín. {formatPrice(3000)}</span>
+                <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${businessStatus?.isOpen ? 'bg-green-400' : 'bg-red-400'}`} />
+                <span>{businessStatus?.isOpen ? (businessStatus.isEarlyOrder ? 'Pedido antecipado' : 'Aberto') : 'Fechado'}</span>
+                {businessStatus?.isOpen && businessStatus.closesAt && (
+                  <><span className="mx-1 opacity-50">·</span><span>Fecha às {businessStatus.closesAt}</span></>
+                )}
+                {!businessStatus?.isOpen && businessStatus?.nextOpenTime && (
+                  <><span className="mx-1 opacity-50">·</span><span>Abre {businessStatus.nextOpenTime}</span></>
+                )}
               </div>
             </div>
           </div>
@@ -1056,6 +1067,24 @@ export default function Pedido() {
                   return fds ? '60 a 110 min' : '45 a 70 min';
                 })()}</span>
               </div>
+
+              {/* Aviso de pedido antecipado */}
+              {businessStatus?.isEarlyOrder && businessStatus.earlyOrderMessage && (
+                <div className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 leading-relaxed">{businessStatus.earlyOrderMessage}</p>
+                </div>
+              )}
+
+              {/* Aviso de fechado */}
+              {businessStatus && !businessStatus.isOpen && (
+                <div className="mx-4 mt-3 bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-700 leading-relaxed">
+                    Estamos fechados no momento. {businessStatus.nextOpenTime ? `Abrimos ${businessStatus.nextOpenTime}.` : ''} Você pode montar seu pedido agora e finalizar quando abrirmos!
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1080,18 +1109,25 @@ export default function Pedido() {
       {/* ===== BOTÃO FINALIZAR PEDIDO (aba carrinho) ===== */}
       {activeTab === "cart" && cart.length > 0 && (
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-5 pt-2 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" style={{ zIndex: 25 }}>
-          <button
-            onClick={() => {
-              localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cart));
-              localStorage.setItem(`deliveryType_${sessionId}`, deliveryType || "delivery");
-              setLocation(`/pedido/${sessionId}/checkout`);
-            }}
-            className="w-full bg-red-600 text-white py-4 rounded-2xl shadow-xl flex items-center justify-between px-5 active:bg-red-700 transition-colors pointer-events-auto"
-          >
-            <ChevronRight className="w-5 h-5 opacity-0" />
-            <span className="font-bold text-base">Finalizar Pedido</span>
-            <span className="font-bold text-base">{formatPrice(total)}</span>
-          </button>
+          {businessStatus && !businessStatus.isOpen ? (
+            <div className="w-full bg-gray-400 text-white py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 px-5 pointer-events-auto cursor-not-allowed">
+              <AlertTriangle className="w-5 h-5" />
+              <span className="font-bold text-base">Fechado agora</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cart));
+                localStorage.setItem(`deliveryType_${sessionId}`, deliveryType || "delivery");
+                setLocation(`/pedido/${sessionId}/checkout`);
+              }}
+              className="w-full bg-red-600 text-white py-4 rounded-2xl shadow-xl flex items-center justify-between px-5 active:bg-red-700 transition-colors pointer-events-auto"
+            >
+              <ChevronRight className="w-5 h-5 opacity-0" />
+              <span className="font-bold text-base">Finalizar Pedido</span>
+              <span className="font-bold text-base">{formatPrice(total)}</span>
+            </button>
+          )}
         </div>
       )}
 

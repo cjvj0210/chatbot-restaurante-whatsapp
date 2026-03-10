@@ -713,3 +713,8 @@
 - [ ] Histórico de pedidos por cliente no painel admin (ao expandir pedido, mostrar total de pedidos do telefone)
 - [ ] Pré-preenchimento automático de dados do cliente no cardápio digital quando número de WhatsApp é reconhecido
 - [ ] Confirmação/troca de endereço no checkout antes de finalizar pedido
+
+
+## Melhorias - 10/03/2026
+- [ ] Notificação WhatsApp automática ao aceitar pedido com tempo estimado
+- [ ] Controle de horário de funcionamento fixo por dia/turno com regra de pedido antecipado
