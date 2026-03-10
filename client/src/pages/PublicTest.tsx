@@ -1,8 +1,38 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Mic, Square } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
+
+// Converte URLs no texto em links clicáveis (compatível com iOS, Android e Windows)
+function renderMessageText(text: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-blue-600 dark:text-blue-400 break-all"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    // Renderiza quebras de linha preservadas
+    return part.split('\n').map((line, j, arr) => (
+      <span key={`${i}-${j}`}>
+        {line}
+        {j < arr.length - 1 && <br />}
+      </span>
+    ));
+  });
+}
 
 interface Message {
   id: string;
@@ -218,7 +248,7 @@ export default function PublicTest() {
                     : "bg-white dark:bg-[#202c33] text-gray-900 dark:text-white"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+                <p className="text-sm break-words">{renderMessageText(message.text)}</p>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {message.timestamp.toLocaleTimeString("pt-BR", {
                     hour: "2-digit",

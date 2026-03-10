@@ -727,3 +727,4 @@
 ## Correções de Compatibilidade e Cardápio (10/03/2026)
 - [x] Corrigir link do cardápio no chatbot para ser enviado em linha separada (compatível iOS/Android/Windows)
 - [x] Ativar e reposicionar grupo "Substitua a sua maneira" nas marmitex P, M e G (displayOrder=1, logo após alterar mix de carnes)
+- [x] Converter URLs em links clicáveis no frontend do chat de teste (PublicTest.tsx)
