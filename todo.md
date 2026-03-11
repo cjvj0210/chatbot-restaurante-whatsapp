@@ -764,3 +764,13 @@
 - [x] Alinhar tempos de entrega/retirada no prompt do chatbot com os valores do cardápio digital
 - [x] Adicionar estimativa de horário de entrega/retirada na tela de conclusão do pedido (cardápio digital)
 - [x] BOT responder tempo estimado correto baseado no pedido já feito pelo cliente
+
+
+## Integração Evolution API (WhatsApp via QR Code)
+- [x] Criar módulo evolutionApi.ts para envio de mensagens via Evolution API
+- [x] Criar endpoint webhook /api/webhook/evolution para receber mensagens da Evolution API
+- [ ] Adaptar audioTranscription.ts para baixar áudio via Evolution API
+- [x] Adicionar configurações de Evolution API via variáveis de ambiente (EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE_NAME)
+- [x] Configurar webhook na Evolution API apontando para o chatbot
+- [ ] Testar fluxo completo: mensagem WhatsApp → webhook → chatbot → resposta
+- [ ] Adicionar toggle no admin para escolher entre Meta Cloud API e Evolution API

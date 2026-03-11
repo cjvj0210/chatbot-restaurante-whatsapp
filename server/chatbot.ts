@@ -17,6 +17,7 @@ import {
   getDb,
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
+import { sendTextMessageEvolution } from "./evolutionApi";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { orderSessions } from "../drizzle/schema";
 import { randomBytes } from "crypto";
@@ -97,7 +98,13 @@ export async function processIncomingMessage(
     }
 
     // 8. Enviar resposta ao cliente
-    if (response.buttons) {
+    // Usar Evolution API se configurada, caso contrário usar Meta Cloud API
+    const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
+    
+    if (useEvolution) {
+      // Evolution API: só suporta texto simples (sem botões interativos nativos)
+      await sendTextMessageEvolution(phone, response.text);
+    } else if (response.buttons) {
       await sendButtonMessage(phone, response.text, response.buttons);
     } else if (response.list) {
       await sendListMessage(phone, response.text, response.list.buttonText, response.list.sections);
@@ -106,7 +113,12 @@ export async function processIncomingMessage(
     }
   } catch (error) {
     console.error("[Chatbot] Error processing message:", error);
-    await sendTextMessage(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
+    const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
+    if (useEvolution) {
+      await sendTextMessageEvolution(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
+    } else {
+      await sendTextMessage(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
+    }
   }
 }
 

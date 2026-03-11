@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
+import { handleEvolutionWebhook } from "../webhookEvolution";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -37,9 +38,12 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   
-  // WhatsApp Webhook
+  // WhatsApp Webhook (Meta Cloud API)
   app.get("/api/webhook/whatsapp", handleWebhookVerification);
   app.post("/api/webhook/whatsapp", handleWebhookMessage);
+  
+  // Evolution API Webhook
+  app.post("/api/webhook/evolution", handleEvolutionWebhook);
   
   // tRPC API
   app.use(
