@@ -743,12 +743,12 @@
 ## Melhorias - 11/03/2026
 - [ ] Corrigir reservas não aparecendo no painel admin (chatSimulator.ts)
 - [ ] Permitir finalizar pedido fora do horário com aviso de agendamento (cardápio digital)
-- [ ] Adicionar desconto bariátrica (R$10,00 com carteirinha) na base de conhecimento
-- [ ] Adicionar orientação sobre vagas de emprego (e-mail estreladosulbarretos@gmail.com)
-- [ ] Bot consultar status do pedido quando cliente perguntar se marmita saiu
-- [ ] Fluxo pós-atendente humano: perguntar se ajuda em mais algo; se urgente, ligar no fixo
-- [ ] Responsável de compras: passar Clóvis 17 9 8811-2790
-- [ ] Cupom fiscal/DANFE: repassar ao atendente humano
+- [x] Adicionar desconto bariátrica (R$10,00 com carteirinha) na base de conhecimento
+- [x] Adicionar orientação sobre vagas de emprego (e-mail estreladosulbarretos@gmail.com)
+- [x] Bot consultar status do pedido quando cliente perguntar se marmita saiu
+- [x] Fluxo pós-atendente humano: perguntar se ajuda em mais algo; se urgente, ligar no fixo
+- [x] Responsável de compras: passar Clóvis 17 9 8811-2790
+- [x] Cupom fiscal/DANFE: repassar ao atendente humano
 
 
 ## Melhorias de Operação (Março 2026 - Sessão 3)
