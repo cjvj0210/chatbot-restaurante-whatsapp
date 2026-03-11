@@ -87,7 +87,10 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     console.log("[EvolutionWebhook] Evento recebido:", payload.event, "| Instância:", payload.instance);
 
     // Só processar evento de mensagens recebidas
-    if (payload.event !== "messages.upsert") {
+    // Evolution API v2.x envia "MESSAGES_UPSERT" (maiúsculo), v1.x enviava "messages.upsert"
+    const eventNormalized = payload.event?.toUpperCase().replace(".", "_");
+    if (eventNormalized !== "MESSAGES_UPSERT") {
+      console.log(`[EvolutionWebhook] Evento ignorado: ${payload.event}`);
       return;
     }
 
