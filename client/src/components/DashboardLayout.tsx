@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -70,6 +71,15 @@ const menuGroups = [
 ];
 
 const allMenuItems = menuGroups.flatMap((g) => g.items);
+
+// Hook para buscar contagens de alertas para badges na sidebar
+function useAlertCounts() {
+  const { data: orders } = trpc.order.list.useQuery(undefined, { refetchInterval: 15000 });
+  const { data: reservations } = trpc.reservations.list.useQuery(undefined, { refetchInterval: 15000 });
+  const pendingOrders = orders?.filter((o) => o.status === "pending").length ?? 0;
+  const pendingReservations = reservations?.filter((r) => r.status === "pending").length ?? 0;
+  return { pendingOrders, pendingReservations };
+}
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 260;
@@ -159,6 +169,7 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const { pendingOrders, pendingReservations } = useAlertCounts();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -251,8 +262,22 @@ function DashboardLayoutContent({
                           }`}
                         >
                           <item.icon className="h-4 w-4 shrink-0" />
-                          <span>{item.label}</span>
-                          {isActive && !isCollapsed && (
+                          <span className="flex-1">{item.label}</span>
+                          {/* Badges de alerta */}
+                          {item.path === "/orders" && pendingOrders > 0 && (
+                            <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse min-w-[18px] text-center">
+                              {pendingOrders}
+                            </span>
+                          )}
+                          {item.path === "/reservations" && pendingReservations > 0 && (
+                            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse min-w-[18px] text-center">
+                              {pendingReservations}
+                            </span>
+                          )}
+                          {isActive && !isCollapsed && !(
+                            (item.path === "/orders" && pendingOrders > 0) ||
+                            (item.path === "/reservations" && pendingReservations > 0)
+                          ) && (
                             <ChevronRight className="h-3 w-3 ml-auto opacity-60" />
                           )}
                         </SidebarMenuButton>

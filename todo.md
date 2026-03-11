@@ -749,3 +749,12 @@
 - [ ] Fluxo pós-atendente humano: perguntar se ajuda em mais algo; se urgente, ligar no fixo
 - [ ] Responsável de compras: passar Clóvis 17 9 8811-2790
 - [ ] Cupom fiscal/DANFE: repassar ao atendente humano
+
+
+## Melhorias de Operação (Março 2026 - Sessão 3)
+- [x] Aceite automático de pedidos com impressão automática das duas vias
+- [x] Alerta visual piscante no dashboard para reservas novas pendentes
+- [x] Simplificar fluxo de pedidos para botão único "Pedido a Caminho"
+- [x] Adicionar configuração on/off para aceite automático nas Settings
+- [x] Refetch automático de reservas a cada 15s com alerta sonoro
+- [x] Remover seletor manual de status e botões intermediários dos pedidos confirmados

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -15,8 +16,10 @@ import {
   AlertCircle,
   Loader2,
   Flame,
+  Bell,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   pending:    { label: "Pendente",    color: "bg-yellow-100 text-yellow-700",  icon: Clock },
@@ -27,10 +30,73 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
   cancelled:  { label: "Cancelado",   color: "bg-red-100 text-red-600",        icon: AlertCircle },
 };
 
+// Gera um beep sintético usando Web Audio API
+function playAlertBeep() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "square";
+    osc.frequency.setValueAtTime(660, ctx.currentTime);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (_) { /* silently ignore */ }
+}
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const utils = trpc.useUtils();
   const { data: stats, isLoading } = trpc.dashboard.stats.useQuery();
   const { data: recentOrders, isLoading: ordersLoading } = trpc.order.list.useQuery({ limit: 5 });
+  const { data: reservations } = trpc.reservations.list.useQuery();
+
+  const prevPendingReservations = useRef<number>(-1);
+  const isFirstLoad = useRef<boolean>(true);
+  const knownReservationIds = useRef<Set<number>>(new Set());
+
+  const pendingReservations = reservations?.filter((r) => r.status === "pending") ?? [];
+  const pendingReservationCount = pendingReservations.length;
+
+  // Detectar novas reservas pendentes e emitir alerta
+  useEffect(() => {
+    if (!reservations) return;
+
+    if (isFirstLoad.current) {
+      // Na primeira carga, registra todas as reservas pendentes como já conhecidas
+      pendingReservations.forEach((r) => knownReservationIds.current.add(r.id));
+      prevPendingReservations.current = pendingReservationCount;
+      isFirstLoad.current = false;
+      return;
+    }
+
+    const newReservations = pendingReservations.filter((r) => !knownReservationIds.current.has(r.id));
+    if (newReservations.length > 0) {
+      playAlertBeep();
+      setTimeout(playAlertBeep, 600);
+      newReservations.forEach((r) => knownReservationIds.current.add(r.id));
+      toast.warning(
+        `📅 ${newReservations.length} nova(s) reserva(s) pendente(s)! Acesse Reservas para confirmar.`,
+        { duration: 10000, action: { label: "Ver Reservas", onClick: () => setLocation("/reservations") } }
+      );
+    }
+
+    prevPendingReservations.current = pendingReservationCount;
+  }, [reservations]);
+
+  // Refetch automático a cada 15 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      utils.dashboard.stats.invalidate();
+      utils.reservations.list.invalidate();
+      utils.order.list.invalidate();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [utils]);
 
   const kpis = [
     {
@@ -50,21 +116,25 @@ export default function Dashboard() {
       sub: "Faturamento acumulado",
     },
     {
-      label: "Pendentes",
+      label: "Pedidos Pendentes",
       value: stats?.pendingOrders ?? 0,
       icon: Clock,
       color: "text-amber-600",
       bg: "bg-amber-50",
       sub: "Aguardando confirmação",
       alert: (stats?.pendingOrders ?? 0) > 0,
+      alertColor: "ring-amber-400/50",
     },
     {
-      label: "Reservas Ativas",
-      value: stats?.activeReservations ?? 0,
+      label: "Reservas Pendentes",
+      value: pendingReservationCount,
       icon: Calendar,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
-      sub: "Confirmadas",
+      color: pendingReservationCount > 0 ? "text-red-600" : "text-purple-600",
+      bg: pendingReservationCount > 0 ? "bg-red-50" : "bg-purple-50",
+      sub: pendingReservationCount > 0 ? "⚠️ Aguardando confirmação" : "Nenhuma pendente",
+      alert: pendingReservationCount > 0,
+      alertColor: "ring-red-400/60",
+      onClick: () => setLocation("/reservations"),
     },
     {
       label: "Clientes",
@@ -112,6 +182,27 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Banner de alerta de reservas pendentes */}
+      {pendingReservationCount > 0 && (
+        <button
+          onClick={() => setLocation("/reservations")}
+          className="w-full flex items-center gap-4 bg-red-50 border-2 border-red-300 rounded-2xl px-5 py-4 text-left hover:bg-red-100 transition-colors group"
+        >
+          <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center shrink-0 animate-bounce">
+            <Bell className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-red-700 text-sm">
+              🔔 {pendingReservationCount} reserva{pendingReservationCount > 1 ? "s" : ""} aguardando confirmação!
+            </p>
+            <p className="text-xs text-red-600 mt-0.5">
+              Clique aqui para ver e confirmar as reservas pendentes
+            </p>
+          </div>
+          <ArrowRight className="w-5 h-5 text-red-500 group-hover:translate-x-1 transition-transform" />
+        </button>
+      )}
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {isLoading
@@ -125,10 +216,20 @@ export default function Dashboard() {
           : kpis.map((kpi) => (
               <div
                 key={kpi.label}
-                className={`stat-card relative overflow-hidden ${kpi.alert ? "ring-2 ring-amber-400/50" : ""}`}
+                onClick={kpi.onClick}
+                className={`stat-card relative overflow-hidden transition-all ${
+                  kpi.alert ? `ring-2 ${kpi.alertColor}` : ""
+                } ${kpi.onClick ? "cursor-pointer hover:shadow-md" : ""}`}
               >
                 {kpi.alert && (
-                  <span className="absolute top-3 right-3 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                  <span className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full animate-ping ${
+                    kpi.alertColor?.includes("red") ? "bg-red-500" : "bg-amber-400"
+                  }`} />
+                )}
+                {kpi.alert && (
+                  <span className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${
+                    kpi.alertColor?.includes("red") ? "bg-red-500" : "bg-amber-400"
+                  }`} />
                 )}
                 <div className="flex items-start justify-between mb-3">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -138,7 +239,9 @@ export default function Dashboard() {
                     <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
+                <p className={`text-2xl font-bold ${kpi.alert && kpi.alertColor?.includes("red") ? "text-red-600" : "text-foreground"}`}>
+                  {kpi.value}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">{kpi.sub}</p>
               </div>
             ))}
@@ -221,7 +324,7 @@ export default function Dashboard() {
               <button
                 key={action.path}
                 onClick={() => setLocation(action.path)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors text-left group"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors text-left group relative"
               >
                 <div className={`w-8 h-8 ${action.color} rounded-lg flex items-center justify-center shrink-0`}>
                   <action.icon className="w-4 h-4 text-white" />
@@ -230,6 +333,18 @@ export default function Dashboard() {
                   <p className="text-sm font-semibold text-foreground">{action.label}</p>
                   <p className="text-xs text-muted-foreground">{action.sub}</p>
                 </div>
+                {/* Badge de alerta para Reservas */}
+                {action.path === "/reservations" && pendingReservationCount > 0 && (
+                  <span className="absolute right-8 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                    {pendingReservationCount}
+                  </span>
+                )}
+                {/* Badge de alerta para Pedidos */}
+                {action.path === "/orders" && (stats?.pendingOrders ?? 0) > 0 && (
+                  <span className="absolute right-8 top-1/2 -translate-y-1/2 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                    {stats?.pendingOrders}
+                  </span>
+                )}
                 <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
               </button>
             ))}

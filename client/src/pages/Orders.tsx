@@ -11,7 +11,7 @@ import {
 import {
   Package,
   Printer,
-  Send,
+  Truck,
   MapPin,
   Store,
   Clock,
@@ -23,21 +23,25 @@ import {
   SlidersHorizontal,
   History,
   Phone,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+const AUTO_ACCEPT_KEY = "estreladosul_auto_accept";
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
   pending:    { label: "Pendente",    bg: "bg-amber-50",   text: "text-amber-700",  dot: "bg-amber-400" },
   confirmed:  { label: "Confirmado",  bg: "bg-blue-50",    text: "text-blue-700",   dot: "bg-blue-500" },
   preparing:  { label: "Preparando",  bg: "bg-orange-50",  text: "text-orange-700", dot: "bg-orange-500" },
   ready:      { label: "Pronto",      bg: "bg-green-50",   text: "text-green-700",  dot: "bg-green-500" },
-  delivering: { label: "Em Entrega",  bg: "bg-indigo-50",  text: "text-indigo-700", dot: "bg-indigo-500" },
+  delivering: { label: "A Caminho",   bg: "bg-indigo-50",  text: "text-indigo-700", dot: "bg-indigo-500" },
   delivered:  { label: "Entregue",    bg: "bg-gray-100",   text: "text-gray-600",   dot: "bg-gray-400" },
   cancelled:  { label: "Cancelado",   bg: "bg-red-50",     text: "text-red-600",    dot: "bg-red-500" },
 };
 
+// Fluxo simplificado: pending → confirmed (auto) → delivering (botão único) → delivered (auto após confirmar entrega)
 const statusFlow = ["pending", "confirmed", "preparing", "ready", "delivering", "delivered"];
 
 interface OrderItem {
@@ -67,6 +71,16 @@ function playAlertBeep() {
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.55);
   } catch (_) { /* silently ignore if audio not available */ }
+}
+
+// Abre janela de impressão automaticamente (para impressora térmica)
+function autoPrint(orderId: number) {
+  const url = `/print-order/${orderId}`;
+  const win = window.open(url, `print_${orderId}`, "width=400,height=600,menubar=no,toolbar=no,status=no");
+  if (!win) {
+    // Se popup bloqueado, abre em nova aba normalmente
+    window.open(url, "_blank");
+  }
 }
 
 // Componente de histórico de pedidos por cliente
@@ -136,6 +150,19 @@ export default function Orders() {
   const [historyPhone, setHistoryPhone] = useState<string | null>(null);
   const prevPendingCount = useRef<number>(0);
   const isFirstLoad = useRef<boolean>(true);
+  const autoAcceptedIds = useRef<Set<number>>(new Set());
+
+  // Configuração de aceite automático (persiste no localStorage)
+  const [autoAccept, setAutoAccept] = useState<boolean>(() => {
+    return localStorage.getItem(AUTO_ACCEPT_KEY) === "true";
+  });
+
+  const toggleAutoAccept = () => {
+    const next = !autoAccept;
+    setAutoAccept(next);
+    localStorage.setItem(AUTO_ACCEPT_KEY, next ? "true" : "false");
+    toast.success(next ? "✅ Aceite automático ativado" : "⏸️ Aceite automático desativado");
+  };
 
   type StatusEnum = "pending" | "confirmed" | "preparing" | "ready" | "delivering" | "delivered" | "cancelled";
   const { data: orders, isLoading } = trpc.order.list.useQuery(
@@ -145,7 +172,6 @@ export default function Orders() {
   const updateStatus = trpc.order.updateStatus.useMutation({
     onSuccess: () => {
       utils.order.list.invalidate();
-      toast.success("Status atualizado!");
     },
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
@@ -154,35 +180,55 @@ export default function Orders() {
     updateStatus.mutate({ orderId, status: newStatus as StatusEnum });
   };
 
-  const getNextStatus = (current: string, orderType: string) => {
-    const idx = statusFlow.indexOf(current);
-    if (idx === -1 || idx >= statusFlow.length - 1) return null;
-    if (current === "ready" && orderType === "pickup") return "delivered";
-    return statusFlow[idx + 1];
-  };
+  const pendingCount = orders?.filter((o) => o.status === "pending").length ?? 0;
 
-   const pendingCount = orders?.filter((o) => o.status === "pending").length ?? 0;
-
-  // Alerta sonoro quando chegam novos pedidos pendentes
+  // Aceite automático: quando chega pedido novo, aceita e imprime automaticamente
   useEffect(() => {
     if (isFirstLoad.current) {
-      // Na primeira carga, apenas registra o count sem tocar som
       if (!isLoading && orders !== undefined) {
+        // Na primeira carga, registra todos os pendentes como já conhecidos (não aceita automaticamente)
+        orders.filter((o) => o.status === "pending").forEach((o) => autoAcceptedIds.current.add(o.id));
         prevPendingCount.current = pendingCount;
         isFirstLoad.current = false;
       }
       return;
     }
-    if (pendingCount > prevPendingCount.current) {
-      // Novos pedidos chegaram — tocar alerta 2x
+
+    if (!orders) return;
+
+    const pendingOrders = orders.filter((o) => o.status === "pending");
+    const newOrders = pendingOrders.filter((o) => !autoAcceptedIds.current.has(o.id));
+
+    if (newOrders.length > 0) {
+      // Alerta sonoro duplo
       playAlertBeep();
       setTimeout(playAlertBeep, 700);
-      toast.warning(`🔔 ${pendingCount - prevPendingCount.current} novo(s) pedido(s) aguardando aceite!`, {
-        duration: 6000,
-      });
+
+      if (autoAccept) {
+        // Aceite automático: confirma e imprime cada novo pedido
+        newOrders.forEach((order) => {
+          autoAcceptedIds.current.add(order.id);
+          updateStatus.mutate(
+            { orderId: order.id, status: "confirmed" },
+            {
+              onSuccess: () => {
+                utils.order.list.invalidate();
+                toast.success(`🖨️ Pedido #${order.orderNumber} aceito e enviado para impressão!`, { duration: 5000 });
+                // Impressão automática após aceite
+                setTimeout(() => autoPrint(order.id), 800);
+              },
+            }
+          );
+        });
+      } else {
+        // Só alerta, sem aceitar
+        newOrders.forEach((o) => autoAcceptedIds.current.add(o.id));
+        toast.warning(`🔔 ${newOrders.length} novo(s) pedido(s) aguardando aceite!`, { duration: 8000 });
+      }
     }
+
     prevPendingCount.current = pendingCount;
-  }, [pendingCount, isLoading, orders]);
+  }, [orders, isLoading]);
 
   // Refetch automático a cada 15 segundos para detectar novos pedidos
   useEffect(() => {
@@ -195,7 +241,7 @@ export default function Orders() {
   return (
     <div className="space-y-5 max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Package className="w-6 h-6 text-primary" />
@@ -211,27 +257,52 @@ export default function Orders() {
           </p>
         </div>
 
-        {/* Filtro de status */}
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-44 h-9 text-sm rounded-xl border-border/60">
-              <SelectValue placeholder="Filtrar status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os pedidos</SelectItem>
-              {Object.entries(statusConfig).map(([k, v]) => (
-                <SelectItem key={k} value={k}>
-                  <span className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${v.dot}`} />
-                    {v.label}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Toggle aceite automático */}
+          <button
+            onClick={toggleAutoAccept}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
+              autoAccept
+                ? "bg-green-600 text-white border-green-600 shadow-md shadow-green-200"
+                : "bg-card text-muted-foreground border-border/60 hover:border-green-400 hover:text-green-700"
+            }`}
+          >
+            <Zap className={`w-4 h-4 ${autoAccept ? "fill-white" : ""}`} />
+            {autoAccept ? "Auto-aceite ON" : "Auto-aceite OFF"}
+          </button>
+
+          {/* Filtro de status */}
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-44 h-9 text-sm rounded-xl border-border/60">
+                <SelectValue placeholder="Filtrar status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os pedidos</SelectItem>
+                {Object.entries(statusConfig).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${v.dot}`} />
+                      {v.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
+
+      {/* Banner informativo quando auto-aceite está ativo */}
+      {autoAccept && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-green-800">
+          <Zap className="w-4 h-4 text-green-600 fill-green-600 shrink-0" />
+          <span>
+            <strong>Aceite automático ativo:</strong> novos pedidos são confirmados e impressos automaticamente assim que chegam.
+          </span>
+        </div>
+      )}
 
       {/* Lista de pedidos */}
       {isLoading ? (
@@ -264,14 +335,23 @@ export default function Orders() {
           {orders.map((order) => {
             const status = statusConfig[order.status] ?? statusConfig.pending;
             const isExpanded = expandedId === order.id;
-            // Usar itens normalizados com nomes (orderItemsList) ou fallback para JSON legado
             const items: OrderItem[] = (() => {
               if ((order as any).orderItemsList && (order as any).orderItemsList.length > 0) {
                 return (order as any).orderItemsList;
               }
               try { return JSON.parse(order.items); } catch { return []; }
             })();
-            const nextStatus = getNextStatus(order.status, order.orderType ?? "delivery");
+
+            // Lógica simplificada de botões:
+            // pending → botão "Aceitar Pedido" (verde pulsante)
+            // confirmed/preparing/ready → botão "Pedido a Caminho" (azul) — marca como delivering
+            // delivering → botão "Confirmar Entrega" (verde) — marca como delivered
+            // delivered/cancelled → sem botão de avanço
+            const isPending = order.status === "pending";
+            const isActive = ["confirmed", "preparing", "ready"].includes(order.status);
+            const isDelivering = order.status === "delivering";
+            const isDelivery = order.orderType === "delivery";
+            const isDone = order.status === "delivered" || order.status === "cancelled";
 
             return (
               <div
@@ -356,6 +436,7 @@ export default function Orders() {
                     {historyPhone === order.customerPhone && (
                       <CustomerHistory phone={order.customerPhone} currentOrderId={order.id} />
                     )}
+
                     {/* Itens do pedido */}
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -398,6 +479,18 @@ export default function Orders() {
                         <span>Total</span>
                         <span className="text-primary">R$ {(order.total / 100).toFixed(2)}</span>
                       </div>
+                      {order.paymentMethod && (
+                        <div className="flex justify-between text-xs text-muted-foreground pt-1">
+                          <span>Pagamento</span>
+                          <span className="capitalize font-medium">{order.paymentMethod}</span>
+                        </div>
+                      )}
+                      {order.changeFor && order.changeFor > 0 && (
+                        <div className="flex justify-between text-xs text-amber-700 font-semibold">
+                          <span>Troco para</span>
+                          <span>R$ {(order.changeFor / 100).toFixed(2)}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Endereço */}
@@ -416,38 +509,104 @@ export default function Orders() {
                       </div>
                     )}
 
-                    {/* Ações */}
+                    {/* ===== AÇÕES SIMPLIFICADAS ===== */}
                     <div className="flex items-center gap-2 pt-1 flex-wrap">
+                      {/* Botão imprimir — sempre disponível */}
                       <button
-                        onClick={() => window.open(`/print-order/${order.id}`, "_blank")}
+                        onClick={() => autoPrint(order.id)}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
                       >
                         <Printer className="w-4 h-4" />
                         Imprimir
                       </button>
 
-                      {nextStatus && (
+                      {/* Pedido PENDENTE → Aceitar */}
+                      {isPending && (
                         <button
-                          onClick={() => handleStatusChange(order.id, nextStatus)}
+                          onClick={() => {
+                            handleStatusChange(order.id, "confirmed");
+                            toast.success(`✅ Pedido #${order.orderNumber} aceito!`);
+                            setTimeout(() => autoPrint(order.id), 600);
+                          }}
                           disabled={updateStatus.isPending}
-                          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-60 ${
-                            order.status === "pending"
-                              ? "bg-green-600 text-white hover:bg-green-700 shadow-md ring-2 ring-green-300 animate-pulse"
-                              : "bg-primary text-white hover:bg-primary/90"
-                          }`}
+                          className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold bg-green-600 text-white hover:bg-green-700 shadow-md ring-2 ring-green-300 animate-pulse transition-colors disabled:opacity-60"
                         >
                           {updateStatus.isPending ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : order.status === "pending" ? (
-                            <CheckCircle2 className="w-4 h-4" />
                           ) : (
-                            <Send className="w-4 h-4" />
+                            <CheckCircle2 className="w-4 h-4" />
                           )}
-                          {order.status === "pending" ? "✅ Aceitar Pedido" : `Avançar para ${statusConfig[nextStatus]?.label}`}
+                          ✅ Aceitar Pedido
                         </button>
                       )}
 
-                      {order.status !== "delivered" && order.status !== "cancelled" && (
+                      {/* Pedido ATIVO (confirmed/preparing/ready) → Pedido a Caminho (só para delivery) */}
+                      {isActive && isDelivery && (
+                        <button
+                          onClick={() => {
+                            handleStatusChange(order.id, "delivering");
+                            toast.success(`🛵 Pedido #${order.orderNumber} saiu para entrega!`);
+                          }}
+                          disabled={updateStatus.isPending}
+                          className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/90 shadow-sm transition-colors disabled:opacity-60"
+                        >
+                          {updateStatus.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Truck className="w-4 h-4" />
+                          )}
+                          🛵 Pedido a Caminho
+                        </button>
+                      )}
+
+                      {/* Pedido ATIVO (retirada) → Pronto para retirar */}
+                      {isActive && !isDelivery && (
+                        <button
+                          onClick={() => {
+                            handleStatusChange(order.id, "delivered");
+                            toast.success(`✅ Pedido #${order.orderNumber} retirado!`);
+                          }}
+                          disabled={updateStatus.isPending}
+                          className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/90 shadow-sm transition-colors disabled:opacity-60"
+                        >
+                          {updateStatus.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                          ✅ Retirado pelo Cliente
+                        </button>
+                      )}
+
+                      {/* Pedido A CAMINHO → Confirmar Entrega */}
+                      {isDelivering && (
+                        <button
+                          onClick={() => {
+                            handleStatusChange(order.id, "delivered");
+                            toast.success(`✅ Pedido #${order.orderNumber} entregue!`);
+                          }}
+                          disabled={updateStatus.isPending}
+                          className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold bg-green-600 text-white hover:bg-green-700 shadow-sm transition-colors disabled:opacity-60"
+                        >
+                          {updateStatus.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                          ✅ Confirmar Entrega
+                        </button>
+                      )}
+
+                      {/* Pedido CONCLUÍDO */}
+                      {order.status === "delivered" && (
+                        <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Entregue
+                        </span>
+                      )}
+
+                      {/* Cancelar — sempre disponível enquanto não concluído/cancelado */}
+                      {!isDone && (
                         <button
                           onClick={() => handleStatusChange(order.id, "cancelled")}
                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ml-auto"
@@ -456,33 +615,6 @@ export default function Orders() {
                           Cancelar
                         </button>
                       )}
-
-                      {order.status === "delivered" && (
-                        <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium ml-auto">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Concluído
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Seletor manual de status */}
-                    <div className="flex items-center gap-2 pt-1 border-t border-border/40">
-                      <span className="text-xs text-muted-foreground">Status manual:</span>
-                      <Select
-                        value={order.status}
-                        onValueChange={(v) => handleStatusChange(order.id, v)}
-                      >
-                        <SelectTrigger className="h-8 text-xs rounded-lg w-40">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(statusConfig).map(([k, v]) => (
-                            <SelectItem key={k} value={k} className="text-xs">
-                              {v.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
                   </div>
                 )}
