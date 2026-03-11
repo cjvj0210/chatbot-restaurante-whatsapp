@@ -21,11 +21,9 @@ import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolution
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { orderSessions } from "../drizzle/schema";
 import { randomBytes } from "crypto";
-// URL de produção hardcoded — não depende de variáveis de ambiente
-// chatbotwa-hesngyeo.manus.space é o domínio publicado correto
-const SITE_URL = process.env.NODE_ENV === "production"
-  ? "https://chatbotwa-hesngyeo.manus.space"
-  : (process.env.SITE_DEV_URL || "http://localhost:3000");
+// URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
+// Domínio publicado correto: chatbotwa-hesngyeo.manus.space
+const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
 
 interface ChatContext {
   intent?: "order" | "reservation" | "info" | "feedback" | "other";
