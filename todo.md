@@ -730,3 +730,6 @@
 - [x] Converter URLs em links clicáveis no frontend do chat de teste (PublicTest.tsx)
 - [x] Atualizar horários do rodízio no chatbotPrompt.ts (almoço seg-sex 11h-14h30, sáb 11h-14h45, dom 11h-15h; jantar ter-dom 19h-22h45, fechado seg)
 - [x] Adicionar política da taxa de serviço (10%) na base de conhecimento do chatbot
+- [x] Adicionar horários de pico e dicas de chegada na base de conhecimento do chatbot
+- [x] Adicionar preços de bebidas do rodízio (PDF) na base de conhecimento
+- [x] Adicionar botões Sim/Não no chat quando bot oferecer atendente humano

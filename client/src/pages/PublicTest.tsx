@@ -39,6 +39,21 @@ interface Message {
   text: string;
   sender: "user" | "bot";
   timestamp: Date;
+  showHumanButtons?: boolean; // exibe botões Sim/Não para atendente humano
+}
+
+// Detecta se a mensagem do bot está oferecendo atendente humano
+function detectHumanHandoff(text: string): boolean {
+  const patterns = [
+    /transferir.*atendente/i,
+    /atendente humano/i,
+    /falar com.*atendente/i,
+    /conectar.*equipe/i,
+    /quer.*atendente/i,
+    /prefere.*atendente/i,
+    /encaminhar.*atendente/i,
+  ];
+  return patterns.some((p) => p.test(text));
 }
 
 export default function PublicTest() {
@@ -64,13 +79,15 @@ export default function PublicTest() {
   const sendMessageMutation = trpc.publicTest.sendMessage.useMutation({
     onSuccess: (response: { message: string; timestamp: Date }) => {
       setIsTyping(false);
+      const botText = response.message;
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
-          text: response.message,
+          text: botText,
           sender: "bot",
           timestamp: new Date(response.timestamp),
+          showHumanButtons: detectHumanHandoff(botText),
         },
       ]);
     },
@@ -92,13 +109,15 @@ export default function PublicTest() {
     onSuccess: (response: { message: string; transcription: string; timestamp: Date }) => {
       setIsProcessingAudio(false);
       setIsTyping(false);
+      const botText = response.message;
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
-          text: response.message,
+          text: botText,
           sender: "bot",
           timestamp: new Date(response.timestamp),
+          showHumanButtons: detectHumanHandoff(botText),
         },
       ]);
     },
@@ -125,23 +144,62 @@ export default function PublicTest() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
+  const handleSend = (overrideText?: string) => {
+    const text = overrideText ?? inputText;
+    if (!text.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputText,
+      text,
       sender: "user",
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Desativa botões de atendente nas mensagens anteriores
+    setMessages((prev) => [
+      ...prev.map((m) => ({ ...m, showHumanButtons: false })),
+      userMessage,
+    ]);
     setInputText("");
     setIsTyping(true);
 
     sendMessageMutation.mutate({
       sessionId,
-      message: inputText,
+      message: text,
+    });
+  };
+
+  const handleHumanYes = () => {
+    // Oculta botões e envia resposta afirmativa
+    setMessages((prev) => prev.map((m) => ({ ...m, showHumanButtons: false })));
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: "Sim, quero falar com um atendente",
+      sender: "user",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsTyping(true);
+    sendMessageMutation.mutate({
+      sessionId,
+      message: "Sim, quero falar com um atendente",
+    });
+  };
+
+  const handleHumanNo = () => {
+    // Oculta botões e envia resposta negativa
+    setMessages((prev) => prev.map((m) => ({ ...m, showHumanButtons: false })));
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: "Não, obrigado",
+      sender: "user",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsTyping(true);
+    sendMessageMutation.mutate({
+      sessionId,
+      message: "Não, obrigado",
     });
   };
 
@@ -249,6 +307,22 @@ export default function PublicTest() {
                 }`}
               >
                 <p className="text-sm break-words">{renderMessageText(message.text)}</p>
+                {message.showHumanButtons && (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={handleHumanYes}
+                      className="flex-1 bg-[#075e54] hover:bg-[#064e47] text-white text-xs font-semibold py-1.5 px-3 rounded-full transition-colors"
+                    >
+                      Sim 👍
+                    </button>
+                    <button
+                      onClick={handleHumanNo}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-white text-xs font-semibold py-1.5 px-3 rounded-full transition-colors"
+                    >
+                      Não, obrigado
+                    </button>
+                  </div>
+                )}
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-right">
                   {message.timestamp.toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
@@ -298,7 +372,7 @@ export default function PublicTest() {
               disabled={isTyping || isRecording}
             />
             <Button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!inputText.trim() || isTyping || isRecording}
               className="bg-[#075e54] hover:bg-[#064e47] text-white"
             >
