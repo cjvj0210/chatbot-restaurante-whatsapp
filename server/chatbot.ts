@@ -21,7 +21,11 @@ import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolution
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { orderSessions } from "../drizzle/schema";
 import { randomBytes } from "crypto";
-import { getSiteUrl } from "./_core/siteUrl";
+// URL de produção hardcoded — não depende de variáveis de ambiente
+// chatbotwa-hesngyeo.manus.space é o domínio publicado correto
+const SITE_URL = process.env.NODE_ENV === "production"
+  ? "https://chatbotwa-hesngyeo.manus.space"
+  : (process.env.SITE_DEV_URL || "http://localhost:3000");
 
 interface ChatContext {
   intent?: "order" | "reservation" | "info" | "feedback" | "other";
@@ -229,8 +233,7 @@ async function generateResponse(
           status: "pending",
           expiresAt,
         });
-        const siteUrl = getSiteUrl();
-        const orderLink = `${siteUrl}/pedido/${sessionId}`;
+        const orderLink = `${SITE_URL}/pedido/${sessionId}`;
         // Garante que o link fique em linha isolada (iOS exige URL sozinha na linha para ser clicavel)
         aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
         aiResponse = aiResponse.replace(/\n{3,}/g, '\n\n');

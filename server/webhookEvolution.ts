@@ -2,9 +2,7 @@ import type { Request, Response } from "express";
 import { processIncomingMessage } from "./chatbot";
 import { sendTextMessageEvolution, downloadMediaEvolution } from "./evolutionApi";
 import { transcribeAudio } from "./_core/voiceTranscription";
-import * as fs from "fs";
-import * as path from "path";
-import * as os from "os";
+import { storagePut } from "./storage";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -162,10 +160,11 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
 
 /**
  * Transcreve um áudio recebido via Evolution API usando Whisper
+ * Fluxo: Evolution API (base64) → S3 (URL pública) → Whisper (transcrição)
  */
 async function transcribeEvolutionAudio(messageId: string): Promise<string | null> {
   try {
-    // Baixar o áudio em base64 via Evolution API
+    // 1. Baixar o áudio em base64 via Evolution API
     const audioBuffer = await downloadMediaEvolution(messageId);
 
     if (!audioBuffer) {
@@ -173,32 +172,36 @@ async function transcribeEvolutionAudio(messageId: string): Promise<string | nul
       return null;
     }
 
-    // Salvar temporariamente como .ogg
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, `evolution-audio-${messageId}.ogg`);
+    console.log(`[EvolutionWebhook] Áudio baixado: ${audioBuffer.length} bytes`);
 
-    fs.writeFileSync(tempFilePath, audioBuffer);
-    console.log(`[EvolutionWebhook] Áudio salvo em ${tempFilePath} (${audioBuffer.length} bytes)`);
-
-    // Transcrever com Whisper
-    const result = await transcribeAudio({
-      audioUrl: tempFilePath,
-      language: "pt",
-    });
-
-    // Limpar arquivo temporário
+    // 2. Fazer upload para S3 para obter URL pública acessível pelo Whisper
+    // O Whisper precisa de URL HTTP, não aceita arquivo local
+    const s3Key = `audio-transcriptions/${messageId}-${Date.now()}.ogg`;
+    let audioUrl: string;
     try {
-      fs.unlinkSync(tempFilePath);
-    } catch (e) {
-      console.warn("[EvolutionWebhook] Falha ao deletar arquivo temporário:", e);
-    }
-
-    if ("error" in result) {
-      console.error("[EvolutionWebhook] Erro na transcrição:", result.error);
+      const uploaded = await storagePut(s3Key, audioBuffer, "audio/ogg");
+      audioUrl = uploaded.url;
+      console.log(`[EvolutionWebhook] Áudio enviado para S3: ${audioUrl}`);
+    } catch (uploadErr) {
+      console.error("[EvolutionWebhook] Falha ao enviar áudio para S3:", uploadErr);
       return null;
     }
 
-    return result?.text || null;
+    // 3. Transcrever com Whisper usando a URL do S3
+    const result = await transcribeAudio({
+      audioUrl,
+      language: "pt",
+      prompt: "Transcrição de mensagem de voz em português brasileiro para atendimento de restaurante",
+    });
+
+    if ("error" in result) {
+      console.error("[EvolutionWebhook] Erro na transcrição:", result.error, result.details);
+      return null;
+    }
+
+    const transcribed = result?.text?.trim() || null;
+    console.log(`[EvolutionWebhook] Transcrição concluída: "${transcribed}"`);
+    return transcribed;
   } catch (error) {
     console.error("[EvolutionWebhook] Erro ao transcrever áudio:", error);
     return null;
