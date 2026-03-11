@@ -758,3 +758,9 @@
 - [x] Adicionar configuração on/off para aceite automático nas Settings
 - [x] Refetch automático de reservas a cada 15s com alerta sonoro
 - [x] Remover seletor manual de status e botões intermediários dos pedidos confirmados
+
+## Melhorias Chatbot + Cardápio Digital (Março 2026 - Sessão 4)
+- [x] Regra: enviar link do cardápio digital imediatamente quando cliente perguntar sobre produtos/marmitas/cardápio
+- [x] Alinhar tempos de entrega/retirada no prompt do chatbot com os valores do cardápio digital
+- [x] Adicionar estimativa de horário de entrega/retirada na tela de conclusão do pedido (cardápio digital)
+- [x] BOT responder tempo estimado correto baseado no pedido já feito pelo cliente

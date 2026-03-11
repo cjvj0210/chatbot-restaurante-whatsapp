@@ -3,33 +3,61 @@ import { useParams } from "wouter";
 import { Clock, MessageCircle, Star, Hourglass } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
-// Calcula o tempo estimado de entrega baseado no dia da semana e tipo de pedido
-function calcularTempoEstimado(deliveryType: string): string {
+/**
+ * Retorna o intervalo de minutos e o horário estimado de chegada
+ * conforme os tempos configurados no cardápio digital:
+ *   - Delivery Seg-Sex: 45–70 min
+ *   - Delivery Sáb-Dom: 60–110 min
+ *   - Retirada (todos os dias): 30–50 min
+ */
+function calcularEstimativa(deliveryType: string): {
+  intervalo: string;
+  horarioMin: string;
+  horarioMax: string;
+} {
   const now = new Date();
-  const diaSemana = now.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab
-  const isFimSemana = diaSemana === 0 || diaSemana === 6; // Domingo ou Sábado
+  const diaSemana = now.getDay(); // 0=Dom, 1=Seg … 6=Sab
+  const isFimSemana = diaSemana === 0 || diaSemana === 6;
+
+  let minMin: number;
+  let minMax: number;
 
   if (deliveryType === "pickup") {
-    // Retirada: sempre 30 a 50 min independente do dia
-    return "30 a 50 min";
+    minMin = 30;
+    minMax = 50;
+  } else if (isFimSemana) {
+    minMin = 60;
+    minMax = 110;
+  } else {
+    minMin = 45;
+    minMax = 70;
   }
 
-  // Delivery
-  if (isFimSemana) {
-    return "60 a 110 min"; // Sábado e Domingo — maior movimento
-  }
-  return "45 a 70 min"; // Segunda a Sexta
+  const toHHMM = (date: Date) =>
+    date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  const chegadaMin = new Date(now.getTime() + minMin * 60 * 1000);
+  const chegadaMax = new Date(now.getTime() + minMax * 60 * 1000);
+
+  return {
+    intervalo: `${minMin} a ${minMax} min`,
+    horarioMin: toHHMM(chegadaMin),
+    horarioMax: toHHMM(chegadaMax),
+  };
 }
 
 export default function Confirmacao() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [deliveryType, setDeliveryType] = useState<string>("delivery");
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const [estimativa] = useState(() => calcularEstimativa("delivery")); // será atualizado abaixo
 
   const { data: order } = trpc.order.getBySession.useQuery(
     { sessionId: sessionId || "" },
-    { enabled: !!sessionId, refetchInterval: 10000 } // Polling a cada 10s para atualizar status
+    { enabled: !!sessionId, refetchInterval: 10000 }
   );
+
+  const [estimativaFinal, setEstimativaFinal] = useState(estimativa);
 
   useEffect(() => {
     if (sessionId) {
@@ -38,6 +66,7 @@ export default function Confirmacao() {
     const savedType = localStorage.getItem("deliveryType");
     if (savedType) {
       setDeliveryType(savedType);
+      setEstimativaFinal(calcularEstimativa(savedType));
       localStorage.removeItem("deliveryType");
     }
   }, [sessionId]);
@@ -45,30 +74,37 @@ export default function Confirmacao() {
   useEffect(() => {
     if (order) {
       setOrderNumber(order.orderNumber || "");
-      if (order.orderType) setDeliveryType(order.orderType);
+      if (order.orderType) {
+        setDeliveryType(order.orderType);
+        setEstimativaFinal(calcularEstimativa(order.orderType));
+      }
     }
   }, [order]);
 
-  const tempoEstimado = calcularTempoEstimado(deliveryType);
   const status = order?.status || "pending";
-  const isConfirmed = status === "confirmed" || status === "preparing" || status === "ready" || status === "delivering" || status === "delivered";
+  const isConfirmed =
+    status === "confirmed" ||
+    status === "preparing" ||
+    status === "ready" ||
+    status === "delivering" ||
+    status === "delivered";
 
-  // Montar link do WhatsApp com número identificador do pedido
   const handleWhatsAppClick = () => {
     const numero = "5517982222790";
     const mensagem = orderNumber
       ? `Olá! Gostaria de acompanhar meu pedido *${orderNumber}*`
       : "Olá! Gostaria de acompanhar meu pedido";
-    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, "_blank");
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, "_blank");
   };
+
+  const isPickup = deliveryType === "pickup";
 
   return (
     <div
       className="min-h-screen bg-white max-w-md mx-auto flex flex-col"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      {/* Header vermelho */}
+      {/* Header */}
       <div className="bg-red-700 text-white px-4 py-4">
         <h1 className="font-bold text-base">Churrascaria Estrela do Sul</h1>
         <p className="text-xs text-red-200">
@@ -99,9 +135,7 @@ export default function Confirmacao() {
         {isConfirmed ? (
           <>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Pedido Aceito!</h2>
-            {orderNumber && (
-              <p className="text-sm font-semibold text-red-700 mb-1">#{orderNumber}</p>
-            )}
+            {orderNumber && <p className="text-sm font-semibold text-red-700 mb-1">#{orderNumber}</p>}
             <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
               O restaurante aceitou seu pedido e já está preparando tudo com carinho para você!
             </p>
@@ -109,9 +143,7 @@ export default function Confirmacao() {
         ) : (
           <>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Pedido Recebido!</h2>
-            {orderNumber && (
-              <p className="text-sm font-semibold text-red-700 mb-1">#{orderNumber}</p>
-            )}
+            {orderNumber && <p className="text-sm font-semibold text-red-700 mb-1">#{orderNumber}</p>}
             <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
               Seu pedido foi enviado ao restaurante e está <strong>aguardando aceite</strong>. Você será avisado pelo WhatsApp assim que for confirmado.
             </p>
@@ -120,6 +152,31 @@ export default function Confirmacao() {
 
         {/* Cards de informação */}
         <div className="w-full mt-8 space-y-3">
+
+          {/* ===== ESTIMATIVA DE HORÁRIO — visível SEMPRE, desde o recebimento ===== */}
+          <div className="bg-orange-50 rounded-2xl p-4 flex items-start gap-3 text-left border-2 border-orange-200">
+            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Clock className="w-5 h-5 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-orange-800 text-sm">
+                {isPickup ? "🏃 Retirada estimada" : "🛵 Entrega estimada"}
+              </p>
+              <p className="text-xl font-extrabold text-orange-700 mt-0.5">
+                {estimativaFinal.horarioMin} – {estimativaFinal.horarioMax}
+              </p>
+              <p className="text-xs text-orange-600 mt-0.5">
+                {isPickup
+                  ? `Seu pedido estará pronto para retirada no balcão em aprox. ${estimativaFinal.intervalo}.`
+                  : `Previsão de chegada em aprox. ${estimativaFinal.intervalo} a partir de agora.`}
+              </p>
+              {!isConfirmed && (
+                <p className="text-[11px] text-orange-400 mt-1 italic">
+                  * O tempo começa a contar após o aceite do restaurante.
+                </p>
+              )}
+            </div>
+          </div>
 
           {/* Status do pedido */}
           <div className={`w-full rounded-2xl p-4 flex items-start gap-3 text-left border-2 ${isConfirmed ? "bg-green-50 border-green-200" : "bg-orange-50 border-orange-200"}`}>
@@ -165,25 +222,6 @@ export default function Confirmacao() {
             </div>
           </button>
 
-          {/* Tempo estimado (só mostra se confirmado) */}
-          {isConfirmed && (
-            <div className="bg-orange-50 rounded-2xl p-4 flex items-start gap-3 text-left">
-              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-orange-800 text-sm">
-                  Tempo estimado: {tempoEstimado}
-                </p>
-                <p className="text-xs text-orange-700 mt-0.5 leading-relaxed">
-                  {deliveryType === "pickup"
-                    ? "Seu pedido estará pronto para retirada no balcão."
-                    : "Estamos preparando seu pedido com todo o carinho. Você será notificado quando estiver a caminho!"}
-                </p>
-              </div>
-            </div>
-          )}
-
           <div className="bg-yellow-50 rounded-2xl p-4 flex items-start gap-3 text-left">
             <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Star className="w-5 h-5 text-yellow-600" />
@@ -199,9 +237,7 @@ export default function Confirmacao() {
 
         {/* Rodapé */}
         <div className="mt-10 text-center">
-          <p className="text-xs text-gray-400">
-            Churrascaria Estrela do Sul · Barretos/SP
-          </p>
+          <p className="text-xs text-gray-400">Churrascaria Estrela do Sul · Barretos/SP</p>
           <p className="text-xs text-gray-300 mt-1">
             {isConfirmed ? "Pedido confirmado com sucesso" : "Pedido recebido — aguardando confirmação"}
           </p>
