@@ -90,7 +90,8 @@ export default function Confirmacao() {
     status === "delivered";
 
   const handleWhatsAppClick = () => {
-    const numero = "5517982222790";
+    // Número de teste do bot (trocar para o número oficial quando for ao ar: 5517982222790)
+    const numero = "5517992253886";
     const mensagem = orderNumber
       ? `Olá! Gostaria de acompanhar meu pedido *${orderNumber}*`
       : "Olá! Gostaria de acompanhar meu pedido";

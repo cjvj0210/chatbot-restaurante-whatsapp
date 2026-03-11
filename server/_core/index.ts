@@ -47,7 +47,8 @@ async function startServer() {
   app.post("/api/webhook/evolution", handleEvolutionWebhook);
   
   // Endpoint de diagnóstico temporário
-  app.get("/api/diag", (_req, res) => {
+  app.get("/api/diag", async (_req, res) => {
+    const { getSiteUrl } = await import("../keepAlive").then(() => import("../_core/siteUrl"));
     res.json({
       nodeEnv: process.env.NODE_ENV,
       evolutionUrl: process.env.EVOLUTION_API_URL ? process.env.EVOLUTION_API_URL.substring(0, 30) + '...' : 'NOT_SET',
@@ -55,6 +56,7 @@ async function startServer() {
       evolutionInstance: process.env.EVOLUTION_INSTANCE_NAME || 'NOT_SET',
       siteDevUrl: process.env.SITE_DEV_URL || 'NOT_SET',
       viteSiteUrl: process.env.VITE_SITE_URL || 'NOT_SET',
+      getSiteUrlResult: getSiteUrl(),
       timestamp: new Date().toISOString(),
     });
   });

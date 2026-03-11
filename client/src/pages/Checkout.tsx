@@ -192,7 +192,13 @@ export default function Checkout() {
     `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 
   const formatPhone = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 11);
+    // Remove tudo que não é dígito
+    let digits = value.replace(/\D/g, "");
+    // Remove o prefixo 55 (Brasil) se o número tiver mais de 11 dígitos (ex: 5517988112791 → 17988112791)
+    if (digits.startsWith("55") && digits.length > 11) {
+      digits = digits.slice(2);
+    }
+    digits = digits.slice(0, 11);
     if (digits.length <= 2) return `(${digits}`;
     if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;

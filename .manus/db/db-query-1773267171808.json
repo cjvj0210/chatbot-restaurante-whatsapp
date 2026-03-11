@@ -1,0 +1,9 @@
+{
+  "query": "-- Deletar os itens Coca-Cola duplicados sem imagem (IDs 210001-240001)\nDELETE FROM menu_items WHERE id IN (210001, 210002, 210003, 210004, 240001);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute -- Deletar os itens Coca-Cola duplicados sem imagem (IDs 210001-240001)\nDELETE FROM menu_items WHERE id IN (210001, 210002, 210003, 210004, 240001);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 56
+}

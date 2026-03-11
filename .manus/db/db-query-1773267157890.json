@@ -1,0 +1,9 @@
+{
+  "query": "-- Mover itens das categorias Bebidas duplicadas para a categoria correta (150007)\nUPDATE menu_items SET categoryId = 150007 WHERE categoryId IN (180002, 210002, 210004, 210006, 210008, 240002);\n\n-- Deletar todas as categorias duplicadas (Pizzas e Bebidas com IDs >= 180000)\nDELETE FROM menu_categories WHERE id IN (180001, 180002, 210001, 210002, 210003, 210004, 210005, 210006, 210007, 210008, 240001, 240002);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute -- Mover itens das categorias Bebidas duplicadas para a categoria correta (150007)\nUPDATE menu_items SET categoryId = 150007 WHERE categoryId IN (180002, 210002, 210004, 210006, 210008, 240002);\n\n-- Deletar todas as categorias duplicadas (Pizzas e Bebidas com IDs >= 180000)\nDELETE FROM menu_categories WHERE id IN (180001, 180002, 210001, 210002, 210003, 210004, 210005, 210006, 210007, 210008, 240001, 240002);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 64
+}

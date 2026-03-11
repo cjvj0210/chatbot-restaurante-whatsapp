@@ -1,0 +1,9 @@
+{
+  "query": "-- Deletar mensagens das conversas do número pessoal 5517988112791\nDELETE m FROM messages m\nJOIN conversations c ON m.conversationId = c.id\nJOIN customers cu ON c.customerId = cu.id\nWHERE cu.whatsappId LIKE '%5517988112791%';\n\n-- Fechar conversas ativas para forçar nova conversa limpa\nUPDATE conversations c\nJOIN customers cu ON c.customerId = cu.id\nSET c.isActive = 0\nWHERE cu.whatsappId LIKE '%5517988112791%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute -- Deletar mensagens das conversas do número pessoal 5517988112791\nDELETE m FROM messages m\nJOIN conversations c ON m.conversationId = c.id\nJOIN customers cu ON c.customerId = cu.id\nWHERE cu.whatsappId LIKE '%5517988112791%';\n\n-- Fechar conversas ativas para forçar nova conversa limpa\nUPDATE conversations c\nJOIN customers cu ON c.customerId = cu.id\nSET c.isActive = 0\nWHERE cu.whatsappId LIKE '%5517988112791%';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 75
+}

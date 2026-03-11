@@ -1,0 +1,80 @@
+{
+  "query": "SELECT sessionId, whatsappNumber, status, createdAt, expiresAt FROM order_sessions ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT sessionId, whatsappNumber, status, createdAt, expiresAt FROM order_sessions ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "sessionId": "c0d98a5c40ef814d7a2acdccee86fcf0",
+      "whatsappNumber": "5511000000001",
+      "status": "pending",
+      "createdAt": "2026-03-11 18:32:24",
+      "expiresAt": "2026-03-12 18:32:24"
+    },
+    {
+      "sessionId": "4cea35c91b1aa875480e9284a151f2e0",
+      "whatsappNumber": "5517992253886",
+      "status": "pending",
+      "createdAt": "2026-03-11 17:53:31",
+      "expiresAt": "2026-03-12 17:53:31"
+    },
+    {
+      "sessionId": "587eb0fdfdd4c85475a12d9e82706e5b",
+      "whatsappNumber": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-11 17:46:09",
+      "expiresAt": "2026-03-12 17:46:09"
+    },
+    {
+      "sessionId": "696dc439685ccb3ea46baff01d81f04e",
+      "whatsappNumber": "5517988112791",
+      "status": "pending",
+      "createdAt": "2026-03-11 17:36:31",
+      "expiresAt": "2026-03-12 17:36:31"
+    },
+    {
+      "sessionId": "ff0a83d8c65f91d5e5ccdd66cfd00560",
+      "whatsappNumber": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-11 14:56:11",
+      "expiresAt": "2026-03-12 14:56:11"
+    },
+    {
+      "sessionId": "94cb0ebcf1af48a5d49e9f40117d24a0",
+      "whatsappNumber": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-11 14:55:11",
+      "expiresAt": "2026-03-12 14:55:11"
+    },
+    {
+      "sessionId": "12d30730063504b92228223b87390e1c",
+      "whatsappNumber": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-11 14:53:25",
+      "expiresAt": "2026-03-12 14:53:25"
+    },
+    {
+      "sessionId": "d7f2e8200598bfc3fe93e77a829b9d60",
+      "whatsappNumber": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-11 13:21:30",
+      "expiresAt": "2026-03-12 13:21:30"
+    },
+    {
+      "sessionId": "e82bb3b7713c6fee5a40070a2c16ecf8",
+      "whatsappNumber": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-11 13:01:00",
+      "expiresAt": "2026-03-12 13:01:01"
+    },
+    {
+      "sessionId": "3ba762aecb4be3a85363756b80c8ccda",
+      "whatsappNumber": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-10 17:30:13",
+      "expiresAt": "2026-03-11 17:30:14"
+    }
+  ],
+  "messages": [],
+  "stdout": "sessionId\twhatsappNumber\tstatus\tcreatedAt\texpiresAt\nc0d98a5c40ef814d7a2acdccee86fcf0\t5511000000001\tpending\t2026-03-11 18:32:24\t2026-03-12 18:32:24\n4cea35c91b1aa875480e9284a151f2e0\t5517992253886\tpending\t2026-03-11 17:53:31\t2026-03-12 17:53:31\n587eb0fdfdd4c85475a12d9e82706e5b\tNULL\tpending\t2026-03-11 17:46:09\t2026-03-12 17:46:09\n696dc439685ccb3ea46baff01d81f04e\t5517988112791\tpending\t2026-03-11 17:36:31\t2026-03-12 17:36:31\nff0a83d8c65f91d5e5ccdd66cfd00560\tNULL\tpending\t2026-03-11 14:56:11\t2026-03-12 14:56:11\n94cb0ebcf1af48a5d49e9f40117d24a0\tNULL\tpending\t2026-03-11 14:55:11\t2026-03-12 14:55:11\n12d30730063504b92228223b87390e1c\tNULL\tcompleted\t2026-03-11 14:53:25\t2026-03-12 14:53:25\nd7f2e8200598bfc3fe93e77a829b9d60\tNULL\tcompleted\t2026-03-11 13:21:30\t2026-03-12 13:21:30\ne82bb3b7713c6fee5a40070a2c16ecf8\tNULL\tcompleted\t2026-03-11 13:01:00\t2026-03-12 13:01:01\n3ba762aecb4be3a85363756b80c8ccda\tNULL\tpending\t2026-03-10 17:30:13\t2026-03-11 17:30:14\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

@@ -19,7 +19,8 @@ import {
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
 import { getChatbotPrompt } from "./chatbotPrompt";
-import { orderSessions } from "../drizzle/schema";
+import { orderSessions, orders } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
@@ -242,6 +243,41 @@ async function generateResponse(
     } catch (err) {
       console.error("[Chatbot] Erro ao gerar link de pedido:", err);
       aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
+    }
+  }
+
+  // Processar [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX] — buscar status real do pedido no banco
+  const statusMatch = aiResponse.match(/\[VERIFICAR_STATUS_PEDIDO:([A-Z0-9]+)\]/);
+  if (statusMatch) {
+    const orderNum = statusMatch[1];
+    try {
+      const db = await getDb();
+      if (db) {
+        const [order] = await db.select().from(orders).where(eq(orders.orderNumber, orderNum)).limit(1);
+        if (order) {
+          const statusMap: Record<string, string> = {
+            pending: "⏳ Aguardando aceite do restaurante",
+            confirmed: "✅ Pedido confirmado — em preparação",
+            preparing: "👨\u200d🍳 Em preparação na cozinha",
+            ready: "✅ Pronto! Aguardando entregador",
+            delivering: "🛵 Saiu para entrega!",
+            delivered: "✅ Entregue com sucesso!",
+            cancelled: "❌ Pedido cancelado",
+          };
+          const statusText = statusMap[order.status] || order.status;
+          const tipoEntrega = order.orderType === 'pickup' ? 'Retirada no balcão' : `Delivery — ${order.deliveryAddress || 'endereço não informado'}`;
+          const totalVal = `R$ ${((order.total || 0) / 100).toFixed(2).replace('.', ',')}`;
+          const statusMsg = `📦 *Pedido ${orderNum}*\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}`;
+          aiResponse = aiResponse.replace(statusMatch[0], statusMsg);
+        } else {
+          aiResponse = aiResponse.replace(statusMatch[0], `Não encontrei o pedido *${orderNum}*. Verifique o número e tente novamente.`);
+        }
+      } else {
+        aiResponse = aiResponse.replace(statusMatch[0], "Sistema temporariamente indisponível. Tente novamente em instantes.");
+      }
+    } catch (err) {
+      console.error("[Chatbot] Erro ao verificar status do pedido:", err);
+      aiResponse = aiResponse.replace(statusMatch[0], "Não consegui verificar o status agora. Tente novamente em instantes.");
     }
   }
 

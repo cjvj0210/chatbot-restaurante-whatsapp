@@ -1,0 +1,55 @@
+{
+  "query": "SELECT * FROM order_sessions ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT * FROM order_sessions ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "420004",
+      "sessionId": "c0d98a5c40ef814d7a2acdccee86fcf0",
+      "whatsappNumber": "5511000000001",
+      "customerId": "NULL",
+      "status": "pending",
+      "expiresAt": "2026-03-12 18:32:24",
+      "createdAt": "2026-03-11 18:32:24"
+    },
+    {
+      "id": "420003",
+      "sessionId": "4cea35c91b1aa875480e9284a151f2e0",
+      "whatsappNumber": "5517992253886",
+      "customerId": "NULL",
+      "status": "pending",
+      "expiresAt": "2026-03-12 17:53:31",
+      "createdAt": "2026-03-11 17:53:31"
+    },
+    {
+      "id": "420002",
+      "sessionId": "587eb0fdfdd4c85475a12d9e82706e5b",
+      "whatsappNumber": "NULL",
+      "customerId": "NULL",
+      "status": "pending",
+      "expiresAt": "2026-03-12 17:46:09",
+      "createdAt": "2026-03-11 17:46:09"
+    },
+    {
+      "id": "420001",
+      "sessionId": "696dc439685ccb3ea46baff01d81f04e",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "pending",
+      "expiresAt": "2026-03-12 17:36:31",
+      "createdAt": "2026-03-11 17:36:31"
+    },
+    {
+      "id": "390003",
+      "sessionId": "ff0a83d8c65f91d5e5ccdd66cfd00560",
+      "whatsappNumber": "NULL",
+      "customerId": "NULL",
+      "status": "pending",
+      "expiresAt": "2026-03-12 14:56:11",
+      "createdAt": "2026-03-11 14:56:11"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsessionId\twhatsappNumber\tcustomerId\tstatus\texpiresAt\tcreatedAt\n420004\tc0d98a5c40ef814d7a2acdccee86fcf0\t5511000000001\tNULL\tpending\t2026-03-12 18:32:24\t2026-03-11 18:32:24\n420003\t4cea35c91b1aa875480e9284a151f2e0\t5517992253886\tNULL\tpending\t2026-03-12 17:53:31\t2026-03-11 17:53:31\n420002\t587eb0fdfdd4c85475a12d9e82706e5b\tNULL\tNULL\tpending\t2026-03-12 17:46:09\t2026-03-11 17:46:09\n420001\t696dc439685ccb3ea46baff01d81f04e\t5517988112791\tNULL\tpending\t2026-03-12 17:36:31\t2026-03-11 17:36:31\n390003\tff0a83d8c65f91d5e5ccdd66cfd00560\tNULL\tNULL\tpending\t2026-03-12 14:56:11\t2026-03-11 14:56:11\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}
