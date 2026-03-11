@@ -57,6 +57,28 @@ async function startServer() {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // Endpoint de teste de envio direto via Evolution API
+  app.get("/api/diag/send-test", async (_req, res) => {
+    try {
+      const { sendTextMessageEvolution } = await import("../evolutionApi");
+      const result = await sendTextMessageEvolution("5517992253886", "[TESTE DIAG] Bot funcionando em producao! " + new Date().toLocaleString('pt-BR'));
+      res.json({ success: result, timestamp: new Date().toISOString() });
+    } catch (e: any) {
+      res.json({ success: false, error: e.message, timestamp: new Date().toISOString() });
+    }
+  });
+
+  // Endpoint para capturar payload real da Evolution API
+  const lastPayloads: any[] = [];
+  app.post("/api/diag/capture", (req, res) => {
+    lastPayloads.unshift({ ts: new Date().toISOString(), body: req.body });
+    if (lastPayloads.length > 5) lastPayloads.pop();
+    res.json({ ok: true });
+  });
+  app.get("/api/diag/payloads", (_req, res) => {
+    res.json(lastPayloads);
+  });
   
   // tRPC API
   app.use(
