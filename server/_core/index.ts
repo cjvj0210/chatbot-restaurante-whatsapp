@@ -45,6 +45,19 @@ async function startServer() {
   // Evolution API Webhook
   app.post("/api/webhook/evolution", handleEvolutionWebhook);
   
+  // Endpoint de diagnóstico temporário
+  app.get("/api/diag", (_req, res) => {
+    res.json({
+      nodeEnv: process.env.NODE_ENV,
+      evolutionUrl: process.env.EVOLUTION_API_URL ? process.env.EVOLUTION_API_URL.substring(0, 30) + '...' : 'NOT_SET',
+      evolutionKey: process.env.EVOLUTION_API_KEY ? 'SET (' + process.env.EVOLUTION_API_KEY.length + ' chars)' : 'NOT_SET',
+      evolutionInstance: process.env.EVOLUTION_INSTANCE_NAME || 'NOT_SET',
+      siteDevUrl: process.env.SITE_DEV_URL || 'NOT_SET',
+      viteSiteUrl: process.env.VITE_SITE_URL || 'NOT_SET',
+      timestamp: new Date().toISOString(),
+    });
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
