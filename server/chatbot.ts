@@ -17,7 +17,7 @@ import {
   getDb,
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
-import { sendTextMessageEvolution } from "./evolutionApi";
+import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { orderSessions } from "../drizzle/schema";
 import { randomBytes } from "crypto";
@@ -102,8 +102,25 @@ export async function processIncomingMessage(
     const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
     
     if (useEvolution) {
-      // Evolution API: só suporta texto simples (sem botões interativos nativos)
-      await sendTextMessageEvolution(phone, response.text);
+      // Se a resposta contiver um link de pedido, enviar como imagem com banner visual
+      const orderLinkMatch = response.text.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
+      if (orderLinkMatch) {
+        const orderLink = orderLinkMatch[0];
+        // Extrair texto antes e depois do link para a legenda
+        const textBeforeLink = response.text.split(orderLink)[0].trim();
+        const textAfterLink = response.text.split(orderLink)[1]?.trim() || "";
+        const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
+        
+        // Enviar banner visual com o link embutido na legenda
+        const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner-cardapio-whatsapp-M8mMSXByvpQzK6jG7HNoeV.png";
+        const sent = await sendMediaMessageEvolution(phone, bannerUrl, caption);
+        if (!sent) {
+          // Fallback: enviar como texto simples se a imagem falhar
+          await sendTextMessageEvolution(phone, response.text);
+        }
+      } else {
+        await sendTextMessageEvolution(phone, response.text);
+      }
     } else if (response.buttons) {
       await sendButtonMessage(phone, response.text, response.buttons);
     } else if (response.list) {

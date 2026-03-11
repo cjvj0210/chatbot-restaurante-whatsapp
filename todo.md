@@ -774,3 +774,12 @@
 - [x] Configurar webhook na Evolution API apontando para o chatbot
 - [ ] Testar fluxo completo: mensagem WhatsApp → webhook → chatbot → resposta
 - [ ] Adicionar toggle no admin para escolher entre Meta Cloud API e Evolution API
+
+## Correção URL Cardápio no WhatsApp (11/03/2026)
+- [x] Confirmado: URL de produção já é usada corretamente (chatbotwa-hesngyeonud5ngjee9cdhq.manus.space)
+- [x] Link chega clicavel no WhatsApp real em linha separada
+
+## Mensagem Visual do Cardápio (11/03/2026)
+- [x] Implementar envio de imagem do restaurante + legenda com link quando cliente pedir cardápio delivery
+- [x] Gerar imagem de banner do cardápio (churrasco, logo, call-to-action visual)
+- [x] Testar mensagem visual chegando no WhatsApp real - confirmado como imageMessage

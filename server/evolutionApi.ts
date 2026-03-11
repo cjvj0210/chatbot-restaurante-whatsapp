@@ -95,6 +95,51 @@ export async function downloadMediaEvolution(messageId: string, instanceName?: s
 }
 
 /**
+ * Envia uma mensagem de imagem com legenda via Evolution API
+ * Usado para enviar o banner do cardápio digital de forma visual e comercial
+ */
+export async function sendMediaMessageEvolution(
+  to: string,
+  imageUrl: string,
+  caption: string
+): Promise<boolean> {
+  try {
+    const { baseUrl, apiKey, instanceName } = getEvolutionConfig();
+
+    if (!baseUrl || !apiKey) {
+      console.error("[EvolutionAPI] URL ou API Key não configurados");
+      return false;
+    }
+
+    const normalizedTo = to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+
+    const response = await axios.post(
+      `${baseUrl}/message/sendMedia/${instanceName}`,
+      {
+        number: normalizedTo,
+        mediatype: "image",
+        mimetype: "image/jpeg",
+        media: imageUrl,
+        caption: caption,
+      },
+      {
+        headers: {
+          apikey: apiKey,
+          "Content-Type": "application/json",
+        },
+        timeout: 30000,
+      }
+    );
+
+    console.log("[EvolutionAPI] Mídia enviada:", response.data?.key?.id || "ok");
+    return true;
+  } catch (error: any) {
+    console.error("[EvolutionAPI] Erro ao enviar mídia:", error?.response?.data || error?.message);
+    return false;
+  }
+}
+
+/**
  * Verifica o status da instância na Evolution API
  */
 export async function checkInstanceStatus(): Promise<"open" | "close" | "connecting" | "unknown"> {
