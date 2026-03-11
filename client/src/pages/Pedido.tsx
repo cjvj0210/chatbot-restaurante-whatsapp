@@ -1109,11 +1109,19 @@ export default function Pedido() {
       {/* ===== BOTÃO FINALIZAR PEDIDO (aba carrinho) ===== */}
       {activeTab === "cart" && cart.length > 0 && (
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-5 pt-2 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" style={{ zIndex: 25 }}>
-          {businessStatus && !businessStatus.isOpen ? (
-            <div className="w-full bg-gray-400 text-white py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 px-5 pointer-events-auto cursor-not-allowed">
+          {(businessStatus && !businessStatus.isOpen) ? (
+            <button
+              onClick={() => {
+                localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cart));
+                localStorage.setItem(`deliveryType_${sessionId}`, deliveryType || "delivery");
+                localStorage.setItem(`scheduled_order_${sessionId}`, "true");
+                setLocation(`/pedido/${sessionId}/checkout`);
+              }}
+              className="w-full bg-orange-500 text-white py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 px-5 active:bg-orange-600 transition-colors pointer-events-auto"
+            >
               <AlertTriangle className="w-5 h-5" />
-              <span className="font-bold text-base">Fechado agora</span>
-            </div>
+              <span className="font-bold text-base">Agendar Pedido</span>
+            </button>
           ) : (
             <button
               onClick={() => {

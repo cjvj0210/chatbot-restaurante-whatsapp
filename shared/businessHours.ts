@@ -136,8 +136,8 @@ export function checkBusinessHours(
     const lunchStart = toMinutes(schedule.lunch.startH, schedule.lunch.startM);
     const lunchEnd = toMinutes(schedule.lunch.endH, schedule.lunch.endM);
 
-    // Regra especial: delivery almoço — pode pedir antes das 11h
-    if (orderType === "delivery" && currentMinutes < lunchStart && currentMinutes >= toMinutes(8, 0)) {
+    // Regra especial: pode pedir antes da abertura (qualquer horário antes do almoço)
+    if (currentMinutes < lunchStart) {
       return {
         isOpen: true,
         isEarlyOrder: true,
@@ -166,6 +166,21 @@ export function checkBusinessHours(
       return {
         isOpen: true,
         isEarlyOrder: false,
+        closesAt: formatTime(schedule.dinner.endH, schedule.dinner.endM),
+        currentShift: "dinner",
+      };
+    }
+  }
+
+  // Regra especial: entre almoço e jantar — pode agendar para o jantar
+  if (schedule.dinner) {
+    const dinnerStart = toMinutes(schedule.dinner.startH, schedule.dinner.startM);
+    const lunchEnd = schedule.lunch ? toMinutes(schedule.lunch.endH, schedule.lunch.endM) : 0;
+    if (currentMinutes >= lunchEnd && currentMinutes < dinnerStart) {
+      return {
+        isOpen: true,
+        isEarlyOrder: true,
+        earlyOrderMessage: `⚠️ Você está fazendo um pedido antecipado! Nosso jantar abre às ${formatTime(schedule.dinner.startH, schedule.dinner.startM)} — o prazo começa a contar a partir desse horário.`,
         closesAt: formatTime(schedule.dinner.endH, schedule.dinner.endM),
         currentShift: "dinner",
       };

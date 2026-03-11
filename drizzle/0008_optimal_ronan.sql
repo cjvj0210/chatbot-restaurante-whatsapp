@@ -1,0 +1,1 @@
+ALTER TABLE `reservations` MODIFY COLUMN `customerId` int;

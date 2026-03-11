@@ -48,7 +48,7 @@ async function processReservationMarker(message: string): Promise<string> {
       } catch {}
 
       await db.insert(reservations).values({
-        customerId: 0,
+        customerId: null,
         reservationNumber,
         customerName: params.nome || 'Cliente via chat',
         customerPhone: params.telefone || '',

@@ -739,3 +739,13 @@
 - [x] Adicionada distinção jarra vs copo nos preços de suco na base de conhecimento
 - [x] Card visual bonito criado para o link do cardápio digital (substituiu URL crua)
 - [x] Removido mínimo obrigatório (minSelections=0) em 11 grupos de variação de carnes
+
+## Melhorias - 11/03/2026
+- [ ] Corrigir reservas não aparecendo no painel admin (chatSimulator.ts)
+- [ ] Permitir finalizar pedido fora do horário com aviso de agendamento (cardápio digital)
+- [ ] Adicionar desconto bariátrica (R$10,00 com carteirinha) na base de conhecimento
+- [ ] Adicionar orientação sobre vagas de emprego (e-mail estreladosulbarretos@gmail.com)
+- [ ] Bot consultar status do pedido quando cliente perguntar se marmita saiu
+- [ ] Fluxo pós-atendente humano: perguntar se ajuda em mais algo; se urgente, ligar no fixo
+- [ ] Responsável de compras: passar Clóvis 17 9 8811-2790
+- [ ] Cupom fiscal/DANFE: repassar ao atendente humano

@@ -146,7 +146,7 @@ export type InsertOrder = typeof orders.$inferInsert;
  */
 export const reservations = mysqlTable("reservations", {
   id: int("id").autoincrement().primaryKey(),
-  customerId: int("customerId").notNull(),
+  customerId: int("customerId"), // Opcional: pode ser reserva via chatbot sem cliente cadastrado
   reservationNumber: varchar("reservationNumber", { length: 20 }).notNull().unique(),
   status: mysqlEnum("status", ["pending", "confirmed", "cancelled", "completed"]).default("pending").notNull(),
   date: timestamp("date").notNull(),
