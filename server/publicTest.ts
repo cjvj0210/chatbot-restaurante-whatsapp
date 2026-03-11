@@ -56,11 +56,12 @@ export const publicTestRouter = router({
       // Adicionar mensagem do usuário ao histórico
       history.push({ role: "user", content: message });
 
-      // Obter data e HORÁRIO atual para contexto
+      // Obter data e HORÁRIO atual para contexto (fuso Brasília UTC-3)
       const agora = new Date();
-      const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long' });
-      const dataCompleta = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-      const horarioAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const tzBrasilia = 'America/Sao_Paulo';
+      const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long', timeZone: tzBrasilia });
+      const dataCompleta = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tzBrasilia });
+      const horarioAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tzBrasilia });
 
       // System prompt completo (compartilhado com simulador)
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
@@ -193,11 +194,12 @@ export const publicTestRouter = router({
       // Adicionar mensagem transcrita ao histórico
       history.push({ role: "user", content: transcribedText });
 
-      // Obter data e HORÁRIO atual para contexto
+      // Obter data e HORÁRIO atual para contexto (fuso Brasília UTC-3)
       const agora = new Date();
-      const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long' });
-      const dataCompleta = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-      const horarioAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const tzBrasilia = 'America/Sao_Paulo';
+      const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long', timeZone: tzBrasilia });
+      const dataCompleta = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tzBrasilia });
+      const horarioAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tzBrasilia });
 
       // System prompt completo (compartilhado com simulador)
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);

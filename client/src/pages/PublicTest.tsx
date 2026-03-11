@@ -5,12 +5,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 
-// Converte URLs no texto em links clicáveis (compatível com iOS, Android e Windows)
+// Detecta se a URL é do cardápio digital (link de pedido)
+function isMenuLink(url: string): boolean {
+  return /\/pedido\/[a-f0-9]{32}/i.test(url);
+}
+
+// Card visual para o link do cardápio digital
+function MenuLinkCard({ url }: { url: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="block mt-2 rounded-xl overflow-hidden border border-[#075e54]/30 bg-gradient-to-r from-[#075e54] to-[#128c7e] text-white no-underline hover:opacity-90 transition-opacity"
+    >
+      <div className="flex items-center gap-3 p-3">
+        <div className="text-3xl flex-shrink-0">🛒</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-sm leading-tight">Cardápio Digital</div>
+          <div className="text-xs text-white/80 mt-0.5">Toque aqui para montar seu pedido →</div>
+        </div>
+        <div className="text-xl flex-shrink-0">➡️</div>
+      </div>
+    </a>
+  );
+}
+
+// Converte URLs no texto em links clicáveis ou cards visuais
 function renderMessageText(text: string) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
   return parts.map((part, i) => {
     if (urlRegex.test(part)) {
+      if (isMenuLink(part)) {
+        return <MenuLinkCard key={i} url={part} />;
+      }
       return (
         <a
           key={i}

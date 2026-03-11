@@ -1,0 +1,410 @@
+{
+  "query": "SELECT g.id, g.name, g.minSelections, g.maxSelections, g.isRequired, i.name as item_name \nFROM menu_addon_groups g \nJOIN menu_items i ON g.menuItemId = i.id \nWHERE g.minSelections > 0\nORDER BY i.name, g.displayOrder\nLIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT g.id, g.name, g.minSelections, g.maxSelections, g.isRequired, i.name as item_name \nFROM menu_addon_groups g \nJOIN menu_items i ON g.menuItemId = i.id \nWHERE g.minSelections > 0\nORDER BY i.name, g.displayOrder\nLIMIT 50;",
+  "rows": [
+    {
+      "id": "79",
+      "name": "Tipo",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Água mineral"
+    },
+    {
+      "id": "30012",
+      "name": "Escolha o tamanho",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Anéis de cebola empanados"
+    },
+    {
+      "id": "78",
+      "name": "Escolha o seu arroz",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Arroz"
+    },
+    {
+      "id": "30010",
+      "name": "Escolha o tamanho",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Batatas chips"
+    },
+    {
+      "id": "30009",
+      "name": "Escolha o tamanho",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Batatas fritas"
+    },
+    {
+      "id": "85",
+      "name": "Escolha a cerveja",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Cervejas lata"
+    },
+    {
+      "id": "84",
+      "name": "Escolha a cerveja",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Cervejas Long Neck"
+    },
+    {
+      "id": "1",
+      "name": "Escolha as carnes",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Cowboy individual"
+    },
+    {
+      "id": "3",
+      "name": "Guarnição 1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Cowboy individual"
+    },
+    {
+      "id": "4",
+      "name": "Guarnição 2",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Cowboy individual"
+    },
+    {
+      "id": "19",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Cowboy individual"
+    },
+    {
+      "id": "14",
+      "name": "Preferência",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Estrelinha - infantil"
+    },
+    {
+      "id": "16",
+      "name": "Guarnição 2",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Estrelinha - infantil"
+    },
+    {
+      "id": "15",
+      "name": "Guarnição 3",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Estrelinha - infantil"
+    },
+    {
+      "id": "67",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Estrelinha - infantil"
+    },
+    {
+      "id": "5",
+      "name": "Escolha as carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "6",
+      "name": "Guarnição 1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "7",
+      "name": "Guarnição 2",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "23",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "50",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Kit de churrasco nobre"
+    },
+    {
+      "id": "54",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "30001",
+      "name": "Escolha a carne",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "8",
+      "name": "Guarnição 1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "27",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "30005",
+      "name": "Alterar Variedade De Carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Marmitex Completa M"
+    },
+    {
+      "id": "38",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Marmitex Completa M"
+    },
+    {
+      "id": "30003",
+      "name": "Alterar Variedade De Carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Marmitex Completa P"
+    },
+    {
+      "id": "34",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Marmitex Completa P"
+    },
+    {
+      "id": "46",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Marmitex econômica 1 (individual)"
+    },
+    {
+      "id": "30013",
+      "name": "Escolha o tamanho",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Mini Pastéis"
+    },
+    {
+      "id": "76",
+      "name": "Escolha o sabor",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Mini Pastéis"
+    },
+    {
+      "id": "77",
+      "name": "Quantidade",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Mini Pastéis"
+    },
+    {
+      "id": "70",
+      "name": "Preferências",
+      "minSelections": "4",
+      "maxSelections": "5",
+      "isRequired": "1",
+      "item_name": "Mix de churrasco nobre"
+    },
+    {
+      "id": "58",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Mix de churrasco nobre"
+    },
+    {
+      "id": "71",
+      "name": "Preferências",
+      "minSelections": "4",
+      "maxSelections": "5",
+      "isRequired": "1",
+      "item_name": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "62",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "11",
+      "name": "Preferência",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Peãozinho - infantil"
+    },
+    {
+      "id": "30002",
+      "name": "Guarnição 2",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Peãozinho - infantil"
+    },
+    {
+      "id": "12",
+      "name": "Guarnição 3",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Peãozinho - infantil"
+    },
+    {
+      "id": "13",
+      "name": "Guarnição 1",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Peãozinho - infantil"
+    },
+    {
+      "id": "66",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Peãozinho - infantil"
+    },
+    {
+      "id": "65",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "3",
+      "isRequired": "1",
+      "item_name": "Pescador individual"
+    },
+    {
+      "id": "80",
+      "name": "Escolha o sabor",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Refrigerantes 2 Litros"
+    },
+    {
+      "id": "81",
+      "name": "Escolha o sabor",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Refrigerantes Econômicos"
+    },
+    {
+      "id": "82",
+      "name": "Escolha o sabor",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Refrigerantes lata"
+    },
+    {
+      "id": "88",
+      "name": "Peça seu molho favorito!",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Salada Caesar"
+    },
+    {
+      "id": "30016",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Salada Caesar"
+    },
+    {
+      "id": "30014",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Salada Caprese"
+    },
+    {
+      "id": "86",
+      "name": "Peça seu molho favorito!",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Salada Caprese"
+    },
+    {
+      "id": "30017",
+      "name": "Precisa de talheres?",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Salada Estrela"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tminSelections\tmaxSelections\tisRequired\titem_name\n79\tTipo\t1\t1\t1\tÁgua mineral\n30012\tEscolha o tamanho\t1\t1\t1\tAnéis de cebola empanados\n78\tEscolha o seu arroz\t1\t1\t1\tArroz\n30010\tEscolha o tamanho\t1\t1\t1\tBatatas chips\n30009\tEscolha o tamanho\t1\t1\t1\tBatatas fritas\n85\tEscolha a cerveja\t1\t1\t1\tCervejas lata\n84\tEscolha a cerveja\t1\t1\t1\tCervejas Long Neck\n1\tEscolha as carnes\t1\t2\t1\tCowboy individual\n3\tGuarnição 1\t1\t1\t1\tCowboy individual\n4\tGuarnição 2\t1\t1\t1\tCowboy individual\n19\tPrecisa de talheres?\t1\t3\t1\tCowboy individual\n14\tPreferência\t1\t1\t1\tEstrelinha - infantil\n16\tGuarnição 2\t1\t1\t1\tEstrelinha - infantil\n15\tGuarnição 3\t1\t1\t1\tEstrelinha - infantil\n67\tPrecisa de talheres?\t1\t3\t1\tEstrelinha - infantil\n5\tEscolha as carnes\t1\t1\t1\tExecutivo Fit Premium\n6\tGuarnição 1\t1\t1\t1\tExecutivo Fit Premium\n7\tGuarnição 2\t1\t1\t1\tExecutivo Fit Premium\n23\tPrecisa de talheres?\t1\t3\t1\tExecutivo Fit Premium\n50\tPrecisa de talheres?\t1\t3\t1\tKit de churrasco nobre\n54\tPrecisa de talheres?\t1\t3\t1\tKit de churrasco tradicional\n30001\tEscolha a carne\t1\t1\t1\tLaçador individual\n8\tGuarnição 1\t1\t1\t1\tLaçador individual\n27\tPrecisa de talheres?\t1\t3\t1\tLaçador individual\n30005\tAlterar Variedade De Carnes\t1\t1\t1\tMarmitex Completa M\n38\tPrecisa de talheres?\t1\t3\t1\tMarmitex Completa M\n30003\tAlterar Variedade De Carnes\t1\t1\t1\tMarmitex Completa P\n34\tPrecisa de talheres?\t1\t3\t1\tMarmitex Completa P\n46\tPrecisa de talheres?\t1\t3\t1\tMarmitex econômica 1 (individual)\n30013\tEscolha o tamanho\t1\t1\t1\tMini Pastéis\n76\tEscolha o sabor\t1\t1\t1\tMini Pastéis\n77\tQuantidade\t1\t1\t1\tMini Pastéis\n70\tPreferências\t4\t5\t1\tMix de churrasco nobre\n58\tPrecisa de talheres?\t1\t3\t1\tMix de churrasco nobre\n71\tPreferências\t4\t5\t1\tMix de churrasco tradicional\n62\tPrecisa de talheres?\t1\t3\t1\tMix de churrasco tradicional\n11\tPreferência\t1\t1\t1\tPeãozinho - infantil\n30002\tGuarnição 2\t1\t1\t1\tPeãozinho - infantil\n12\tGuarnição 3\t1\t1\t1\tPeãozinho - infantil\n13\tGuarnição 1\t1\t1\t1\tPeãozinho - infantil\n66\tPrecisa de talheres?\t1\t3\t1\tPeãozinho - infantil\n65\tPrecisa de talheres?\t1\t3\t1\tPescador individual\n80\tEscolha o sabor\t1\t1\t1\tRefrigerantes 2 Litros\n81\tEscolha o sabor\t1\t1\t1\tRefrigerantes Econômicos\n82\tEscolha o sabor\t1\t1\t1\tRefrigerantes lata\n88\tPeça seu molho favorito!\t1\t2\t1\tSalada Caesar\n30016\tPrecisa de talheres?\t1\t2\t1\tSalada Caesar\n30014\tPrecisa de talheres?\t1\t2\t1\tSalada Caprese\n86\tPeça seu molho favorito!\t1\t2\t1\tSalada Caprese\n30017\tPrecisa de talheres?\t1\t2\t1\tSalada Estrela\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

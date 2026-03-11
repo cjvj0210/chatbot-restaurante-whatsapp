@@ -1,0 +1,98 @@
+{
+  "query": "SELECT g.id, g.name, g.minSelections, g.maxSelections, g.isRequired, i.name as item_name \nFROM menu_addon_groups g \nJOIN menu_items i ON g.menuItemId = i.id \nWHERE g.minSelections > 0\nAND (g.name LIKE '%Varie%' OR g.name LIKE '%Carne%' OR g.name LIKE '%Mix%' OR g.name LIKE '%Prefer%' OR g.name LIKE '%Alterar%')\nORDER BY i.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT g.id, g.name, g.minSelections, g.maxSelections, g.isRequired, i.name as item_name \nFROM menu_addon_groups g \nJOIN menu_items i ON g.menuItemId = i.id \nWHERE g.minSelections > 0\nAND (g.name LIKE '%Varie%' OR g.name LIKE '%Carne%' OR g.name LIKE '%Mix%' OR g.name LIKE '%Prefer%' OR g.name LIKE '%Alterar%')\nORDER BY i.name;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Escolha as carnes",
+      "minSelections": "1",
+      "maxSelections": "2",
+      "isRequired": "1",
+      "item_name": "Cowboy individual"
+    },
+    {
+      "id": "14",
+      "name": "Preferência",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Estrelinha - infantil"
+    },
+    {
+      "id": "5",
+      "name": "Escolha as carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Executivo Fit Premium"
+    },
+    {
+      "id": "30001",
+      "name": "Escolha a carne",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Laçador individual"
+    },
+    {
+      "id": "30005",
+      "name": "Alterar Variedade De Carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Marmitex Completa M"
+    },
+    {
+      "id": "30003",
+      "name": "Alterar Variedade De Carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Marmitex Completa P"
+    },
+    {
+      "id": "70",
+      "name": "Preferências",
+      "minSelections": "4",
+      "maxSelections": "5",
+      "isRequired": "1",
+      "item_name": "Mix de churrasco nobre"
+    },
+    {
+      "id": "71",
+      "name": "Preferências",
+      "minSelections": "4",
+      "maxSelections": "5",
+      "isRequired": "1",
+      "item_name": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "11",
+      "name": "Preferência",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Peãozinho - infantil"
+    },
+    {
+      "id": "30007",
+      "name": "Alterar Variedade De Carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Tradicional Marmitex G"
+    },
+    {
+      "id": "2",
+      "name": "Escolha as carnes",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "isRequired": "1",
+      "item_name": "Tropeiro individual"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tminSelections\tmaxSelections\tisRequired\titem_name\n1\tEscolha as carnes\t1\t2\t1\tCowboy individual\n14\tPreferência\t1\t1\t1\tEstrelinha - infantil\n5\tEscolha as carnes\t1\t1\t1\tExecutivo Fit Premium\n30001\tEscolha a carne\t1\t1\t1\tLaçador individual\n30005\tAlterar Variedade De Carnes\t1\t1\t1\tMarmitex Completa M\n30003\tAlterar Variedade De Carnes\t1\t1\t1\tMarmitex Completa P\n70\tPreferências\t4\t5\t1\tMix de churrasco nobre\n71\tPreferências\t4\t5\t1\tMix de churrasco tradicional\n11\tPreferência\t1\t1\t1\tPeãozinho - infantil\n30007\tAlterar Variedade De Carnes\t1\t1\t1\tTradicional Marmitex G\n2\tEscolha as carnes\t1\t1\t1\tTropeiro individual\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

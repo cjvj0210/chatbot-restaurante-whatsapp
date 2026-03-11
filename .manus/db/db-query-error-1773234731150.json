@@ -1,0 +1,8 @@
+{
+  "query": "SELECT g.id, g.name, g.min_required, g.max_allowed, g.is_required, i.name as item_name \nFROM menu_addon_groups g \nJOIN menu_items i ON g.menu_item_id = i.id \nWHERE (g.name LIKE '%Varie%' OR g.name LIKE '%Carne%' OR g.name LIKE '%Mix%' OR g.name LIKE '%Prefer%' OR g.name LIKE '%Alterar%')\nORDER BY i.name, g.display_order\nLIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT g.id, g.name, g.min_required, g.max_allowed, g.is_required, i.name as item_name \nFROM menu_addon_groups g \nJOIN menu_items i ON g.menu_item_id = i.id \nWHERE (g.name LIKE '%Varie%' OR g.name LIKE '%Carne%' OR g.name LIKE '%Mix%' OR g.name LIKE '%Prefer%' OR g.name LIKE '%Alterar%')\nORDER BY i.name, g.display_order\nLIMIT 30;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'g.menu_item_id' in 'on clause'"
+  ]
+}

@@ -135,17 +135,20 @@ async function generateResponse(
   context: ChatContext,
   phone: string
 ): Promise<BotResponse> {
-  // Obter data/hora atual para contexto
+  // Obter data/hora atual para contexto (fuso Brasília UTC-3)
   const hoje = new Date();
-  const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long" });
+  const tzBrasilia = 'America/Sao_Paulo';
+  const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
   const dataCompleta = hoje.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: tzBrasilia,
   });
   const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: tzBrasilia,
   });
 
   // Usar o prompt COMPLETO do restaurante

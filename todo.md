@@ -733,3 +733,9 @@
 - [x] Adicionar horários de pico e dicas de chegada na base de conhecimento do chatbot
 - [x] Adicionar preços de bebidas do rodízio (PDF) na base de conhecimento
 - [x] Adicionar botões Sim/Não no chat quando bot oferecer atendente humano
+- [x] Corrigir fuso horário para Brasília (UTC-3) no chatbotPrompt.ts e todos os arquivos do servidor
+- [x] Reservas do simulador agora são salvas no banco e notificam o admin via notifyOwner
+- [x] Bot agora pergunta almoço ou jantar antes de responder sobre dia específico
+- [x] Adicionada distinção jarra vs copo nos preços de suco na base de conhecimento
+- [x] Card visual bonito criado para o link do cardápio digital (substituiu URL crua)
+- [x] Removido mínimo obrigatório (minSelections=0) em 11 grupos de variação de carnes

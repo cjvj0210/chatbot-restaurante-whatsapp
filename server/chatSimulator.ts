@@ -9,12 +9,69 @@ import { randomBytes } from "crypto";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { storagePut } from "./storage";
 import { getSiteUrl } from "./_core/siteUrl";
+import { notifyOwner } from "./_core/notification";
+import { reservations } from "../drizzle/schema";
 
 // Armazenamento em memória das conversas
 const conversations = new Map<string, Array<{ role: "user" | "assistant"; content: string }>>();
 
 // Mapa de sessão de chat → sessão de pedido ativo
 const chatOrderSessions = new Map<string, string>();
+
+// Processa e salva reserva detectada na resposta do bot
+async function processReservationMarker(message: string): Promise<string> {
+  const reservaRegex = /\[SALVAR_RESERVA:([^\]]+)\]/;
+  const match = message.match(reservaRegex);
+  if (!match) return message;
+
+  try {
+    const params: Record<string, string> = {};
+    match[1]!.split(';').forEach(pair => {
+      const [key, ...rest] = pair.split('=');
+      if (key) params[key.trim()] = rest.join('=').trim();
+    });
+
+    const db = await getDb();
+    if (db) {
+      const dateStr = new Date().toISOString().slice(0, 8).replace(/-/g, '');
+      const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const reservationNumber = `RES-${dateStr}-${suffix}`;
+
+      // Tentar parsear a data da reserva
+      let reservationDate = new Date();
+      try {
+        if (params.data) {
+          // Tentar parsear formatos comuns
+          const parsed = new Date(params.data);
+          if (!isNaN(parsed.getTime())) reservationDate = parsed;
+        }
+      } catch {}
+
+      await db.insert(reservations).values({
+        customerId: 0,
+        reservationNumber,
+        customerName: params.nome || 'Cliente via chat',
+        customerPhone: params.telefone || '',
+        date: reservationDate,
+        numberOfPeople: parseInt(params.pessoas || '1', 10),
+        customerNotes: params.obs && params.obs !== 'OBSERVACOES' ? params.obs : null,
+        status: 'pending',
+        source: 'chatbot',
+      });
+
+      // Notificar o dono
+      await notifyOwner({
+        title: `📝 Nova reserva via Chat de Teste`,
+        content: `Nome: ${params.nome || '-'}\nTelefone: ${params.telefone || '-'}\nData/Hora: ${params.data || '-'}\nPessoas: ${params.pessoas || '-'}\nObs: ${params.obs && params.obs !== 'OBSERVACOES' ? params.obs : '-'}`,
+      }).catch(() => {});
+    }
+  } catch (err) {
+    console.error('[Simulator] Erro ao salvar reserva:', err);
+  }
+
+  // Remover o marcador da mensagem exibida ao cliente
+  return message.replace(reservaRegex, '').replace(/\n{3,}/g, '\n\n').trim();
+}
 
 export const chatSimulatorRouter = router({
   sendMessage: publicProcedure
@@ -33,17 +90,20 @@ export const chatSimulatorRouter = router({
       // Adicionar mensagem do usuário ao histórico
       history.push({ role: "user", content: message });
 
-      // Obter data/hora atual para contexto
+      // Obter data/hora atual para contexto (fuso Brasília UTC-3)
       const hoje = new Date();
-      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long" });
+      const tzBrasilia = 'America/Sao_Paulo';
+      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
       const dataCompleta = hoje.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "long",
         year: "numeric",
+        timeZone: tzBrasilia,
       });
       const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: tzBrasilia,
       });
 
       // Usar o prompt COMPLETO do restaurante (mesmo do WhatsApp real)
@@ -98,6 +158,11 @@ export const chatSimulatorRouter = router({
             "(link indisponível no momento)"
           );
         }
+      }
+
+      // Processar SALVAR_RESERVA: salvar no banco e notificar o dono
+      if (assistantMessage.includes('[SALVAR_RESERVA:')) {
+        assistantMessage = await processReservationMarker(assistantMessage);
       }
 
       // Adicionar resposta ao histórico
@@ -156,17 +221,20 @@ export const chatSimulatorRouter = router({
       let history = conversations.get(sessionId) || [];
       history.push({ role: "user", content: `[Áudio]: ${transcribedText}` });
 
-      // Obter data/hora atual
+      // Obter data/hora atual (fuso Brasília UTC-3)
       const hoje = new Date();
-      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long" });
+      const tzBrasilia = 'America/Sao_Paulo';
+      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
       const dataCompleta = hoje.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "long",
         year: "numeric",
+        timeZone: tzBrasilia,
       });
       const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: tzBrasilia,
       });
 
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
@@ -214,6 +282,11 @@ export const chatSimulatorRouter = router({
             "(link indisponível no momento)"
           );
         }
+      }
+
+      // Processar SALVAR_RESERVA no fluxo de áudio
+      if (assistantMessage.includes('[SALVAR_RESERVA:')) {
+        assistantMessage = await processReservationMarker(assistantMessage);
       }
 
       history.push({ role: "assistant", content: assistantMessage });
