@@ -460,11 +460,7 @@ export default function Pedido() {
   const { data: menuItems, isLoading: loadingItems } = trpc.menu.listItems.useQuery();
   const { data: featuredItems = [] } = trpc.menu.listFeatured.useQuery();
 
-  useEffect(() => {
-    if (validation && !validation.valid) {
-      setTimeout(() => setLocation("/"), 3000);
-    }
-  }, [validation, setLocation]);
+  // Sem redirect automático quando sessão inválida — exibe tela de erro inline
 
   useEffect(() => {
     if (categories && categories.length > 0 && !activeCategoryId) {
@@ -646,14 +642,26 @@ export default function Pedido() {
   }
 
   if (!validation?.valid) {
+    const reason = (validation as any)?.reason;
+    const isCompleted = reason === 'session_already_used';
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Link inválido</h2>
-          <p className="text-gray-500 text-sm">
-            Este link de pedido não é mais válido. Solicite um novo link pelo WhatsApp.
+      <div className="min-h-screen bg-white flex items-center justify-center p-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="text-center max-w-xs">
+          <div className="text-6xl mb-4">{isCompleted ? '✅' : '⏰'}</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-3">
+            {isCompleted ? 'Pedido já realizado!' : 'Link expirado'}
+          </h2>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            {isCompleted
+              ? 'Este link já foi usado para fazer um pedido. Para fazer um novo pedido, envie uma mensagem no WhatsApp.'
+              : 'Este link de pedido expirou ou não é mais válido. Solicite um novo link pelo WhatsApp.'}
           </p>
+          <a
+            href="https://wa.me/5517992253886?text=Quero+fazer+um+novo+pedido"
+            className="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full font-semibold text-sm shadow-md"
+          >
+            💬 Pedir novo link no WhatsApp
+          </a>
         </div>
       </div>
     );

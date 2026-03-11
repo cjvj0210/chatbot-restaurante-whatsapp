@@ -194,11 +194,18 @@ async function generateResponse(
   ];
 
   // Adicionar histórico (últimas 15 mensagens para mais contexto)
+  // IMPORTANTE: remover links de pedido do histórico para forçar a IA a sempre usar [GERAR_LINK_PEDIDO]
+  // Isso garante que cada pedido gere um link novo, mesmo que o cliente peça várias vezes
   const recentHistory = history.slice(-15);
   for (const msg of recentHistory) {
+    let content = msg.content;
+    // Substituir links de pedido por [GERAR_LINK_PEDIDO] no histórico do assistente
+    if (msg.role === "assistant") {
+      content = content.replace(/https?:\/\/[^\s]+\/pedido\/[a-f0-9]+/g, "[GERAR_LINK_PEDIDO]");
+    }
     messages.push({
       role: msg.role === "user" ? "user" : "assistant",
-      content: msg.content,
+      content,
     });
   }
 

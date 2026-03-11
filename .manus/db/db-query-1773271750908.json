@@ -1,0 +1,45 @@
+{
+  "query": "SELECT sessionId, whatsappNumber, status, expiresAt, createdAt FROM order_sessions ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT sessionId, whatsappNumber, status, expiresAt, createdAt FROM order_sessions ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "sessionId": "fc3f387d1a0dfc438e1d614598f2557c",
+      "whatsappNumber": "5517988112791",
+      "status": "completed",
+      "expiresAt": "2026-03-12 22:03:46",
+      "createdAt": "2026-03-11 22:03:46"
+    },
+    {
+      "sessionId": "a9a3c174c52de0aafe361df784e64a98",
+      "whatsappNumber": "212454869074102",
+      "status": "pending",
+      "expiresAt": "2026-03-12 21:53:50",
+      "createdAt": "2026-03-11 21:53:50"
+    },
+    {
+      "sessionId": "bdea0995d2fe912004310a0cfc0462e9",
+      "whatsappNumber": "5517992253886",
+      "status": "pending",
+      "expiresAt": "2026-03-12 21:51:39",
+      "createdAt": "2026-03-11 21:51:39"
+    },
+    {
+      "sessionId": "c0d98a5c40ef814d7a2acdccee86fcf0",
+      "whatsappNumber": "5511000000001",
+      "status": "pending",
+      "expiresAt": "2026-03-12 18:32:24",
+      "createdAt": "2026-03-11 18:32:24"
+    },
+    {
+      "sessionId": "4cea35c91b1aa875480e9284a151f2e0",
+      "whatsappNumber": "5517992253886",
+      "status": "pending",
+      "expiresAt": "2026-03-12 17:53:31",
+      "createdAt": "2026-03-11 17:53:31"
+    }
+  ],
+  "messages": [],
+  "stdout": "sessionId\twhatsappNumber\tstatus\texpiresAt\tcreatedAt\nfc3f387d1a0dfc438e1d614598f2557c\t5517988112791\tcompleted\t2026-03-12 22:03:46\t2026-03-11 22:03:46\na9a3c174c52de0aafe361df784e64a98\t212454869074102\tpending\t2026-03-12 21:53:50\t2026-03-11 21:53:50\nbdea0995d2fe912004310a0cfc0462e9\t5517992253886\tpending\t2026-03-12 21:51:39\t2026-03-11 21:51:39\nc0d98a5c40ef814d7a2acdccee86fcf0\t5511000000001\tpending\t2026-03-12 18:32:24\t2026-03-11 18:32:24\n4cea35c91b1aa875480e9284a151f2e0\t5517992253886\tpending\t2026-03-12 17:53:31\t2026-03-11 17:53:31\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}
