@@ -14,10 +14,10 @@ export function getSiteUrl(): string {
 
   if (isProduction) {
     // Em produção, usa o domínio publicado no Manus
-    const appId = process.env.VITE_APP_ID ?? "";
-    if (appId) {
-      const slug = appId.toLowerCase().replace(/[^a-z0-9]/g, "");
-      return `https://chatbotwa-${slug}.manus.space`;
+    // IMPORTANTE: usar o domínio exato publicado (não derivar do VITE_APP_ID pois gera slug incorreto)
+    const siteUrl = process.env.VITE_SITE_URL;
+    if (siteUrl) {
+      return siteUrl.replace(/\/$/, "");
     }
     return "https://chatbotwa-hesngyeo.manus.space";
   }
