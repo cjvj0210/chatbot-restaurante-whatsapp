@@ -865,14 +865,14 @@
 
 ### LGPD
 - [x] 2.1 Adicionar política de privacidade e consentimento no checkout
-- [ ] 2.2 Adicionar campo deletedAt (soft delete) em customers e conversations
-- [ ] 2.3 Centralizar telefone/dados do restaurante nas configurações do banco
+- [x] 2.2 Adicionar campo deletedAt (soft delete) em customers e conversations
+- [x] 2.3 Centralizar telefone/dados do restaurante nas configurações do banco
 - [x] 2.4 Criar página /privacidade com política de dados
 
 ### Qualidade de Código
 - [x] 3.2 Corrigir URL duplicada: importar getSiteUrl() no chatbot.ts
-- [ ] 3.3 Adicionar foreign keys no schema do banco
-- [ ] 3.4 Adicionar índices de banco para queries frequentes
+- [x] 3.3 Adicionar foreign keys no schema do banco
+- [x] 3.4 Adicionar índices de banco para queries frequentes
 - [x] 3.5 Implementar paginação nas queries de listagem
 
 ### Guardrails de IA
@@ -885,7 +885,7 @@
 - [x] 5.1 Adicionar handler de erros não capturados no processo Node.js
 - [x] 5.2 Monitoramento automático da instância WhatsApp no cron job
 - [x] 5.3 Limpeza periódica de sessões expiradas no cron job
-- [ ] 5.4 Worker de retry para fila de mensagens pendentes
+- [x] 5.4 Worker de retry para fila de mensagens pendentes
 
 ### UX / Segurança
 - [x] 6.1 Corrigir página de impressão: usar token aleatório em vez de ID sequencial
@@ -903,3 +903,32 @@
 
 ### Melhorias
 - [x] Edição inline de itens do cardápio: botão editar preço/nome/descrição/disponibilidade sem deletar
+
+
+## Sprint 3 — Wide Research: Segurança + Performance (12/03/2026)
+
+### Segurança
+- [x] S1. Sanitização de output do LLM antes de enviar ao WhatsApp
+- [x] S2. Proteção contra vazamento do system prompt (anti-leak)
+- [x] S3. Rate limit por whatsappId no chatbot (máx 30 msgs/hora)
+- [x] S4. Sanitização de inputs HTML/XSS em todos os campos de texto
+- [x] S5. Audit logging de ações administrativas (tabela audit_logs)
+- [x] S6. Sanitização de erros — nunca expor stack trace ao cliente
+- [x] S7. Proteção contra enumeração de endpoints (404 genérico)
+- [ ] S8. npm audit e correção de dependências vulneráveis
+- [x] S9. Cookie security hardening (httpOnly, secure, sameSite)
+
+### Performance
+- [ ] P1. Cache de respostas frequentes do chatbot (FAQ sem LLM)
+- [ ] P2. Otimização do prompt (reduzir tokens desnecessários)
+- [x] P3. Compressão gzip no Express
+- [x] P4. Lazy loading de imagens no cardápio
+- [ ] P5. Pré-preenchimento inteligente no checkout (último endereço + pagamento)
+- [ ] P6. Debounce em buscas e inputs
+- [ ] P7. Otimização de queries do dashboard
+
+### Extras Implementados
+- [x] Cache em memória para dados do cardápio (60s TTL com invalidação automática)
+- [x] Componente LazyImage com placeholder animado e fallback de erro
+- [x] Testes automatizados para sanitização, rate limiting, cache e audit log (23 testes novos)
+- [x] Relatório final do Sprint 3 em linguagem leiga

@@ -23,6 +23,8 @@ import { orderSessions, orders, reservations } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { notifyOwner } from "./_core/notification";
+import { sanitizeLLMOutput } from "./sanitize";
+import { checkChatbotRateLimit } from "./chatbotRateLimit";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -46,6 +48,19 @@ export async function processIncomingMessage(
   messageId: string
 ): Promise<void> {
   try {
+    // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
+    if (!checkChatbotRateLimit(whatsappId)) {
+      console.warn(`[Chatbot] Rate limit atingido para ${phone} (${whatsappId})`);
+      const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
+      const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
+      if (useEvo) {
+        await sendTextMessageEvolution(phone, limitMsg);
+      } else {
+        await sendTextMessage(phone, limitMsg);
+      }
+      return;
+    }
+
     // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
     const MAX_MSG_LENGTH = 2000;
     if (messageText.length > MAX_MSG_LENGTH) {
@@ -465,6 +480,9 @@ async function generateResponse(
 
   // Detectar intenção para atualizar contexto
   const updatedContext = detectIntent(userMessage, context);
+
+  // Sanitizar output do LLM antes de enviar
+  aiResponse = sanitizeLLMOutput(aiResponse);
 
   return {
     text: aiResponse,

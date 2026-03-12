@@ -461,7 +461,7 @@ export default function Menu() {
                           {/* Foto */}
                           <div className="w-16 h-16 rounded-xl bg-muted/50 overflow-hidden shrink-0 flex items-center justify-center">
                             {item.imageUrl ? (
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                              <img src={item.imageUrl} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-2xl">🥖</span>
                             )}

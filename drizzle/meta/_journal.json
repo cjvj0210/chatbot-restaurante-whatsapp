@@ -106,6 +106,13 @@
       "when": 1773347757634,
       "tag": "0014_broad_pyro",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1773349832029,
+      "tag": "0015_freezing_gamma_corps",
+      "breakpoints": true
     }
   ]
 }

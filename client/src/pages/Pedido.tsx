@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store, AlertTriangle, History, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
+import { LazyImage } from "@/components/LazyImage";
 import { checkBusinessHours } from "../../../shared/businessHours";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/logo-estrela-do-sul_aa66ec3f.png";
@@ -164,7 +165,7 @@ function ItemDrawer({
           {/* Imagem ou placeholder */}
           {item.imageUrl ? (
             <div className="w-full h-48 overflow-hidden">
-              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+              <LazyImage src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
             </div>
           ) : (
             <div className="w-full h-36 bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center text-5xl">
@@ -1009,7 +1010,7 @@ export default function Pedido() {
                           {/* Imagem */}
                           <div className="relative">
                             {item.imageUrl ? (
-                              <img
+                              <LazyImage
                                 src={item.imageUrl}
                                 alt={item.name}
                                 className="w-full h-28 object-cover"
@@ -1243,9 +1244,9 @@ export default function Pedido() {
                         {/* Imagem + botão + */}
                         <div className="relative flex-shrink-0">
                           {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
+                          <LazyImage
+                            src={item.imageUrl}
+                            alt={item.name}
                               className="w-24 h-24 object-cover rounded-xl"
                             />
                           ) : (
@@ -1298,7 +1299,7 @@ export default function Pedido() {
                       className="flex items-start gap-3 px-4 py-3"
                     >
                       {item.imageUrl ? (
-                        <img
+                        <LazyImage
                           src={item.imageUrl}
                           alt={item.name}
                           className="w-14 h-14 object-cover rounded-xl flex-shrink-0"

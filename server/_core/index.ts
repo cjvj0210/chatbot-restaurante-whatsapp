@@ -3,6 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import helmet from "helmet";
+import compression from "compression";
 import { rateLimit } from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
@@ -14,6 +15,7 @@ import { handleEvolutionWebhook } from "../webhookEvolution";
 import { startKeepAlive } from "../keepAlive";
 import { sendReservationReminders } from "../reservationReminder";
 import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages } from "../maintenance";
+import { cleanupRateLimits } from "../chatbotRateLimit";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -57,6 +59,9 @@ async function startServer() {
     contentSecurityPolicy: false, // Vite/React gerencia CSP
     crossOriginEmbedderPolicy: false, // Necessário para iframes de mapas
   }));
+
+  // ── Compressão gzip para respostas HTTP ──
+  app.use(compression());
 
   // ── Rate limiting global: 300 req/min por IP ──
   const globalLimiter = rateLimit({
@@ -196,6 +201,12 @@ async function startServer() {
       );
     }, 5 * 60 * 1000);
     console.log('[Cron] Worker de retry de mensagens iniciado (a cada 5 min)');
+
+    // Limpeza de rate limits do chatbot (a cada 30 minutos)
+    setInterval(() => {
+      cleanupRateLimits();
+    }, 30 * 60 * 1000);
+    console.log('[Cron] Limpeza de rate limits iniciada (a cada 30 min)');
   });
 }
 

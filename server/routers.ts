@@ -17,6 +17,9 @@ import { orderRouter } from "./orderRouter";
 import { uploadRouter } from "./uploadRouter";
 import { sendTextMessageEvolution } from "./evolutionApi";
 import { notifyOwner } from "./_core/notification";
+import { logAudit } from "./auditLog";
+import { sanitizeInput } from "./sanitize";
+import { cached, invalidateCachePrefix } from "./cache";
 
 export const appRouter = router({
   system: systemRouter,
@@ -28,16 +31,16 @@ export const appRouter = router({
   order: orderRouter,
   upload: uploadRouter,
 
-  // Cardápio Público (para página de pedidos)
+  // Cardápio Público (para página de pedidos) — com cache de 60s
   menu: router({
     listCategories: publicProcedure.query(async () => {
-      return await db.getMenuCategories();
+      return await cached("menu:categories", () => db.getMenuCategories());
     }),
     listItems: publicProcedure.query(async () => {
-      return await db.getMenuItems();
+      return await cached("menu:items", () => db.getMenuItems());
     }),
     listFeatured: publicProcedure.query(async () => {
-      return await db.getFeaturedMenuItems();
+      return await cached("menu:featured", () => db.getFeaturedMenuItems());
     }),
   }),
   
@@ -132,7 +135,9 @@ export const appRouter = router({
             message: `Já existe uma categoria com o nome "${duplicate.name}". Escolha um nome diferente.`,
           });
         }
-        return await db.createMenuCategory(input);
+        const result = await db.createMenuCategory(input);
+        invalidateCachePrefix("menu:");
+        return result;
       }),
     update: protectedProcedure
       .input(
@@ -159,10 +164,13 @@ export const appRouter = router({
           }
         }
         await db.updateMenuCategory(id, data);
+        invalidateCachePrefix("menu:");
         return { success: true };
       }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
       await db.deleteMenuCategory(input.id);
+      invalidateCachePrefix("menu:");
+      await logAudit({ userId: ctx.user?.id, action: "category.delete", entityType: "menuCategory", entityId: input.id });
       return { success: true };
     }),
   }),
@@ -184,7 +192,9 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        return await db.createMenuItem(input);
+        const result = await db.createMenuItem(input);
+        invalidateCachePrefix("menu:");
+        return result;
       }),
     update: protectedProcedure
       .input(
@@ -202,10 +212,13 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
         await db.updateMenuItem(id, data);
+        invalidateCachePrefix("menu:");
         return { success: true };
       }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
       await db.deleteMenuItem(input.id);
+      invalidateCachePrefix("menu:");
+      await logAudit({ userId: ctx.user?.id, action: "item.delete", entityType: "menuItem", entityId: input.id });
       return { success: true };
     }),
   }),
@@ -232,8 +245,9 @@ export const appRouter = router({
           status: z.enum(["pending", "confirmed", "preparing", "ready", "delivering", "delivered", "cancelled"]),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         await db.updateOrderStatus(input.id, input.status);
+        await logAudit({ userId: ctx.user?.id, action: `order.${input.status}`, entityType: "order", entityId: input.id, details: { status: input.status } });
         return { success: true };
       }),
   }),
@@ -253,8 +267,9 @@ export const appRouter = router({
           status: z.enum(["pending", "confirmed", "cancelled", "completed"]),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         await db.updateReservationStatus(input.id, input.status);
+        await logAudit({ userId: ctx.user?.id, action: `reservation.${input.status}`, entityType: "reservation", entityId: input.id, details: { status: input.status } });
 
         // Enviar notificação WhatsApp ao cliente quando confirmado ou cancelado
         if (input.status === "confirmed" || input.status === "cancelled") {
@@ -346,8 +361,9 @@ export const appRouter = router({
     // Admin: deletar grupo (e suas opções)
     deleteGroup: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         await db.deleteAddonGroup(input.id);
+        await logAudit({ userId: ctx.user?.id, action: "addon.deleteGroup", entityType: "addonGroup", entityId: input.id });
         return { success: true };
       }),
     // Admin: criar opção dentro de um grupo
@@ -380,8 +396,9 @@ export const appRouter = router({
     // Admin: deletar opção
     deleteOption: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         await db.deleteAddonOption(input.id);
+        await logAudit({ userId: ctx.user?.id, action: "addon.deleteOption", entityType: "addonOption", entityId: input.id });
         return { success: true };
       }),
   }),

@@ -385,3 +385,25 @@ export const menuAddonOptions = mysqlTable("menu_addon_options", {
 
 export type MenuAddonOption = typeof menuAddonOptions.$inferSelect;
 export type InsertMenuAddonOption = typeof menuAddonOptions.$inferInsert;
+
+
+/**
+ * Audit logs — registro de ações administrativas para rastreabilidade
+ */
+export const auditLogs = mysqlTable("audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"), // admin que fez a ação (null = sistema)
+  action: varchar("action", { length: 100 }).notNull(), // ex: "order.confirm", "reservation.cancel", "menu.update"
+  entityType: varchar("entityType", { length: 50 }).notNull(), // ex: "order", "reservation", "menuItem"
+  entityId: int("entityId"), // ID da entidade afetada
+  details: text("details"), // JSON com detalhes da ação
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => [
+  index("idx_audit_action").on(t.action),
+  index("idx_audit_entity").on(t.entityType, t.entityId),
+  index("idx_audit_created").on(t.createdAt),
+]);
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
