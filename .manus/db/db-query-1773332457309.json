@@ -1,0 +1,162 @@
+{
+  "query": "SELECT id, orderNumber, customerName, status, total, createdAt FROM orders ORDER BY createdAt DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, orderNumber, customerName, status, total, createdAt FROM orders ORDER BY createdAt DESC LIMIT 30;",
+  "rows": [
+    {
+      "id": "240005",
+      "orderNumber": "PED31499763",
+      "customerName": "Clóvis Jr",
+      "status": "delivered",
+      "total": "4540",
+      "createdAt": "2026-03-12 16:04:59"
+    },
+    {
+      "id": "240004",
+      "orderNumber": "PED23423451",
+      "customerName": "Clóvis Jr",
+      "status": "delivered",
+      "total": "4940",
+      "createdAt": "2026-03-12 13:50:23"
+    },
+    {
+      "id": "240003",
+      "orderNumber": "PED20953138",
+      "customerName": "Clóvis Jr",
+      "status": "delivering",
+      "total": "4640",
+      "createdAt": "2026-03-12 13:09:13"
+    },
+    {
+      "id": "240002",
+      "orderNumber": "PED19812583",
+      "customerName": "Clóvis Jr ",
+      "status": "confirmed",
+      "total": "13450",
+      "createdAt": "2026-03-12 12:50:12"
+    },
+    {
+      "id": "240001",
+      "orderNumber": "PED17303159",
+      "customerName": "Clóvis João Valandro Júnior ",
+      "status": "delivered",
+      "total": "14387",
+      "createdAt": "2026-03-12 12:08:23"
+    },
+    {
+      "id": "210002",
+      "orderNumber": "PED74639773",
+      "customerName": "Clóvis Jr ",
+      "status": "confirmed",
+      "total": "5798",
+      "createdAt": "2026-03-12 00:17:19"
+    },
+    {
+      "id": "210001",
+      "orderNumber": "PED66750530",
+      "customerName": "Clóvis Jr ",
+      "status": "delivering",
+      "total": "6489",
+      "createdAt": "2026-03-11 22:05:50"
+    },
+    {
+      "id": "180001",
+      "orderNumber": "PED40935051",
+      "customerName": "Caroline ",
+      "status": "cancelled",
+      "total": "4940",
+      "createdAt": "2026-03-11 14:55:35"
+    },
+    {
+      "id": "150002",
+      "orderNumber": "PED35514805",
+      "customerName": "Maria ",
+      "status": "confirmed",
+      "total": "3799",
+      "createdAt": "2026-03-11 13:25:14"
+    },
+    {
+      "id": "150001",
+      "orderNumber": "PED34379061",
+      "customerName": "Jose ",
+      "status": "confirmed",
+      "total": "19987",
+      "createdAt": "2026-03-11 13:06:19"
+    },
+    {
+      "id": "120003",
+      "orderNumber": "PED60827180",
+      "customerName": "mi",
+      "status": "confirmed",
+      "total": "3398",
+      "createdAt": "2026-03-10 16:40:27"
+    },
+    {
+      "id": "120002",
+      "orderNumber": "PED58661062",
+      "customerName": "JOAO",
+      "status": "confirmed",
+      "total": "9887",
+      "createdAt": "2026-03-10 16:04:21"
+    },
+    {
+      "id": "120001",
+      "orderNumber": "PED57252654",
+      "customerName": "Clovis Jr",
+      "status": "confirmed",
+      "total": "10785",
+      "createdAt": "2026-03-10 15:40:52"
+    },
+    {
+      "id": "90003",
+      "orderNumber": "PED52004095",
+      "customerName": "Clóvis João Valandro ",
+      "status": "confirmed",
+      "total": "9738",
+      "createdAt": "2026-03-10 14:13:24"
+    },
+    {
+      "id": "90002",
+      "orderNumber": "PED47779600",
+      "customerName": "Teste jr",
+      "status": "confirmed",
+      "total": "8889",
+      "createdAt": "2026-03-10 13:02:59"
+    },
+    {
+      "id": "90001",
+      "orderNumber": "PED45748660",
+      "customerName": "fabiano",
+      "status": "confirmed",
+      "total": "4348",
+      "createdAt": "2026-03-10 12:29:08"
+    },
+    {
+      "id": "60001",
+      "orderNumber": "PED43336694",
+      "customerName": "Clovis Jr",
+      "status": "delivered",
+      "total": "6438",
+      "createdAt": "2026-03-10 11:48:56"
+    },
+    {
+      "id": "30001",
+      "orderNumber": "PED32254670",
+      "customerName": "Clóvis Jr",
+      "status": "cancelled",
+      "total": "6900",
+      "createdAt": "2025-12-23 23:24:14"
+    },
+    {
+      "id": "1",
+      "orderNumber": "PED91240605",
+      "customerName": "CLOVIS JR",
+      "status": "cancelled",
+      "total": "562",
+      "createdAt": "2025-12-23 12:00:40"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torderNumber\tcustomerName\tstatus\ttotal\tcreatedAt\n240005\tPED31499763\tClóvis Jr\tdelivered\t4540\t2026-03-12 16:04:59\n240004\tPED23423451\tClóvis Jr\tdelivered\t4940\t2026-03-12 13:50:23\n240003\tPED20953138\tClóvis Jr\tdelivering\t4640\t2026-03-12 13:09:13\n240002\tPED19812583\tClóvis Jr \tconfirmed\t13450\t2026-03-12 12:50:12\n240001\tPED17303159\tClóvis João Valandro Júnior \tdelivered\t14387\t2026-03-12 12:08:23\n210002\tPED74639773\tClóvis Jr \tconfirmed\t5798\t2026-03-12 00:17:19\n210001\tPED66750530\tClóvis Jr \tdelivering\t6489\t2026-03-11 22:05:50\n180001\tPED40935051\tCaroline \tcancelled\t4940\t2026-03-11 14:55:35\n150002\tPED35514805\tMaria \tconfirmed\t3799\t2026-03-11 13:25:14\n150001\tPED34379061\tJose \tconfirmed\t19987\t2026-03-11 13:06:19\n120003\tPED60827180\tmi\tconfirmed\t3398\t2026-03-10 16:40:27\n120002\tPED58661062\tJOAO\tconfirmed\t9887\t2026-03-10 16:04:21\n120001\tPED57252654\tClovis Jr\tconfirmed\t10785\t2026-03-10 15:40:52\n90003\tPED52004095\tClóvis João Valandro \tconfirmed\t9738\t2026-03-10 14:13:24\n90002\tPED47779600\tTeste jr\tconfirmed\t8889\t2026-03-10 13:02:59\n90001\tPED45748660\tfabiano\tconfirmed\t4348\t2026-03-10 12:29:08\n60001\tPED43336694\tClovis Jr\tdelivered\t6438\t2026-03-10 11:48:56\n30001\tPED32254670\tClóvis Jr\tcancelled\t6900\t2025-12-23 23:24:14\n1\tPED91240605\tCLOVIS JR\tcancelled\t562\t2025-12-23 12:00:40\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

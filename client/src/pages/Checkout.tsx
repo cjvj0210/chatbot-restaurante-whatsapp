@@ -64,6 +64,7 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [prefillApplied, setPrefillApplied] = useState(false);
+  const [birthDate, setBirthDate] = useState("");
   // Controle do modal de confirmação de endereço
   const [showAddressConfirm, setShowAddressConfirm] = useState(false);
   const [savedAddressFull, setSavedAddressFull] = useState("");
@@ -160,6 +161,12 @@ export default function Checkout() {
       alert("Por favor, preencha nome e telefone");
       return;
     }
+    // Validar data de nascimento apenas para novos clientes
+    const isNewCustomer = !customerData || customerData.totalOrders === 0;
+    if (isNewCustomer && birthDate && birthDate.replace(/\D/g, "").length !== 8) {
+      alert("Por favor, preencha a data de nascimento corretamente (DD/MM/AAAA)");
+      return;
+    }
     if (deliveryType === "delivery") {
       if (!addressStreet.trim()) { alert("Por favor, preencha o endereço (Rua/Avenida)"); return; }
       if (!addressNumber.trim()) { alert("Por favor, preencha o número"); return; }
@@ -181,6 +188,7 @@ export default function Checkout() {
       paymentMethod,
       changeFor: paymentMethod === "dinheiro" && changeFor ? parseFloat(changeFor) * 100 : undefined,
       additionalNotes: additionalNotes || undefined,
+      birthDate: birthDate || undefined,
       totalAmount,
       items: cart.map((item) => ({
         menuItemId: item.menuItemId,
@@ -365,6 +373,29 @@ export default function Checkout() {
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
                   />
+                </div>
+              )}
+
+              {/* Campo de data de nascimento: apenas para novos clientes (sem pedidos anteriores) */}
+              {(!customerData || customerData.totalOrders === 0) && !customerData?.birthDate && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Data de nascimento <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="DD/MM/AAAA"
+                    value={birthDate}
+                    maxLength={10}
+                    onChange={(e) => {
+                      let v = e.target.value.replace(/\D/g, "");
+                      if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+                      if (v.length > 5) v = v.slice(0, 5) + "/" + v.slice(5);
+                      setBirthDate(v.slice(0, 10));
+                    }}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Para receber promoções especiais no seu aniversário 🎂</p>
                 </div>
               )}
 

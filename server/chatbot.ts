@@ -115,7 +115,7 @@ export async function processIncomingMessage(
         const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
         
         // Enviar banner visual com o link embutido na legenda
-        const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner2_900x900_781f01cb.jpg";
+        const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
         const sent = await sendMediaMessageEvolution(phone, bannerUrl, caption);
         if (!sent) {
           // Fallback: enviar como texto simples se a imagem falhar

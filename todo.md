@@ -816,3 +816,13 @@
 
 ## Atualização de Banner (12/03/2026)
 - [x] Substituir banner do cardápio digital enviado pelo bot pelo novo arquivo banner2_FINAL.jpg (recortado para 900x900px, CDN: banner2_900x900_781f01cb.jpg)
+
+## Melhorias Solicitadas (12/03/2026 - tarde)
+- [x] Limpar todos os pedidos de teste do banco de dados
+- [x] Remover todas as categorias "Pizzas" do banco e do painel
+- [x] Atualizar configurações do restaurante com dados reais (Churrascaria Estrela do Sul, Av. Eng. Necker Camargo de Carvalho, rua 36, nº 1885, Barretos-SP)
+- [x] Tornar card "Clientes" no dashboard clicável, abrindo tabela com dados dos clientes (rota /customers)
+- [x] Adicionar campo data de nascimento no checkout do cardápio digital (apenas no primeiro pedido do cliente)
+- [x] Gerenciamento de complementos já estava implementado (botão Settings2 em cada item do cardápio)
+- [x] Histórico de pedidos: paginação 20/página + filtro por data (dateFrom/dateTo) + botões Anterior/Próxima
+- [x] Substituir banner do bot pelo novo banner_cardapio_digital_900x900.png (CDN: banner_cardapio_digital_900x900_b8c4719c.png)

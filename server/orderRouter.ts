@@ -23,6 +23,7 @@ export const orderRouter = router({
         paymentMethod: z.enum(["dinheiro", "cartao", "pix"]),
         changeFor: z.number().optional(), // valor em centavos para troco
         additionalNotes: z.string().optional(),
+        birthDate: z.string().optional(), // formato DD/MM/AAAA
         totalAmount: z.number(),
         items: z.array(
           z.object({
@@ -169,6 +170,13 @@ export const orderRouter = router({
           if (input.deliveryType === "delivery" && input.address) {
             customerUpdate.address = input.address;
           }
+          // Salvar data de nascimento apenas se ainda não tiver (não sobrescrever)
+          if (input.birthDate) {
+            const [existingCustomer] = await db.select().from(customers).where(eq(customers.id, session.customerId!)).limit(1);
+            if (existingCustomer && !existingCustomer.birthDate) {
+              customerUpdate.birthDate = input.birthDate;
+            }
+          }
           if (Object.keys(customerUpdate).length > 0) {
             await db.update(customers).set(customerUpdate).where(eq(customers.id, session.customerId));
           }
@@ -300,6 +308,8 @@ export const orderRouter = router({
         status: z.enum(["pending", "confirmed", "preparing", "ready", "delivering", "delivered", "cancelled"]).optional(),
         limit: z.number().min(1).max(100).optional(),
         offset: z.number().min(0).optional(),
+        dateFrom: z.string().optional(), // formato YYYY-MM-DD
+        dateTo: z.string().optional(),   // formato YYYY-MM-DD
       }).optional()
     )
     .query(async ({ input }) => {
@@ -308,13 +318,27 @@ export const orderRouter = router({
         throw new Error("Database connection failed");
       }
 
-      const limit = input?.limit || 50;
+      const limit = input?.limit || 20;
       const offset = input?.offset || 0;
 
-      let query = db.select().from(orders);
+      const { and: andOp, gte, lte } = await import("drizzle-orm");
 
+      const conditions: any[] = [];
       if (input?.status) {
-        query = query.where(eq(orders.status, input.status)) as any;
+        conditions.push(eq(orders.status, input.status));
+      }
+      if (input?.dateFrom) {
+        const from = new Date(input.dateFrom + "T00:00:00.000Z");
+        conditions.push(gte(orders.createdAt, from));
+      }
+      if (input?.dateTo) {
+        const to = new Date(input.dateTo + "T23:59:59.999Z");
+        conditions.push(lte(orders.createdAt, to));
+      }
+
+      let query = db.select().from(orders);
+      if (conditions.length > 0) {
+        query = query.where(conditions.length === 1 ? conditions[0] : andOp(...conditions)) as any;
       }
 
       const ordersList = await query
@@ -449,6 +473,7 @@ export const orderRouter = router({
         address: resolvedAddress,
         totalOrders: customer.totalOrders,
         totalSpent: customer.totalSpent,
+        birthDate: customer.birthDate || null,
       };
     }),
 

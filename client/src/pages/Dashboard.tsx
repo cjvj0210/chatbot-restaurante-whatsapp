@@ -143,6 +143,7 @@ export default function Dashboard() {
       color: "text-cyan-600",
       bg: "bg-cyan-50",
       sub: "Cadastrados no sistema",
+      onClick: () => setLocation("/customers"),
     },
     {
       label: "Avaliação Média",

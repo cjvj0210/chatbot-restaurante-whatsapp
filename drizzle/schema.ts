@@ -103,6 +103,7 @@ export const customers = mysqlTable("customers", {
   address: text("address"),
   totalOrders: int("totalOrders").default(0).notNull(),
   totalSpent: int("totalSpent").default(0).notNull(), // em centavos
+  birthDate: varchar("birthDate", { length: 10 }), // formato DD/MM/AAAA
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

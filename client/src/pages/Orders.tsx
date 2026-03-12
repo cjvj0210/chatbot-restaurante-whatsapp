@@ -146,6 +146,10 @@ function CustomerHistory({ phone, currentOrderId }: { phone: string; currentOrde
 export default function Orders() {
   const utils = trpc.useUtils();
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterDateFrom, setFilterDateFrom] = useState<string>("");
+  const [filterDateTo, setFilterDateTo] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const PAGE_SIZE = 20;
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [historyPhone, setHistoryPhone] = useState<string | null>(null);
   const prevPendingCount = useRef<number>(0);
@@ -165,8 +169,16 @@ export default function Orders() {
   };
 
   type StatusEnum = "pending" | "confirmed" | "preparing" | "ready" | "delivering" | "delivered" | "cancelled";
+  const queryInput = {
+    ...(filterStatus !== "all" ? { status: filterStatus as StatusEnum } : {}),
+    ...(filterDateFrom ? { dateFrom: filterDateFrom } : {}),
+    ...(filterDateTo ? { dateTo: filterDateTo } : {}),
+    limit: PAGE_SIZE,
+    offset: currentPage * PAGE_SIZE,
+  };
+  const hasFilters = Object.keys(queryInput).length > 2; // tem mais que limit+offset
   const { data: orders, isLoading } = trpc.order.list.useQuery(
-    filterStatus !== "all" ? { status: filterStatus as StatusEnum } : undefined
+    Object.keys(queryInput).length > 2 || currentPage > 0 ? queryInput : undefined
   );
 
   const updateStatus = trpc.order.updateStatus.useMutation({
@@ -271,10 +283,10 @@ export default function Orders() {
             {autoAccept ? "Auto-aceite ON" : "Auto-aceite OFF"}
           </button>
 
-          {/* Filtro de status */}
-          <div className="flex items-center gap-2">
+          {/* Filtros */}
+          <div className="flex items-center gap-2 flex-wrap">
             <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); setCurrentPage(0); }}>
               <SelectTrigger className="w-44 h-9 text-sm rounded-xl border-border/60">
                 <SelectValue placeholder="Filtrar status" />
               </SelectTrigger>
@@ -290,6 +302,33 @@ export default function Orders() {
                 ))}
               </SelectContent>
             </Select>
+            {/* Filtro de data */}
+            <div className="flex items-center gap-1.5">
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => { setFilterDateFrom(e.target.value); setCurrentPage(0); }}
+                className="h-9 px-2 text-sm rounded-xl border border-border/60 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                title="Data inicial"
+              />
+              <span className="text-muted-foreground text-xs">até</span>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => { setFilterDateTo(e.target.value); setCurrentPage(0); }}
+                className="h-9 px-2 text-sm rounded-xl border border-border/60 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                title="Data final"
+              />
+              {(filterDateFrom || filterDateTo) && (
+                <button
+                  onClick={() => { setFilterDateFrom(""); setFilterDateTo(""); setCurrentPage(0); }}
+                  className="h-9 px-2 text-xs rounded-xl border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  title="Limpar filtro de data"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -620,7 +659,35 @@ export default function Orders() {
                 )}
               </div>
             );
-          })}
+            })}
+        </div>
+      )}
+
+      {/* Controles de paginação */}
+      {!isLoading && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm text-muted-foreground">
+            {orders && orders.length > 0
+              ? `Página ${currentPage + 1} · ${orders.length} pedido${orders.length !== 1 ? "s" : ""}`
+              : ""}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+              disabled={currentPage === 0}
+              className="h-9 px-4 text-sm rounded-xl border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              ← Anterior
+            </button>
+            <span className="text-sm font-medium text-foreground px-2">{currentPage + 1}</span>
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={!orders || orders.length < PAGE_SIZE}
+              className="h-9 px-4 text-sm rounded-xl border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Próxima →
+            </button>
+          </div>
         </div>
       )}
     </div>

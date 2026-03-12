@@ -53,6 +53,7 @@ const menuGroups = [
       { icon: UtensilsCrossed, label: "Cardápio", path: "/menu" },
       { icon: ShoppingBag, label: "Pedidos", path: "/orders" },
       { icon: Calendar, label: "Reservas", path: "/reservations" },
+      { icon: Users, label: "Clientes", path: "/customers" },
     ],
   },
   {

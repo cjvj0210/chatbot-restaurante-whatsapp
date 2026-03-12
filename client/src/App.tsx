@@ -19,6 +19,7 @@ import Pedido from "./pages/Pedido";
 import Checkout from "./pages/Checkout";
 import Confirmacao from "./pages/Confirmacao";
 import PrintOrder from "./pages/PrintOrder";
+import Customers from "./pages/Customers";
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ function Router() {
             <Route path="/orders" component={Orders} />
             <Route path="/reservations" component={Reservations} />
             <Route path="/settings" component={Settings} />
+            <Route path="/customers" component={Customers} />
             <Route path="/debug" component={Debug} />
             <Route path="/conversas-teste" component={TestConversations} />
             <Route path="/404" component={NotFound} />

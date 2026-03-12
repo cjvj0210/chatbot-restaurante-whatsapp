@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE restaurant_settings SET \n  name = 'Churrascaria Estrela do Sul',\n  phone = '5517988222790',\n  address = 'Avenida Engenheiro Necker Camargo de Carvalho, Rua 36, nº 1885 - Barretos, SP',\n  openingHours = 'Almoço: Seg-Sex 11h-14h30, Sáb 11h-14h45, Dom 11h-15h | Jantar: Ter-Dom 19h-22h45 (fechado segunda)',\n  deliveryFee = 850,\n  minimumOrder = 3000,\n  paymentMethods = 'Dinheiro, Cartão, Pix',\n  acceptsDelivery = 1,\n  acceptsReservation = 1,\n  updatedAt = NOW()\nWHERE id = 60001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute UPDATE restaurant_settings SET \n  name = 'Churrascaria Estrela do Sul',\n  phone = '5517988222790',\n  address = 'Avenida Engenheiro Necker Camargo de Carvalho, Rua 36, nº 1885 - Barretos, SP',\n  openingHours = 'Almoço: Seg-Sex 11h-14h30, Sáb 11h-14h45, Dom 11h-15h | Jantar: Ter-Dom 19h-22h45 (fechado segunda)',\n  deliveryFee = 850,\n  minimumOrder = 3000,\n  paymentMethods = 'Dinheiro, Cartão, Pix',\n  acceptsDelivery = 1,\n  acceptsReservation = 1,\n  updatedAt = NOW()\nWHERE id = 60001;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 58
+}

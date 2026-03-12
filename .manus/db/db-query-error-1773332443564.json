@@ -1,0 +1,8 @@
+{
+  "query": "-- Ver pedidos existentes para confirmar quais deletar\nSELECT id, order_number, customer_name, status, total, created_at FROM orders ORDER BY created_at DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute -- Ver pedidos existentes para confirmar quais deletar\nSELECT id, order_number, customer_name, status, total, created_at FROM orders ORDER BY created_at DESC LIMIT 30;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'order_number' in 'field list'"
+  ]
+}
