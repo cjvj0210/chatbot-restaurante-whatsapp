@@ -1,0 +1,140 @@
+{
+  "query": "SELECT id, orderNumber, status, orderType, total, customerPhone, customerName, createdAt FROM orders WHERE customerPhone LIKE '%98811%' OR customerPhone LIKE '%88112791%' ORDER BY createdAt DESC LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, orderNumber, status, orderType, total, customerPhone, customerName, createdAt FROM orders WHERE customerPhone LIKE '%98811%' OR customerPhone LIKE '%88112791%' ORDER BY createdAt DESC LIMIT 15;",
+  "rows": [
+    {
+      "id": "240004",
+      "orderNumber": "PED23423451",
+      "status": "delivered",
+      "orderType": "delivery",
+      "total": "4940",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis Jr",
+      "createdAt": "2026-03-12 13:50:23"
+    },
+    {
+      "id": "240003",
+      "orderNumber": "PED20953138",
+      "status": "delivering",
+      "orderType": "delivery",
+      "total": "4640",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis Jr",
+      "createdAt": "2026-03-12 13:09:13"
+    },
+    {
+      "id": "240002",
+      "orderNumber": "PED19812583",
+      "status": "confirmed",
+      "orderType": "delivery",
+      "total": "13450",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis Jr ",
+      "createdAt": "2026-03-12 12:50:12"
+    },
+    {
+      "id": "240001",
+      "orderNumber": "PED17303159",
+      "status": "delivered",
+      "orderType": "delivery",
+      "total": "14387",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis João Valandro Júnior ",
+      "createdAt": "2026-03-12 12:08:23"
+    },
+    {
+      "id": "210002",
+      "orderNumber": "PED74639773",
+      "status": "confirmed",
+      "orderType": "delivery",
+      "total": "5798",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis Jr ",
+      "createdAt": "2026-03-12 00:17:19"
+    },
+    {
+      "id": "210001",
+      "orderNumber": "PED66750530",
+      "status": "delivering",
+      "orderType": "delivery",
+      "total": "6489",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis Jr ",
+      "createdAt": "2026-03-11 22:05:50"
+    },
+    {
+      "id": "120002",
+      "orderNumber": "PED58661062",
+      "status": "confirmed",
+      "orderType": "delivery",
+      "total": "9887",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "JOAO",
+      "createdAt": "2026-03-10 16:04:21"
+    },
+    {
+      "id": "120001",
+      "orderNumber": "PED57252654",
+      "status": "confirmed",
+      "orderType": "delivery",
+      "total": "10785",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clovis Jr",
+      "createdAt": "2026-03-10 15:40:52"
+    },
+    {
+      "id": "90003",
+      "orderNumber": "PED52004095",
+      "status": "confirmed",
+      "orderType": "delivery",
+      "total": "9738",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clóvis João Valandro ",
+      "createdAt": "2026-03-10 14:13:24"
+    },
+    {
+      "id": "90002",
+      "orderNumber": "PED47779600",
+      "status": "confirmed",
+      "orderType": "delivery",
+      "total": "8889",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Teste jr",
+      "createdAt": "2026-03-10 13:02:59"
+    },
+    {
+      "id": "60001",
+      "orderNumber": "PED43336694",
+      "status": "delivered",
+      "orderType": "delivery",
+      "total": "6438",
+      "customerPhone": "(17) 98811-2791",
+      "customerName": "Clovis Jr",
+      "createdAt": "2026-03-10 11:48:56"
+    },
+    {
+      "id": "30001",
+      "orderNumber": "PED32254670",
+      "status": "cancelled",
+      "orderType": "delivery",
+      "total": "6900",
+      "customerPhone": "17988112791",
+      "customerName": "Clóvis Jr",
+      "createdAt": "2025-12-23 23:24:14"
+    },
+    {
+      "id": "1",
+      "orderNumber": "PED91240605",
+      "status": "cancelled",
+      "orderType": "delivery",
+      "total": "562",
+      "customerPhone": "17988112791",
+      "customerName": "CLOVIS JR",
+      "createdAt": "2025-12-23 12:00:40"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torderNumber\tstatus\torderType\ttotal\tcustomerPhone\tcustomerName\tcreatedAt\n240004\tPED23423451\tdelivered\tdelivery\t4940\t(17) 98811-2791\tClóvis Jr\t2026-03-12 13:50:23\n240003\tPED20953138\tdelivering\tdelivery\t4640\t(17) 98811-2791\tClóvis Jr\t2026-03-12 13:09:13\n240002\tPED19812583\tconfirmed\tdelivery\t13450\t(17) 98811-2791\tClóvis Jr \t2026-03-12 12:50:12\n240001\tPED17303159\tdelivered\tdelivery\t14387\t(17) 98811-2791\tClóvis João Valandro Júnior \t2026-03-12 12:08:23\n210002\tPED74639773\tconfirmed\tdelivery\t5798\t(17) 98811-2791\tClóvis Jr \t2026-03-12 00:17:19\n210001\tPED66750530\tdelivering\tdelivery\t6489\t(17) 98811-2791\tClóvis Jr \t2026-03-11 22:05:50\n120002\tPED58661062\tconfirmed\tdelivery\t9887\t(17) 98811-2791\tJOAO\t2026-03-10 16:04:21\n120001\tPED57252654\tconfirmed\tdelivery\t10785\t(17) 98811-2791\tClovis Jr\t2026-03-10 15:40:52\n90003\tPED52004095\tconfirmed\tdelivery\t9738\t(17) 98811-2791\tClóvis João Valandro \t2026-03-10 14:13:24\n90002\tPED47779600\tconfirmed\tdelivery\t8889\t(17) 98811-2791\tTeste jr\t2026-03-10 13:02:59\n60001\tPED43336694\tdelivered\tdelivery\t6438\t(17) 98811-2791\tClovis Jr\t2026-03-10 11:48:56\n30001\tPED32254670\tcancelled\tdelivery\t6900\t17988112791\tClóvis Jr\t2025-12-23 23:24:14\n1\tPED91240605\tcancelled\tdelivery\t562\t17988112791\tCLOVIS JR\t2025-12-23 12:00:40\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

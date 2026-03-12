@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, sessionId, whatsappNumber, customerId, status, createdAt FROM order_sessions WHERE whatsappNumber LIKE '%98811%' OR whatsappNumber LIKE '%17988%' ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, sessionId, whatsappNumber, customerId, status, createdAt FROM order_sessions WHERE whatsappNumber LIKE '%98811%' OR whatsappNumber LIKE '%17988%' ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "480006",
+      "sessionId": "a87c180180b3a37908e751e989130f19",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-12 14:05:46"
+    },
+    {
+      "id": "480005",
+      "sessionId": "fb1b8aa4e04d95c8a069f4da6597fd12",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-12 13:51:13"
+    },
+    {
+      "id": "480004",
+      "sessionId": "55ed451e0d12e897dcb79ca01e9aabd3",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-12 13:49:08"
+    },
+    {
+      "id": "480003",
+      "sessionId": "fae12e5cb53e338c894c3644b5885c51",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-12 13:05:31"
+    },
+    {
+      "id": "480002",
+      "sessionId": "a55e5f18503fced315ffa4ea95387b7d",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-12 12:47:29"
+    },
+    {
+      "id": "480001",
+      "sessionId": "f89f0880fcf995d1dc4676c98dcbb445",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-12 12:05:41"
+    },
+    {
+      "id": "450006",
+      "sessionId": "9f84cc27f1e08f311d087b6ff29329e1",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-12 00:40:40"
+    },
+    {
+      "id": "450005",
+      "sessionId": "bb2897e7714a044021fdb459e4235260",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-12 00:15:29"
+    },
+    {
+      "id": "450003",
+      "sessionId": "fc3f387d1a0dfc438e1d614598f2557c",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "completed",
+      "createdAt": "2026-03-11 22:03:46"
+    },
+    {
+      "id": "420001",
+      "sessionId": "696dc439685ccb3ea46baff01d81f04e",
+      "whatsappNumber": "5517988112791",
+      "customerId": "NULL",
+      "status": "pending",
+      "createdAt": "2026-03-11 17:36:31"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsessionId\twhatsappNumber\tcustomerId\tstatus\tcreatedAt\n480006\ta87c180180b3a37908e751e989130f19\t5517988112791\tNULL\tpending\t2026-03-12 14:05:46\n480005\tfb1b8aa4e04d95c8a069f4da6597fd12\t5517988112791\tNULL\tpending\t2026-03-12 13:51:13\n480004\t55ed451e0d12e897dcb79ca01e9aabd3\t5517988112791\tNULL\tcompleted\t2026-03-12 13:49:08\n480003\tfae12e5cb53e338c894c3644b5885c51\t5517988112791\tNULL\tcompleted\t2026-03-12 13:05:31\n480002\ta55e5f18503fced315ffa4ea95387b7d\t5517988112791\tNULL\tcompleted\t2026-03-12 12:47:29\n480001\tf89f0880fcf995d1dc4676c98dcbb445\t5517988112791\tNULL\tcompleted\t2026-03-12 12:05:41\n450006\t9f84cc27f1e08f311d087b6ff29329e1\t5517988112791\tNULL\tpending\t2026-03-12 00:40:40\n450005\tbb2897e7714a044021fdb459e4235260\t5517988112791\tNULL\tcompleted\t2026-03-12 00:15:29\n450003\tfc3f387d1a0dfc438e1d614598f2557c\t5517988112791\tNULL\tcompleted\t2026-03-11 22:03:46\n420001\t696dc439685ccb3ea46baff01d81f04e\t5517988112791\tNULL\tpending\t2026-03-11 17:36:31\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

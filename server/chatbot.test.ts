@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
@@ -81,6 +81,23 @@ describe("Restaurant Settings", () => {
 });
 
 describe("Menu Categories", () => {
+  // Limpar dados de teste criados no banco após cada teste
+  afterEach(async () => {
+    const { getDb } = await import("./db");
+    const { menuCategories, menuItems } = await import("../drizzle/schema");
+    const { like } = await import("drizzle-orm");
+    const db = await getDb();
+    if (db) {
+      // Deletar itens de categorias de teste primeiro (FK constraint)
+      const testCats = await db.select({ id: menuCategories.id }).from(menuCategories).where(like(menuCategories.name, "Test_%"));
+      for (const cat of testCats) {
+        const { eq } = await import("drizzle-orm");
+        await db.delete(menuItems).where(eq(menuItems.categoryId, cat.id));
+      }
+      await db.delete(menuCategories).where(like(menuCategories.name, "Test_%"));
+    }
+  });
+
   it("should list menu categories", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
@@ -108,6 +125,22 @@ describe("Menu Categories", () => {
 });
 
 describe("Menu Items", () => {
+  // Limpar dados de teste criados no banco após cada teste
+  afterEach(async () => {
+    const { getDb } = await import("./db");
+    const { menuCategories, menuItems } = await import("../drizzle/schema");
+    const { like } = await import("drizzle-orm");
+    const db = await getDb();
+    if (db) {
+      const testCats = await db.select({ id: menuCategories.id }).from(menuCategories).where(like(menuCategories.name, "Test_%"));
+      for (const cat of testCats) {
+        const { eq } = await import("drizzle-orm");
+        await db.delete(menuItems).where(eq(menuItems.categoryId, cat.id));
+      }
+      await db.delete(menuCategories).where(like(menuCategories.name, "Test_%"));
+    }
+  });
+
   it("should list menu items", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);

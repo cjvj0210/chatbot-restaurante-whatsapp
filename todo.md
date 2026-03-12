@@ -809,3 +809,7 @@
 ## Bugs Reportados (12/03/2026 - 10:51)
 - [x] Bug: "Último pedido" mostra "1x Item" sem nome e sem imagem para pedidos antigos (PED32254670) — corrigido: getOrderHistory agora busca por preço quando itemName é null, salva retroativamente no banco, e filtra pedidos cancelados
 - [x] Bug: Endereço novo digitado no checkout não é salvo como endereço padrão do cliente — corrigido: createOrder agora atualiza customer.address e customer.name no banco sempre que um pedido é criado com sucesso
+
+## Bugs Reportados (12/03/2026 - 11:06)
+- [x] Bug: Testes automatizados criam categorias reais no banco de produção (Test_Bebidas_...) — corrigido: adicionado afterEach que deleta todas as categorias/itens com nome 'Test_%' após cada teste; categorias antigas já foram deletadas do banco
+- [x] Bug: "Último pedido" no cardápio mostra PED32254670 (R$69, antigo) em vez de PED23423451 (R$49,40, mais recente) — corrigido: problema era que pedidos novos têm telefone formatado '(17) 98811-2791' e o LIKE '%88112791%' não encontrava por causa do traço; agora busca por OR com 11 dígitos e 8 dígitos; createOrder também normaliza o telefone antes de salvar

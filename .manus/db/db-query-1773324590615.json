@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, orderNumber, status, orderType, total, customerPhone, createdAt FROM orders WHERE customerPhone LIKE '%88112791%' ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, orderNumber, status, orderType, total, customerPhone, createdAt FROM orders WHERE customerPhone LIKE '%88112791%' ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "30001",
+      "orderNumber": "PED32254670",
+      "status": "cancelled",
+      "orderType": "delivery",
+      "total": "6900",
+      "customerPhone": "17988112791",
+      "createdAt": "2025-12-23 23:24:14"
+    },
+    {
+      "id": "1",
+      "orderNumber": "PED91240605",
+      "status": "cancelled",
+      "orderType": "delivery",
+      "total": "562",
+      "customerPhone": "17988112791",
+      "createdAt": "2025-12-23 12:00:40"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torderNumber\tstatus\torderType\ttotal\tcustomerPhone\tcreatedAt\n30001\tPED32254670\tcancelled\tdelivery\t6900\t17988112791\t2025-12-23 23:24:14\n1\tPED91240605\tcancelled\tdelivery\t562\t17988112791\t2025-12-23 12:00:40\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

@@ -108,6 +108,9 @@ export const orderRouter = router({
       const orderNumber = `PED${Date.now().toString().slice(-8)}`;
 
       // Criar pedido
+      // Normalizar telefone: remover tudo que não é dígito para garantir consistência nas buscas
+      const normalizedPhone = input.customerPhone.replace(/\D/g, "");
+
       const result = await db
         .insert(orders)
         .values({
@@ -117,7 +120,7 @@ export const orderRouter = router({
           status: "pending",
           orderType: input.deliveryType,
           customerName: input.customerName,
-          customerPhone: input.customerPhone,
+          customerPhone: normalizedPhone,
           items: JSON.stringify(input.items), // Manter para compatibilidade
           subtotal,
           deliveryFee,
@@ -401,10 +404,16 @@ export const orderRouter = router({
       if (!session?.whatsappNumber) return null;
       // Buscar cliente pelo telefone
       const phone = session.whatsappNumber.replace(/\D/g, "");
+      const phoneDigits = phone.slice(-11); // ex: "17988112791"
+      const phoneLast8 = phone.slice(-8);   // ex: "88112791"
+      const { or: orOp } = await import("drizzle-orm");
       const customersList = await db
         .select()
         .from(customers)
-        .where(like(customers.phone, `%${phone.slice(-8)}%`))
+        .where(orOp(
+          like(customers.phone, `%${phoneDigits}%`),
+          like(customers.phone, `%${phoneLast8}%`)
+        ))
         .limit(1);
       const customer = customersList[0];
       if (!customer) return null;
@@ -412,7 +421,10 @@ export const orderRouter = router({
       const lastOrders = await db
         .select()
         .from(orders)
-        .where(like(orders.customerPhone, `%${phone.slice(-8)}%`))
+        .where(orOp(
+          like(orders.customerPhone, `%${phoneDigits}%`),
+          like(orders.customerPhone, `%${phoneLast8}%`)
+        ))
         .orderBy(desc(orders.createdAt))
         .limit(10); // buscar últimos 10 para encontrar um com endereço
       const lastOrder = lastOrders[0];
@@ -463,12 +475,22 @@ export const orderRouter = router({
       if (!session?.whatsappNumber) return [];
 
       const phone = session.whatsappNumber.replace(/\D/g, "");
+      // Usar os últimos 11 dígitos (DDD + número completo) para busca mais precisa
+      // Isso garante que tanto "17988112791" quanto "(17) 98811-2791" sejam encontrados
+      // pois ambos têm os mesmos dígitos, apenas com formatação diferente
+      const phoneDigits = phone.slice(-11); // ex: "17988112791"
+      const phoneLast8 = phone.slice(-8);   // ex: "88112791"
 
       // Buscar últimos 8 pedidos do cliente para filtrar cancelados e mostrar 5 válidos
+      // Busca por OR: telefone normalizado (11 dígitos) OU últimos 8 dígitos
+      const { or } = await import("drizzle-orm");
       const pastOrders = await db
         .select()
         .from(orders)
-        .where(like(orders.customerPhone, `%${phone.slice(-8)}%`))
+        .where(or(
+          like(orders.customerPhone, `%${phoneDigits}%`),
+          like(orders.customerPhone, `%${phoneLast8}%`)
+        ))
         .orderBy(desc(orders.createdAt))
         .limit(8);
 
