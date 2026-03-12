@@ -826,3 +826,6 @@
 - [x] Gerenciamento de complementos já estava implementado (botão Settings2 em cada item do cardápio)
 - [x] Histórico de pedidos: paginação 20/página + filtro por data (dateFrom/dateTo) + botões Anterior/Próxima
 - [x] Substituir banner do bot pelo novo banner_cardapio_digital_900x900.png (CDN: banner_cardapio_digital_900x900_b8c4719c.png)
+
+## Edição de Complementos (12/03/2026)
+- [x] Adicionar botão de editar em cada opção de complemento (nome, descrição, preço) sem precisar deletar e recriar

@@ -25,6 +25,7 @@ import {
   GripVertical,
   X,
   Check,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +49,12 @@ export default function Menu() {
   const [newOptionName, setNewOptionName] = useState("");
   const [newOptionDesc, setNewOptionDesc] = useState("");
   const [newOptionPrice, setNewOptionPrice] = useState("");
+
+  // Estado para edição inline de opção de complemento
+  const [editingOptionId, setEditingOptionId] = useState<number | null>(null);
+  const [editOptionName, setEditOptionName] = useState("");
+  const [editOptionDesc, setEditOptionDesc] = useState("");
+  const [editOptionPrice, setEditOptionPrice] = useState("");
 
   const utils = trpc.useUtils();
   const { data: categories, isLoading: categoriesLoading } = trpc.menuCategories.list.useQuery();
@@ -166,6 +173,32 @@ export default function Menu() {
     onSuccess: () => { refetchAddons(); toast.success("Opção removida!"); },
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
+
+  const updateAddonOption = trpc.menuAddons.updateOption.useMutation({
+    onSuccess: () => {
+      refetchAddons();
+      setEditingOptionId(null);
+      setEditOptionName("");
+      setEditOptionDesc("");
+      setEditOptionPrice("");
+      toast.success("Opção atualizada!");
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const startEditOption = (opt: { id: number; name: string; description?: string | null; priceExtra: number }) => {
+    setEditingOptionId(opt.id);
+    setEditOptionName(opt.name);
+    setEditOptionDesc(opt.description || "");
+    setEditOptionPrice((opt.priceExtra / 100).toFixed(2));
+  };
+
+  const cancelEditOption = () => {
+    setEditingOptionId(null);
+    setEditOptionName("");
+    setEditOptionDesc("");
+    setEditOptionPrice("");
+  };
 
   const openAddonDialog = (itemId: number, itemName: string) => {
     setAddonItemId(itemId);
@@ -506,20 +539,85 @@ export default function Menu() {
                     {/* Opções do grupo */}
                     <div className="divide-y divide-border/30">
                       {group.options.map((opt) => (
-                        <div key={opt.id} className="px-4 py-3 flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground">{opt.name}</p>
-                            {opt.description && <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>}
-                            {opt.priceExtra > 0 && (
-                              <p className="text-xs text-primary font-semibold mt-0.5">+ R$ {(opt.priceExtra / 100).toFixed(2).replace(".", ",")}</p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => deleteAddonOption.mutate({ id: opt.id })}
-                            className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors ml-3 shrink-0"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                        <div key={opt.id}>
+                          {editingOptionId === opt.id ? (
+                            /* Formulário de edição inline */
+                            <div className="px-4 py-3 bg-amber-50 dark:bg-amber-950/20 space-y-2">
+                              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Editar Opção</p>
+                              <Input
+                                placeholder="Nome da opção"
+                                value={editOptionName}
+                                onChange={(e) => setEditOptionName(e.target.value)}
+                                className="rounded-xl text-sm"
+                              />
+                              <Input
+                                placeholder="Descrição (opcional)"
+                                value={editOptionDesc}
+                                onChange={(e) => setEditOptionDesc(e.target.value)}
+                                className="rounded-xl text-sm"
+                              />
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Preço extra R$ (0 = gratuito)"
+                                value={editOptionPrice}
+                                onChange={(e) => setEditOptionPrice(e.target.value)}
+                                className="rounded-xl text-sm"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    if (!editOptionName.trim()) return;
+                                    updateAddonOption.mutate({
+                                      id: opt.id,
+                                      name: editOptionName.trim(),
+                                      description: editOptionDesc.trim() || undefined,
+                                      priceExtra: Math.round(parseFloat(editOptionPrice || "0") * 100),
+                                    });
+                                  }}
+                                  disabled={!editOptionName.trim() || updateAddonOption.isPending}
+                                  className="flex-1 bg-amber-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-amber-700 disabled:opacity-50 flex items-center justify-center gap-1"
+                                >
+                                  {updateAddonOption.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                  Salvar
+                                </button>
+                                <button
+                                  onClick={cancelEditOption}
+                                  className="px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            /* Exibição normal com botões de editar e deletar */
+                            <div className="px-4 py-3 flex items-center justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground">{opt.name}</p>
+                                {opt.description && <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>}
+                                {opt.priceExtra > 0 && (
+                                  <p className="text-xs text-primary font-semibold mt-0.5">+ R$ {(opt.priceExtra / 100).toFixed(2).replace(".", ",")}</p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 ml-3 shrink-0">
+                                <button
+                                  onClick={() => startEditOption(opt)}
+                                  className="p-1 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/30 text-muted-foreground hover:text-amber-600 transition-colors"
+                                  title="Editar opção"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => { if (confirm(`Remover opção "${opt.name}"?`)) deleteAddonOption.mutate({ id: opt.id }); }}
+                                  className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                                  title="Remover opção"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
