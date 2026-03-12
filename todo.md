@@ -849,3 +849,8 @@
 
 ## Campo Data de Nascimento no Checkout (12/03/2026)
 - [x] Ocultar campo de data de nascimento no checkout quando o cliente já tiver a data cadastrada no perfil
+
+## Modo Humano e Alerta Interno (12/03/2026)
+- [x] Enviar alerta interno via WhatsApp ao número do restaurante quando cliente pede atendente humano
+- [x] Implementar modo humano: detectar respostas do operador e pausar bot por 30 minutos
+- [x] Bot retoma automaticamente após 30 min de inatividade do operador

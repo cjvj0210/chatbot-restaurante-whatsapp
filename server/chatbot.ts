@@ -81,6 +81,20 @@ export async function processIncomingMessage(
     // 4. Obter contexto da conversa
     const context: ChatContext = conversation.context ? JSON.parse(conversation.context) : {};
 
+    // 4b. Verificar modo humano: se o operador assumiu a conversa, o bot fica silencioso
+    const db = await getDb();
+    if (db && conversation.humanMode && conversation.humanModeUntil) {
+      const now = new Date();
+      if (now < new Date(conversation.humanModeUntil)) {
+        console.log(`[Chatbot] Modo humano ativo até ${conversation.humanModeUntil} — bot silencioso para ${phone}`);
+        return; // Bot não responde enquanto o operador está no controle
+      } else {
+        // Expirou: desativar modo humano
+        await updateConversation(conversation.id, { humanMode: false, humanModeUntil: null });
+        console.log(`[Chatbot] Modo humano expirado para ${phone} — bot retomando`);
+      }
+    }
+
     // 5. Processar mensagem com IA usando o prompt completo do restaurante
     const response = await generateResponse(customer.id, conversation.id, messageText, context, phone);
 
@@ -99,6 +113,42 @@ export async function processIncomingMessage(
         context: JSON.stringify(response.updatedContext),
         intent: response.updatedContext.intent || conversation.intent,
       });
+    }
+
+    // 7b. Detectar pedido de atendente humano e enviar alerta interno
+    const humanKeywords = [
+      "atendente", "humano", "pessoa", "falar com alguém", "falar com um humano",
+      "quero falar com", "preciso falar com", "chamar alguém", "operador",
+      "atendimento humano", "falar com atendente"
+    ];
+    const isAskingForHuman = humanKeywords.some(kw =>
+      messageText.toLowerCase().includes(kw)
+    );
+
+    if (isAskingForHuman) {
+      try {
+        // Buscar número do restaurante nas configurações
+        const settings = await getRestaurantSettings();
+        const restaurantPhone = settings?.phone
+          ? settings.phone.replace(/\D/g, "")
+          : "5517982123269"; // fallback
+        const restaurantPhoneNorm = restaurantPhone.startsWith("55")
+          ? restaurantPhone
+          : `55${restaurantPhone}`;
+
+        const alertMsg =
+          `🚨 *Atenção — Cliente aguardando atendimento humano!*\n\n` +
+          `👤 *Cliente:* ${customer.name || phone}\n` +
+          `📱 *Telefone:* ${phone}\n` +
+          `💬 *Última mensagem:* "${messageText.substring(0, 100)}"\n\n` +
+          `Acesse o WhatsApp e responda diretamente para este contato.\n` +
+          `_O bot ficará silencioso por 30 minutos após você responder._`;
+
+        await sendTextMessageEvolution(restaurantPhoneNorm, alertMsg).catch(() => {});
+        console.log(`[Chatbot] Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
+      } catch (err) {
+        console.error("[Chatbot] Erro ao enviar alerta de atendimento humano:", err);
+      }
     }
 
     // 8. Enviar resposta ao cliente

@@ -3,6 +3,9 @@ import { processIncomingMessage } from "./chatbot";
 import { sendTextMessageEvolution, downloadMediaEvolution } from "./evolutionApi";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { storagePut } from "./storage";
+import { getDb } from "./db";
+import { conversations, customers } from "../drizzle/schema";
+import { eq, like, or } from "drizzle-orm";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -96,9 +99,45 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
 
     const { key, message, messageType, pushName } = payload.data;
 
-    // Ignorar mensagens enviadas pelo próprio bot
+    // Detectar mensagens enviadas pelo OPERADOR (fromMe=true) para ativar modo humano
     if (key.fromMe) {
-      console.log("[EvolutionWebhook] Mensagem própria ignorada");
+      // Verificar se é mensagem para um cliente (não para grupos)
+      if (!key.remoteJid.includes("@g.us") && !key.remoteJid.includes("status")) {
+        const clientPhone = extractPhoneFromJid(key.remoteJid);
+        try {
+          const db = await getDb();
+          if (db) {
+            const phoneDigits = clientPhone.slice(-11);
+            const phoneLast8 = clientPhone.slice(-8);
+            // Buscar cliente pelo telefone
+            const [customer] = await db.select().from(customers).where(
+              or(
+                like(customers.phone, `%${phoneDigits}%`),
+                like(customers.phone, `%${phoneLast8}%`)
+              )
+            ).limit(1);
+
+            if (customer) {
+              // Buscar conversa ativa
+              const [conv] = await db.select().from(conversations)
+                .where(eq(conversations.customerId, customer.id))
+                .orderBy(conversations.createdAt)
+                .limit(1);
+
+              if (conv) {
+                const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000); // +30 minutos
+                await db.update(conversations)
+                  .set({ humanMode: true, humanModeUntil })
+                  .where(eq(conversations.id, conv.id));
+                console.log(`[EvolutionWebhook] Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
+              }
+            }
+          }
+        } catch (err) {
+          console.error("[EvolutionWebhook] Erro ao ativar modo humano:", err);
+        }
+      }
+      console.log("[EvolutionWebhook] Mensagem do operador processada (modo humano)");
       return;
     }
 

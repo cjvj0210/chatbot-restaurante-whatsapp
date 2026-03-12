@@ -175,6 +175,8 @@ export const conversations = mysqlTable("conversations", {
   intent: mysqlEnum("intent", ["order", "reservation", "info", "feedback", "other"]),
   context: text("context"), // JSON com contexto da conversa
   isActive: boolean("isActive").default(true).notNull(),
+  humanMode: boolean("humanMode").default(false).notNull(), // true quando operador assumiu a conversa
+  humanModeUntil: timestamp("humanModeUntil"), // bot silencioso até este momento
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
