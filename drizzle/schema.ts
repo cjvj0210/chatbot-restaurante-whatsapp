@@ -136,6 +136,8 @@ export const orders = mysqlTable("orders", {
   paymentMethod: varchar("paymentMethod", { length: 50 }),
   changeFor: int("changeFor"), // em centavos - valor para troco quando pagamento em dinheiro
   confirmedAt: timestamp("confirmedAt"), // horário em que o restaurante confirmou o pedido
+  printedAt: timestamp("printedAt"), // horário em que a comanda foi impressa
+  printToken: varchar("printToken", { length: 64 }), // token aleatório para acesso à comanda (evita enumeração por ID)
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

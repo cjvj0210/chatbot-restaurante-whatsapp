@@ -177,7 +177,7 @@ export default function Orders() {
     offset: currentPage * PAGE_SIZE,
   };
   const hasFilters = Object.keys(queryInput).length > 2; // tem mais que limit+offset
-  const { data: orders, isLoading } = trpc.order.list.useQuery(
+  const { data: orders, isLoading, isError, refetch } = trpc.order.list.useQuery(
     Object.keys(queryInput).length > 2 || currentPage > 0 ? queryInput : undefined
   );
 
@@ -340,6 +340,19 @@ export default function Orders() {
           <span>
             <strong>Aceite automático ativo:</strong> novos pedidos são confirmados e impressos automaticamente assim que chegam.
           </span>
+        </div>
+      )}
+
+      {/* Estado de erro */}
+      {isError && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-2xl px-5 py-4 mb-2">
+          <p className="text-sm text-red-700 font-medium">Erro ao carregar pedidos. Verifique sua conexão.</p>
+          <button
+            onClick={() => refetch()}
+            className="text-xs text-red-600 underline hover:text-red-800 font-semibold"
+          >
+            Tentar novamente
+          </button>
         </div>
       )}
 

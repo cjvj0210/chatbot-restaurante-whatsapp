@@ -20,6 +20,7 @@ import Checkout from "./pages/Checkout";
 import Confirmacao from "./pages/Confirmacao";
 import PrintOrder from "./pages/PrintOrder";
 import Customers from "./pages/Customers";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function Router() {
   return (
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/pedido/:sessionId/checkout" component={Checkout} />
       <Route path="/pedido/:sessionId/confirmacao" component={Confirmacao} />
       <Route path="/print-order/:orderId" component={PrintOrder} />
+      <Route path="/privacidade" component={PrivacyPolicy} />
       
       {/* Rotas autenticadas com DashboardLayout */}
       <Route>

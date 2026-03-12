@@ -84,14 +84,28 @@ export const orderRouter = router({
       const orderItemsData = input.items.map((item) => {
         const menuItem = itemsData.find((mi) => mi.id === item.menuItemId);
         if (!menuItem) throw new Error(`Item ${item.menuItemId} não encontrado`);
-        
-        const itemTotal = menuItem.price * item.quantity;
+
+        // Calcular preço base do item pelo preço do banco (ignorar preço enviado pelo cliente)
+        let itemBasePrice = menuItem.price;
+
+        // Somar addons: usar priceExtra enviado pelo cliente (não há tabela de preços de addons
+        // no banco para validar, mas limitamos a valores positivos e razoáveis)
+        let addonsTotal = 0;
+        if (item.addons && item.addons.length > 0) {
+          for (const addon of item.addons) {
+            // Garantir que priceExtra é número não-negativo e razoável (< R$ 500)
+            const addonPrice = Math.max(0, Math.min(addon.priceExtra || 0, 50000));
+            addonsTotal += addonPrice * (addon.quantity || 1);
+          }
+        }
+
+        const itemTotal = (itemBasePrice + addonsTotal) * item.quantity;
         subtotal += itemTotal;
-        
+
         return {
           menuItemId: item.menuItemId,
           quantity: item.quantity,
-          unitPrice: menuItem.price,
+          unitPrice: itemBasePrice, // preço unitário do banco
           itemName: menuItem.name, // salvar nome no momento do pedido
           itemImageUrl: menuItem.imageUrl || null, // salvar imagem no momento do pedido
           observations: item.observations || null,
@@ -102,11 +116,14 @@ export const orderRouter = router({
       // Taxa de entrega (buscar das configurações ou usar padrão)
       const deliveryFee = input.deliveryType === "delivery" ? 850 : 0; // R$ 8,50
 
-      // Total
-      const total = input.totalAmount + deliveryFee;
+      // Total calculado pelo servidor (não pelo cliente)
+      const total = subtotal + deliveryFee;
 
       // Gerar número do pedido (timestamp + random)
       const orderNumber = `PED${Date.now().toString().slice(-8)}`;
+
+      // Gerar token aleatório para acesso à comanda de impressão (evita enumeração por ID)
+      const printToken = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}-${Math.random().toString(36).slice(2, 10)}`;
 
       // Criar pedido
       // Normalizar telefone: remover tudo que não é dígito para garantir consistência nas buscas
@@ -131,6 +148,7 @@ export const orderRouter = router({
           paymentMethod: input.paymentMethod,
           changeFor: input.changeFor || null,
           estimatedTime: 40, // 40 minutos padrão
+          printToken, // token para acesso à comanda de impressão
         });
 
       // Buscar pedido criado
@@ -201,10 +219,49 @@ export const orderRouter = router({
       return {
         orderId: order.id,
         orderNumber: order.orderNumber,
+        printToken: order.printToken, // token para URL de impressão
         total,
         estimatedTime: order.estimatedTime,
         status: order.status,
       };
+    }),
+
+  /**
+   * Buscar pedido por printToken (acesso à comanda de impressão)
+   */
+  getByToken: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const [order] = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.printToken, input.token))
+        .limit(1);
+
+      if (!order) return null;
+
+      const items = await db
+        .select({
+          id: orderItems.id,
+          menuItemId: orderItems.menuItemId,
+          menuItemName: menuItems.name,
+          quantity: orderItems.quantity,
+          unitPrice: orderItems.unitPrice,
+          observations: orderItems.observations,
+          addons: orderItems.addons,
+        })
+        .from(orderItems)
+        .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+        .where(eq(orderItems.orderId, order.id));
+
+      return { ...order, items };
     }),
 
   /**

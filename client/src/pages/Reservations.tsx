@@ -44,7 +44,7 @@ function playAlertBeep() {
 
 export default function Reservations() {
   const utils = trpc.useUtils();
-  const { data: reservations, isLoading } = trpc.reservations.list.useQuery();
+  const { data: reservations, isLoading, isError, refetch } = trpc.reservations.list.useQuery();
 
   const isFirstLoad = useRef<boolean>(true);
   const knownIds = useRef<Set<number>>(new Set());
@@ -119,6 +119,19 @@ export default function Reservations() {
               Confirme ou cancele abaixo para o cliente receber a notificação
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Estado de erro */}
+      {isError && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
+          <p className="text-sm text-red-700 font-medium">Erro ao carregar reservas. Verifique sua conexão.</p>
+          <button
+            onClick={() => refetch()}
+            className="text-xs text-red-600 underline hover:text-red-800 font-semibold"
+          >
+            Tentar novamente
+          </button>
         </div>
       )}
 

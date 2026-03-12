@@ -25,10 +25,21 @@ interface SelectedAddon {
 
 export default function PrintOrder() {
   const { orderId } = useParams<{ orderId: string }>();
-  const { data: order, isLoading } = trpc.order.getById.useQuery(
-    { id: parseInt(orderId!) },
-    { enabled: !!orderId }
+
+  // Detectar se é um token alfanumérico (novo formato) ou ID numérico legado
+  const isToken = orderId ? /[a-z]/.test(orderId) : false;
+
+  const { data: orderByToken, isLoading: loadingToken } = trpc.order.getByToken.useQuery(
+    { token: orderId! },
+    { enabled: !!orderId && isToken }
   );
+  const { data: orderById, isLoading: loadingId } = trpc.order.getById.useQuery(
+    { id: parseInt(orderId!) },
+    { enabled: !!orderId && !isToken }
+  );
+
+  const order = isToken ? orderByToken : orderById;
+  const isLoading = isToken ? loadingToken : loadingId;
 
   useEffect(() => {
     if (order && !isLoading) {

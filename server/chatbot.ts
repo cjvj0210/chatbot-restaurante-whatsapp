@@ -46,6 +46,30 @@ export async function processIncomingMessage(
   messageId: string
 ): Promise<void> {
   try {
+    // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
+    const MAX_MSG_LENGTH = 2000;
+    if (messageText.length > MAX_MSG_LENGTH) {
+      console.warn(`[Chatbot] Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
+      messageText = messageText.slice(0, MAX_MSG_LENGTH) + "...";
+    }
+
+    // Guardrail: sanitizar tentativas óbvias de prompt injection
+    // Remover instruções que tentam redefinir o papel do bot
+    const injectionPatterns = [
+      /ignore (all )?(previous|prior|above) instructions?/gi,
+      /you are now/gi,
+      /act as (a |an )?/gi,
+      /forget (everything|your instructions)/gi,
+      /\[system\]/gi,
+      /\[assistant\]/gi,
+    ];
+    for (const pattern of injectionPatterns) {
+      if (pattern.test(messageText)) {
+        console.warn(`[Chatbot] Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
+        messageText = messageText.replace(pattern, "[mensagem filtrada]");
+      }
+    }
+
     // 1. Buscar ou criar cliente
     let customer = await getCustomerByWhatsappId(whatsappId);
     if (!customer) {

@@ -854,3 +854,40 @@
 - [x] Enviar alerta interno via WhatsApp ao número do restaurante quando cliente pede atendente humano
 - [x] Implementar modo humano: detectar respostas do operador e pausar bot por 30 minutos
 - [x] Bot retoma automaticamente após 30 min de inatividade do operador
+
+## Auditoria Técnica Completa — Implementação (12/03/2026)
+
+### Segurança
+- [x] 1.1 Proteger endpoints /api/diag/* com autenticação de admin
+- [x] 1.2 Validar apikey no webhook da Evolution API
+- [x] 1.3 Recalcular total do pedido inteiramente no servidor (ignorar totalAmount do cliente)
+- [x] 1.4 Instalar helmet e express-rate-limit
+
+### LGPD
+- [x] 2.1 Adicionar política de privacidade e consentimento no checkout
+- [ ] 2.2 Adicionar campo deletedAt (soft delete) em customers e conversations
+- [ ] 2.3 Centralizar telefone/dados do restaurante nas configurações do banco
+- [x] 2.4 Criar página /privacidade com política de dados
+
+### Qualidade de Código
+- [x] 3.2 Corrigir URL duplicada: importar getSiteUrl() no chatbot.ts
+- [ ] 3.3 Adicionar foreign keys no schema do banco
+- [ ] 3.4 Adicionar índices de banco para queries frequentes
+- [x] 3.5 Implementar paginação nas queries de listagem
+
+### Guardrails de IA
+- [x] 4.1 Adicionar limite de 2000 caracteres nas mensagens do chatbot
+- [x] 4.2 Adicionar instrução anti-injection no system prompt
+- [ ] 4.3 Adicionar estimativa de tokens no histórico de conversa
+- [x] 4.4 Melhorar detecção de atendente humano via marcador LLM
+
+### Resiliência
+- [x] 5.1 Adicionar handler de erros não capturados no processo Node.js
+- [x] 5.2 Monitoramento automático da instância WhatsApp no cron job
+- [x] 5.3 Limpeza periódica de sessões expiradas no cron job
+- [ ] 5.4 Worker de retry para fila de mensagens pendentes
+
+### UX / Segurança
+- [x] 6.1 Corrigir página de impressão: usar token aleatório em vez de ID sequencial
+- [x] 6.2 Feedback visual inline de erros no checkout
+- [x] 6.3 Estado de erro nas páginas do painel admin (Orders, Reservations)

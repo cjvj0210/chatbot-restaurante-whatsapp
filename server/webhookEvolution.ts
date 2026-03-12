@@ -87,6 +87,14 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
   try {
     const payload = req.body as EvolutionWebhookPayload;
 
+    // Validar autenticidade do webhook: verificar apikey enviada pela Evolution API
+    const configuredKey = process.env.EVOLUTION_API_KEY || "";
+    const receivedKey = payload.apikey || (req.headers["apikey"] as string) || "";
+    if (configuredKey && receivedKey && receivedKey !== configuredKey) {
+      console.warn("[EvolutionWebhook] apikey inválida — payload ignorado");
+      return;
+    }
+
     console.log("[EvolutionWebhook] Evento recebido:", payload.event, "| Instância:", payload.instance);
 
     // Só processar evento de mensagens recebidas

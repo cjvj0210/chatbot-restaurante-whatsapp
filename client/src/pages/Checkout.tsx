@@ -754,15 +754,24 @@ export default function Checkout() {
             <ChevronRight className="w-5 h-5" />
           </button>
         ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full bg-green-600 text-white py-4 rounded-2xl shadow-xl flex items-center justify-between px-6 hover:bg-green-700 transition-colors disabled:opacity-60 font-bold text-base"
-          >
-            <span />
-            <span>{isSubmitting ? "Enviando pedido..." : `Confirmar Pedido · ${formatPrice(total)}`}</span>
-            <CheckCircle2 className="w-5 h-5" />
-          </button>
+          <div className="space-y-2">
+            <p className="text-center text-xs text-gray-400 px-2">
+              Ao confirmar, você concorda com nossa{" "}
+              <a href="/privacidade" target="_blank" className="underline text-gray-500 hover:text-gray-700">
+                Política de Privacidade
+              </a>{" "}
+              (LGPD). Seus dados são usados apenas para processar este pedido.
+            </p>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full bg-green-600 text-white py-4 rounded-2xl shadow-xl flex items-center justify-between px-6 hover:bg-green-700 transition-colors disabled:opacity-60 font-bold text-base"
+            >
+              <span />
+              <span>{isSubmitting ? "Enviando pedido..." : `Confirmar Pedido · ${formatPrice(total)}`}</span>
+              <CheckCircle2 className="w-5 h-5" />
+            </button>
+          </div>
         )}
       </div>
     </div>
