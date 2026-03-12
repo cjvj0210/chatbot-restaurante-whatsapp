@@ -192,10 +192,10 @@ export async function notifyWhatsAppBot(
     }
   }
 
-  // Fallback: salvar na fila
+  // Fallback: salvar na fila (normalizar telefone para formato 55XXXXXXXXXXX)
   await db.insert(botMessages).values({
     sessionId,
-    whatsappNumber: phone,
+    whatsappNumber: phone ? normalizePhoneForEvolution(phone) : phone,
     message,
     messageType: "order_confirmation",
     status: "pending",
@@ -282,10 +282,10 @@ export async function notifyStatusUpdate(
     }
   }
 
-  // Fallback: salvar na fila
+  // Fallback: salvar na fila (normalizar telefone para formato 55XXXXXXXXXXX)
   await db.insert(botMessages).values({
     sessionId: order.sessionId || `order_${order.id}`,
-    whatsappNumber: phone,
+    whatsappNumber: phone ? normalizePhoneForEvolution(phone) : phone,
     message,
     messageType: "order_status_update",
     status: "pending",

@@ -95,11 +95,21 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       return;
     }
 
-    console.log("[EvolutionWebhook] Evento recebido:", payload.event, "| Instância:", payload.instance);
+    const timestamp = new Date().toISOString();
+    console.log(`[EvolutionWebhook] [${timestamp}] Evento: ${payload.event} | Instância: ${payload.instance}`);
+
+    // Tratar evento de conexão (detectar desconexão em tempo real)
+    const eventNormalized = payload.event?.toUpperCase().replace(".", "_");
+    if (eventNormalized === "CONNECTION_UPDATE") {
+      const state = (payload.data as any)?.state || (payload.data as any)?.status;
+      console.log(`[EvolutionWebhook] Conexão atualizada: ${JSON.stringify(payload.data)}`);
+      if (state === "close" || state === "disconnected") {
+        console.error(`[EvolutionWebhook] ⚠️ DESCONEXÃO DETECTADA via webhook!`);
+      }
+      return;
+    }
 
     // Só processar evento de mensagens recebidas
-    // Evolution API v2.x envia "MESSAGES_UPSERT" (maiúsculo), v1.x enviava "messages.upsert"
-    const eventNormalized = payload.event?.toUpperCase().replace(".", "_");
     if (eventNormalized !== "MESSAGES_UPSERT") {
       console.log(`[EvolutionWebhook] Evento ignorado: ${payload.event}`);
       return;

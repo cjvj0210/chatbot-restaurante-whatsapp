@@ -524,6 +524,8 @@ export const orderRouter = router({
       // Endereço: prioridade = customer.address (sempre atualizado pelo createOrder),
       // fallback = último pedido de delivery não cancelado
       const resolvedAddress = customer.address || lastDeliveryOrder?.deliveryAddress || "";
+      // Forma de pagamento e tipo de entrega do último pedido (não cancelado)
+      const lastValidOrder = lastOrders.find(o => o.status !== 'cancelled') || lastOrder;
       return {
         name: resolvedName,
         phone: customer.phone || session.whatsappNumber,
@@ -531,6 +533,8 @@ export const orderRouter = router({
         totalOrders: customer.totalOrders,
         totalSpent: customer.totalSpent,
         birthDate: customer.birthDate || null,
+        lastPaymentMethod: lastValidOrder?.paymentMethod || null,
+        lastDeliveryType: lastValidOrder?.orderType || null,
       };
     }),
 

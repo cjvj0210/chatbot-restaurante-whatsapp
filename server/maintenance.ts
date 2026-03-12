@@ -1,8 +1,17 @@
 import { getDb } from "./db";
 import { orderSessions, testSessions, testMessages, conversations, messages, botMessages } from "../drizzle/schema";
-import { lt, and, eq, lte } from "drizzle-orm";
+import { lt, and, eq, lte, or, desc } from "drizzle-orm";
 import { checkInstanceStatus, sendTextMessageEvolution } from "./evolutionApi";
 import { notifyOwner } from "./_core/notification";
+
+/**
+ * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
+ */
+function normalizePhone(phone: string): string {
+  let digits = phone.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+  if (digits.startsWith("55") && digits.length >= 12) return digits;
+  return "55" + digits;
+}
 
 let lastInstanceStatus: string = "unknown";
 let instanceAlertSent = false;
@@ -91,16 +100,21 @@ export async function retryFailedMessages(): Promise<void> {
   const MAX_RETRIES = 3;
 
   try {
-    // Buscar mensagens com falha que ainda têm tentativas disponíveis
+    // Buscar mensagens pendentes ou com falha que ainda têm tentativas disponíveis
+    // Prioriza as mais recentes (DESC) para não ficar preso em mensagens antigas
     const failedMessages = await db
       .select()
       .from(botMessages)
       .where(
         and(
-          eq(botMessages.status, "failed"),
+          or(
+            eq(botMessages.status, "failed"),
+            eq(botMessages.status, "pending")
+          ),
           lte(botMessages.retries, MAX_RETRIES)
         )
       )
+      .orderBy(desc(botMessages.createdAt))
       .limit(10); // Processar no máximo 10 por vez
 
     if (failedMessages.length === 0) return;
@@ -110,7 +124,9 @@ export async function retryFailedMessages(): Promise<void> {
     for (const msg of failedMessages) {
       if (!msg.whatsappNumber) continue;
 
-      const sent = await sendTextMessageEvolution(msg.whatsappNumber, msg.message);
+      // Normalizar telefone para formato 55XXXXXXXXXXX
+      const normalizedPhone = normalizePhone(msg.whatsappNumber);
+      const sent = await sendTextMessageEvolution(normalizedPhone, msg.message);
 
       if (sent) {
         await db

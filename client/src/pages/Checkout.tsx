@@ -98,9 +98,24 @@ export default function Checkout() {
       if (customerData.address) {
         setSavedAddressFull(customerData.address);
       }
+      // Pré-preencher forma de pagamento do último pedido
+      if (customerData.lastPaymentMethod) {
+        const pm = customerData.lastPaymentMethod as PaymentMethod;
+        if (["dinheiro", "cartao", "pix"].includes(pm)) {
+          setPaymentMethod(pm);
+        }
+      }
+      // Pré-preencher tipo de entrega do último pedido (se não veio do localStorage)
+      const savedType = localStorage.getItem(`deliveryType_${sessionId}`);
+      if (!savedType && customerData.lastDeliveryType) {
+        const dt = customerData.lastDeliveryType as DeliveryType;
+        if (["delivery", "pickup"].includes(dt)) {
+          setDeliveryType(dt);
+        }
+      }
       setPrefillApplied(true);
     }
-  }, [customerData, prefillApplied]);
+  }, [customerData, prefillApplied, sessionId]);
 
   useEffect(() => {
     if (!validating && !validation?.valid) {

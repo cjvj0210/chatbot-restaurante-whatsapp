@@ -919,16 +919,42 @@
 - [x] S9. Cookie security hardening (httpOnly, secure, sameSite)
 
 ### Performance
-- [ ] P1. Cache de respostas frequentes do chatbot (FAQ sem LLM)
-- [ ] P2. Otimização do prompt (reduzir tokens desnecessários)
+- [x] P1. Cache de respostas frequentes do chatbot (FAQ sem LLM)
+- [x] P2. Otimização do prompt (reduzir tokens desnecessários)
 - [x] P3. Compressão gzip no Express
 - [x] P4. Lazy loading de imagens no cardápio
-- [ ] P5. Pré-preenchimento inteligente no checkout (último endereço + pagamento)
-- [ ] P6. Debounce em buscas e inputs
-- [ ] P7. Otimização de queries do dashboard
+- [x] P5. Pré-preenchimento inteligente no checkout (último endereço + pagamento)
+- [x] P6. Debounce em buscas e inputs
+- [x] P7. Otimização de queries do dashboard
 
 ### Extras Implementados
 - [x] Cache em memória para dados do cardápio (60s TTL com invalidação automática)
 - [x] Componente LazyImage com placeholder animado e fallback de erro
 - [x] Testes automatizados para sanitização, rate limiting, cache e audit log (23 testes novos)
 - [x] Relatório final do Sprint 3 em linguagem leiga
+
+## Sprint 3B — Melhorias de Performance Pendentes (12/03/2026)
+- [x] P1. Cache de FAQ sem LLM (respostas instantâneas para perguntas frequentes)
+- [x] P2. Otimização do prompt (reduzir tokens desnecessários)
+- [x] P5. Pré-preenchimento inteligente no checkout (último endereço + pagamento)
+- [x] P6. Debounce em buscas e inputs
+- [x] P7. Otimização de queries do dashboard (índices + agregação eficiente)
+
+## Bug URGENTE: Bot não responde no WhatsApp (12/03/2026 - 19:14)
+- [x] Investigar por que mensagens das 19:12-19:13 não recebem resposta
+- [x] Verificar logs do servidor e webhook da Evolution API
+- [x] Corrigir o problema e testar
+- [x] Reduzir keep-alive de 10 para 5 minutos com ping duplo anti-hibernação
+- [x] Normalizar telefones no retry worker (formato 55XXXXXXXXXXX)
+- [x] Retry worker agora processa mensagens 'pending' além de 'failed'
+- [x] Retry worker prioriza mensagens mais recentes (ORDER BY DESC)
+- [x] Limpeza de fila de mensagens antigas acumuladas
+
+## Bug: Bot não responde (19:33-19:35) — Desconexão 401 (12/03/2026)
+- [x] Diagnosticar causa raiz: desconexão 401 (logout) da Evolution API às 19:31
+- [x] KeepAlive reescrito: ping a cada 4 min (era 10), detecção de desconexão, reconexão automática
+- [x] Notificação automática ao dono quando bot desconecta
+- [x] Verificação periódica do webhook (a cada 15 min) com reconfiguração automática
+- [x] Logging detalhado no webhook com timestamp e detecção de CONNECTION_UPDATE
+- [x] Webhook reconfigurado e instância reiniciada
+- [x] 58 testes passando (16 novos: FAQ cache, dashboard stats, debounce hook)

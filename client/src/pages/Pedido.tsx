@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store, AlertTriangle, History, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import { LazyImage } from "@/components/LazyImage";
 import { checkBusinessHours } from "../../../shared/businessHours";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/logo-estrela-do-sul_aa66ec3f.png";
 
@@ -391,6 +392,7 @@ export default function Pedido() {
     return checkBusinessHours(deliveryType);
   }, [deliveryType]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 200); // Debounce de 200ms na busca
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const categoryRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -497,13 +499,13 @@ export default function Pedido() {
     items: (menuItems || []).filter((item) => item.categoryId === category.id && item.isAvailable),
   })).filter((c) => c.items.length > 0);
 
-  const filteredCategories = searchQuery.trim()
+  const filteredCategories = debouncedSearch.trim()
     ? categorizedItems.map((cat) => ({
         ...cat,
         items: cat.items.filter(
           (item) =>
-            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+            item.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            (item.description || "").toLowerCase().includes(debouncedSearch.toLowerCase())
         ),
       })).filter((cat) => cat.items.length > 0)
     : categorizedItems;

@@ -199,3 +199,127 @@ describe("Audit Log", () => {
     ).resolves.not.toThrow();
   });
 });
+
+describe("FAQ Cache", () => {
+  it("deve retornar resposta para saudação simples", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Oi");
+    expect(result).not.toBeNull();
+    expect(result).toContain("Gauchinho");
+  });
+
+  it("deve retornar resposta para 'boa noite'", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Boa noite");
+    expect(result).not.toBeNull();
+    expect(result).toContain("Gauchinho");
+  });
+
+  it("deve retornar resposta para endereço", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Onde fica o restaurante?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("Barretos");
+  });
+
+  it("deve retornar resposta para formas de pagamento", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Aceita cartão?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("PIX");
+  });
+
+  it("deve retornar resposta para taxa de serviço", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Cobram 10%?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("10%");
+  });
+
+  it("deve retornar resposta para aniversário", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("É meu aniversário!");
+    expect(result).not.toBeNull();
+    expect(result).toContain("PETIT GATEAU");
+  });
+
+  it("deve retornar resposta para vagas de emprego", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Vocês estão contratando?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("estreladosulbarretos@gmail.com");
+  });
+
+  it("deve retornar null para perguntas complexas que precisam do LLM", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    expect(checkFaqCache("Quero fazer um pedido de 2 marmitex")).toBeNull();
+    expect(checkFaqCache("Qual o preço do rodízio no sábado?")).toBeNull();
+    expect(checkFaqCache("Quero reservar uma mesa para 5 pessoas")).toBeNull();
+  });
+
+  it("deve retornar resposta para preços de crianças", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Quanto a criança paga?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("GRATIS");
+  });
+
+  it("deve retornar resposta para taxa de entrega", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Quanto custa a entrega?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("8,50");
+  });
+
+  it("deve retornar resposta para telefone", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    const result = checkFaqCache("Qual o telefone?");
+    expect(result).not.toBeNull();
+    expect(result).toContain("3325-8628");
+  });
+
+  it("deve funcionar com acentos e maiúsculas", async () => {
+    const { checkFaqCache } = await import("./faqCache");
+    expect(checkFaqCache("OI!")).not.toBeNull();
+    expect(checkFaqCache("Olá!")).not.toBeNull();
+    expect(checkFaqCache("BOA TARDE")).not.toBeNull();
+  });
+});
+
+describe("Dashboard Stats Otimizado", () => {
+  it("deve exportar a função getDashboardStats", async () => {
+    const { getDashboardStats } = await import("./db");
+    expect(typeof getDashboardStats).toBe("function");
+  });
+
+  it("deve retornar objeto com todas as propriedades esperadas", async () => {
+    const { getDashboardStats } = await import("./db");
+    const stats = await getDashboardStats();
+    expect(stats).toHaveProperty("totalOrders");
+    expect(stats).toHaveProperty("totalRevenue");
+    expect(stats).toHaveProperty("pendingOrders");
+    expect(stats).toHaveProperty("activeReservations");
+    expect(stats).toHaveProperty("totalCustomers");
+    expect(stats).toHaveProperty("averageRating");
+  });
+
+  it("deve retornar números (não strings)", async () => {
+    const { getDashboardStats } = await import("./db");
+    const stats = await getDashboardStats();
+    expect(typeof stats.totalOrders).toBe("number");
+    expect(typeof stats.totalRevenue).toBe("number");
+    expect(typeof stats.pendingOrders).toBe("number");
+    expect(typeof stats.activeReservations).toBe("number");
+    expect(typeof stats.totalCustomers).toBe("number");
+    expect(typeof stats.averageRating).toBe("number");
+  });
+});
+
+describe("useDebounce Hook", () => {
+  it("deve exportar useDebounce e useDebouncedCallback", async () => {
+    // Verificar que o módulo existe e exporta as funções
+    const mod = await import("../client/src/hooks/useDebounce");
+    expect(typeof mod.useDebounce).toBe("function");
+    expect(typeof mod.useDebouncedCallback).toBe("function");
+  });
+});

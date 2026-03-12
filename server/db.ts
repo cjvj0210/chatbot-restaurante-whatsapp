@@ -1,4 +1,4 @@
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, count, sum, avg, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -442,6 +442,56 @@ export async function getAllFeedback(): Promise<typeof feedback.$inferSelect[]> 
   if (!db) return [];
 
   return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+}
+
+/**
+ * Dashboard stats otimizado — usa COUNT/SUM/AVG no SQL em vez de carregar tudo na memória
+ * Reduz transferência de dados e tempo de resposta significativamente
+ */
+export async function getDashboardStats() {
+  const db = await getDb();
+  if (!db) return {
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingOrders: 0,
+    activeReservations: 0,
+    totalCustomers: 0,
+    averageRating: 0,
+  };
+
+  // Executar todas as queries em paralelo para máxima performance
+  const [orderStats, pendingStats, reservationStats, customerStats, ratingStats] = await Promise.all([
+    // Total de pedidos e receita total
+    db.select({
+      totalOrders: count(),
+      totalRevenue: sum(orders.total),
+    }).from(orders),
+    // Pedidos pendentes
+    db.select({
+      pendingOrders: count(),
+    }).from(orders).where(eq(orders.status, "pending")),
+    // Reservas ativas (confirmadas)
+    db.select({
+      activeReservations: count(),
+    }).from(reservations).where(eq(reservations.status, "confirmed")),
+    // Total de clientes
+    db.select({
+      totalCustomers: count(),
+    }).from(customers),
+    // Média de avaliação
+    db.select({
+      averageRating: avg(feedback.rating),
+    }).from(feedback),
+  ]);
+
+  return {
+    totalOrders: orderStats[0]?.totalOrders ?? 0,
+    totalRevenue: Number(orderStats[0]?.totalRevenue ?? 0),
+    pendingOrders: pendingStats[0]?.pendingOrders ?? 0,
+    activeReservations: reservationStats[0]?.activeReservations ?? 0,
+    totalCustomers: customerStats[0]?.totalCustomers ?? 0,
+    averageRating: Number(ratingStats[0]?.averageRating ?? 0),
+  };
 }
 
 // ===== Complementos do Cardápio (Addon Groups & Options) =====

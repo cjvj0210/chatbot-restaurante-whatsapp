@@ -406,28 +406,8 @@ export const appRouter = router({
   // Dashboard Stats
   dashboard: router({
     stats: protectedProcedure.query(async () => {
-      const orders = await db.getAllOrders();
-      const reservations = await db.getAllReservations();
-      const customers = await db.getAllCustomers();
-      const feedbackList = await db.getAllFeedback();
-
-      const totalOrders = orders.length;
-      const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-      const pendingOrders = orders.filter((o) => o.status === "pending").length;
-      const activeReservations = reservations.filter((r) => r.status === "confirmed").length;
-      const totalCustomers = customers.length;
-      const averageRating = feedbackList.length > 0
-        ? feedbackList.reduce((sum, f) => sum + f.rating, 0) / feedbackList.length
-        : 0;
-
-      return {
-        totalOrders,
-        totalRevenue,
-        pendingOrders,
-        activeReservations,
-        totalCustomers,
-        averageRating,
-      };
+      // Query otimizada: usa COUNT/SUM/AVG no SQL em vez de carregar tudo na memória
+      return await db.getDashboardStats();
     }),
   }),
 });

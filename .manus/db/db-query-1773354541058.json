@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE bot_messages SET status = 'sent', sentAt = NOW() WHERE status = 'pending' AND createdAt < '2026-03-12 22:00:00';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute UPDATE bot_messages SET status = 'sent', sentAt = NOW() WHERE status = 'pending' AND createdAt < '2026-03-12 22:00:00';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 128
+}

@@ -25,6 +25,7 @@ import { randomBytes } from "crypto";
 import { notifyOwner } from "./_core/notification";
 import { sanitizeLLMOutput } from "./sanitize";
 import { checkChatbotRateLimit } from "./chatbotRateLimit";
+import { checkFaqCache } from "./faqCache";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -134,7 +135,29 @@ export async function processIncomingMessage(
       }
     }
 
-    // 5. Processar mensagem com IA usando o prompt completo do restaurante
+    // 5. Verificar cache de FAQ antes de chamar o LLM (economia de tokens e latência)
+    const faqResponse = checkFaqCache(messageText);
+    if (faqResponse) {
+      console.log(`[Chatbot] FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
+      // Salvar resposta do FAQ como mensagem do assistente
+      await createMessage({
+        conversationId: conversation.id,
+        role: "assistant",
+        content: faqResponse,
+        messageType: "text",
+        metadata: JSON.stringify({ source: "faq_cache" }),
+      });
+      // Enviar resposta via WhatsApp
+      const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
+      if (useEvo) {
+        await sendTextMessageEvolution(phone, faqResponse);
+      } else {
+        await sendTextMessage(phone, faqResponse);
+      }
+      return;
+    }
+
+    // 5b. Processar mensagem com IA usando o prompt completo do restaurante
     const response = await generateResponse(customer.id, conversation.id, messageText, context, phone);
 
     // 6. Salvar resposta do assistente
