@@ -403,6 +403,85 @@ export const orderRouter = router({
     }),
 
   /**
+   * Buscar histórico de pedidos do cliente pelo sessionId (para exibir no cardápio digital)
+   */
+  getOrderHistory: publicProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      // Buscar sessão para obter o whatsappNumber
+      const [session] = await db
+        .select()
+        .from(orderSessions)
+        .where(eq(orderSessions.sessionId, input.sessionId))
+        .limit(1);
+
+      if (!session?.whatsappNumber) return [];
+
+      const phone = session.whatsappNumber.replace(/\D/g, "");
+
+      // Buscar últimos 5 pedidos do cliente (excluindo cancelados)
+      const pastOrders = await db
+        .select()
+        .from(orders)
+        .where(like(orders.customerPhone, `%${phone.slice(-8)}%`))
+        .orderBy(desc(orders.createdAt))
+        .limit(5);
+
+      if (pastOrders.length === 0) return [];
+
+      // Para cada pedido, buscar os itens
+      const result = await Promise.all(
+        pastOrders.map(async (order) => {
+          const items = await db
+            .select({
+              id: orderItems.id,
+              menuItemId: orderItems.menuItemId,
+              quantity: orderItems.quantity,
+              unitPrice: orderItems.unitPrice,
+              observations: orderItems.observations,
+              addons: orderItems.addons,
+              menuItemName: menuItems.name,
+              menuItemImage: menuItems.imageUrl,
+            })
+            .from(orderItems)
+            .leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+            .where(eq(orderItems.orderId, order.id));
+
+          return {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            status: order.status,
+            orderType: order.orderType,
+            total: order.total,
+            subtotal: order.subtotal,
+            deliveryFee: order.deliveryFee,
+            deliveryAddress: order.deliveryAddress,
+            paymentMethod: order.paymentMethod,
+            createdAt: order.createdAt,
+            items: items.map((item) => ({
+              menuItemId: item.menuItemId,
+              name: item.menuItemName || "Item",
+              price: item.unitPrice,
+              quantity: item.quantity,
+              observations: item.observations || undefined,
+              imageUrl: item.menuItemImage || undefined,
+              addons: item.addons ? (() => { try { return JSON.parse(item.addons as string); } catch { return undefined; } })() : undefined,
+            })),
+          };
+        })
+      );
+
+      return result;
+    }),
+
+  /**
    * Atualizar status do pedido (admin)
    */
   updateStatus: protectedProcedure

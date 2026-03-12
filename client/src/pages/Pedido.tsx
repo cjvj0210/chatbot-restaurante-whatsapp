@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Search, X, Plus, Minus, Trash2, ChevronRight, MapPin, Clock, ChevronDown, ChevronUp, Bike, Store, AlertTriangle, History, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import { checkBusinessHours } from "../../../shared/businessHours";
 
 const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/logo-estrela-do-sul_aa66ec3f.png";
@@ -367,6 +367,15 @@ export default function Pedido() {
     { enabled: !!sessionId }
   );
 
+  // Buscar histórico de pedidos do cliente
+  const { data: orderHistory = [] } = trpc.order.getOrderHistory.useQuery(
+    { sessionId: sessionId || "" },
+    { enabled: !!sessionId }
+  );
+
+  // Estado do modal de histórico
+  const [showHistory, setShowHistory] = useState(false);
+
   // Status de horário de funcionamento (atualiza ao mudar tipo de pedido)
   const businessStatus = useMemo(() => {
     if (!deliveryType) return null;
@@ -641,12 +650,125 @@ export default function Pedido() {
             </button>
           </div>
 
+          {/* Botão de histórico de pedidos (apenas para clientes reconhecidos com pedidos anteriores) */}
+          {orderHistory.length > 0 && (
+            <button
+              onClick={() => setShowHistory(true)}
+              className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-gray-300 text-gray-500 text-sm hover:border-red-300 hover:text-red-600 transition-colors"
+            >
+              <History className="w-4 h-4" />
+              <span>Ver meus pedidos anteriores</span>
+            </button>
+          )}
+
           {/* Endereço do restaurante */}
           <div className="mt-8 flex items-start gap-2 text-xs text-gray-400 justify-center">
             <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
             <span>Av. 7 nº 1885 · Barretos/SP · (17) 9 8222-2790</span>
           </div>
         </div>
+
+        {/* Modal de histórico de pedidos */}
+        {showHistory && (
+          <div className="fixed inset-0 z-50 flex flex-col bg-white max-w-md mx-auto">
+            {/* Header do modal */}
+            <div className="bg-red-700 text-white px-4 py-4 flex items-center gap-3">
+              <button onClick={() => setShowHistory(false)} className="p-1 rounded-full hover:bg-red-600">
+                <X className="w-5 h-5" />
+              </button>
+              <div>
+                <h2 className="font-bold text-base">Meus Pedidos</h2>
+                <p className="text-xs text-red-200">{orderHistory.length} pedido{orderHistory.length !== 1 ? "s" : ""} anteriores</p>
+              </div>
+            </div>
+
+            {/* Lista de pedidos */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {orderHistory.map((order) => {
+                const statusLabel: Record<string, { label: string; color: string }> = {
+                  pending: { label: "Aguardando", color: "text-yellow-600 bg-yellow-50" },
+                  confirmed: { label: "Confirmado", color: "text-blue-600 bg-blue-50" },
+                  preparing: { label: "Preparando", color: "text-orange-600 bg-orange-50" },
+                  ready: { label: "Pronto", color: "text-green-600 bg-green-50" },
+                  delivering: { label: "A caminho", color: "text-purple-600 bg-purple-50" },
+                  delivered: { label: "Entregue", color: "text-green-700 bg-green-50" },
+                  cancelled: { label: "Cancelado", color: "text-red-600 bg-red-50" },
+                };
+                const st = statusLabel[order.status] || { label: order.status, color: "text-gray-600 bg-gray-50" };
+                const date = new Date(order.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+                const total = `R$ ${((order.total || 0) / 100).toFixed(2).replace(".", ",")}`;
+
+                return (
+                  <div key={order.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                    {/* Cabeçalho do pedido */}
+                    <div className="px-4 py-3 flex items-center justify-between border-b border-gray-50">
+                      <div>
+                        <p className="font-bold text-sm text-gray-900">{order.orderNumber}</p>
+                        <p className="text-xs text-gray-400">{date} · {order.orderType === "delivery" ? "Delivery" : "Retirada"}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>{st.label}</span>
+                        <span className="font-bold text-sm text-gray-800">{total}</span>
+                      </div>
+                    </div>
+
+                    {/* Itens do pedido */}
+                    <div className="px-4 py-3 space-y-2">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-3">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">🍽️</div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
+                            {item.observations && (
+                              <p className="text-xs text-gray-400 truncate">{item.observations}</p>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0">x{item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Botão repetir pedido */}
+                    {order.status !== "cancelled" && (
+                      <div className="px-4 pb-3">
+                        <button
+                          onClick={() => {
+                            // Adicionar todos os itens do pedido ao carrinho
+                            const newItems: CartItem[] = order.items
+                              .filter((item) => item.menuItemId !== null)
+                              .map((item) => ({
+                                menuItemId: item.menuItemId as number,
+                                name: item.name,
+                                price: item.price,
+                                basePrice: item.price,
+                                quantity: item.quantity,
+                                observations: item.observations,
+                                imageUrl: item.imageUrl,
+                                addons: item.addons as SelectedAddon[] | undefined,
+                              }));
+                            setCart(newItems);
+                            // Fechar modal e ir para o cardápio
+                            setShowHistory(false);
+                            // Definir tipo de entrega igual ao pedido anterior
+                            setDeliveryType(order.orderType as DeliveryType);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold active:scale-[0.98] transition-all"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          Repetir este pedido
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

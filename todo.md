@@ -790,3 +790,4 @@
 - [ ] Notificação WhatsApp automática ao confirmar pedido: enviar mensagem ao cliente via Evolution API
 - [ ] Salvar horário de confirmação (confirmedAt) no banco quando pedido for aceito
 - [ ] Bot responde inteligentemente sobre tempo de entrega: calcular previsão com base no horário de confirmação e dia da semana
+- [x] Histórico de pedidos no cardápio digital com opção de repetir pedido com um clique
