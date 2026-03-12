@@ -15,6 +15,8 @@ import { getWebhookLogs, clearWebhookLogs } from "./debug";
 import { orderLinkRouter } from "./orderLinkRouter";
 import { orderRouter } from "./orderRouter";
 import { uploadRouter } from "./uploadRouter";
+import { sendTextMessageEvolution } from "./evolutionApi";
+import { notifyOwner } from "./_core/notification";
 
 export const appRouter = router({
   system: systemRouter,
@@ -253,6 +255,38 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         await db.updateReservationStatus(input.id, input.status);
+
+        // Enviar notificação WhatsApp ao cliente quando confirmado ou cancelado
+        if (input.status === "confirmed" || input.status === "cancelled") {
+          try {
+            const reservation = await db.getReservationById(input.id);
+            if (reservation?.customerPhone) {
+              const phone = reservation.customerPhone.replace(/\D/g, "");
+              const normalizedPhone = phone.startsWith("55") ? phone : `55${phone}`;
+
+              const dataFormatada = new Date(reservation.date).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: "America/Sao_Paulo",
+              });
+
+              let msg = "";
+              if (input.status === "confirmed") {
+                msg = `✅ *Reserva Confirmada!*\n\nOlá, *${reservation.customerName}*! 🎉\n\nSua reserva foi *confirmada* pelo restaurante!\n\n📅 *Data:* ${dataFormatada}\n👥 *Pessoas:* ${reservation.numberOfPeople}\n🔖 *Reserva:* #${reservation.reservationNumber}\n\nLembre-se: é importante que 80% do grupo chegue no horário combinado. 👍\n\n_Esperamos você! Churrascaria Estrela do Sul 🌟_`;
+              } else {
+                msg = `❌ *Reserva Cancelada*\n\nOlá, *${reservation.customerName}*,\n\nInfelizmente não foi possível confirmar sua reserva para ${dataFormatada}.\n\nEntre em contato conosco para reagendar:\n📞 (17) 9 8212-3269\n\n_Churrascaria Estrela do Sul 🌟_`;
+              }
+
+              await sendTextMessageEvolution(normalizedPhone, msg).catch(() => {});
+            }
+          } catch (err) {
+            console.error("[Reservations] Erro ao enviar notificação WhatsApp:", err);
+          }
+        }
+
         return { success: true };
       }),
   }),

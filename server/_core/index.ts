@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
 import { handleEvolutionWebhook } from "../webhookEvolution";
 import { startKeepAlive } from "../keepAlive";
+import { sendReservationReminders } from "../reservationReminder";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -109,6 +110,15 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
     // Iniciar keep-alive para manter Evolution API acordada (Render.com free tier)
     startKeepAlive();
+    // Iniciar cron job de lembretes de reserva (a cada 15 minutos)
+    setInterval(() => {
+      sendReservationReminders().catch(err =>
+        console.error('[Cron] Erro no lembrete de reserva:', err)
+      );
+    }, 15 * 60 * 1000);
+    // Executar imediatamente na inicialização também
+    sendReservationReminders().catch(() => {});
+    console.log('[Cron] Lembrete de reservas iniciado (a cada 15 min)');
   });
 }
 

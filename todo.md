@@ -829,3 +829,20 @@
 
 ## Edição de Complementos (12/03/2026)
 - [x] Adicionar botão de editar em cada opção de complemento (nome, descrição, preço) sem precisar deletar e recriar
+
+## Melhorias no Fluxo de Reservas (12/03/2026)
+- [ ] Corrigir: remover [SALVAR_RESERVA:...] da mensagem enviada ao cliente no WhatsApp
+- [ ] Adicionar aviso ao cliente: "quando o restaurante confirmar, você receberá uma mensagem aqui"
+- [ ] Implementar lembrete automático 12h antes da reserva via WhatsApp
+
+## Auditoria Completa do Fluxo de Reservas (12/03/2026)
+- [x] Corrigir chatbot.ts: processar [SALVAR_RESERVA] e salvar no banco (igual ao chatSimulator.ts)
+- [x] Remover marcador [SALVAR_RESERVA:...] da mensagem enviada ao cliente
+- [x] Garantir que reservas aparecem no painel admin (/reservations)
+- [x] Botão "Confirmar" no painel envia mensagem WhatsApp ao cliente
+- [x] Botão "Recusar" no painel envia mensagem WhatsApp ao cliente
+- [x] Lembrete automático 12h antes da reserva via WhatsApp (cron job)
+- [x] Notificar admin via sistema quando nova reserva chegar
+
+## Previsão de Entrega com Horário (12/03/2026)
+- [x] Corrigir mensagem de confirmação de pedido: mostrar horário estimado de chegada (ex: "até às 14h53") em vez de "45 a 70 minutos"

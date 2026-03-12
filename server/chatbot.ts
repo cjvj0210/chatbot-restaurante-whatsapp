@@ -19,9 +19,10 @@ import {
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
 import { getChatbotPrompt } from "./chatbotPrompt";
-import { orderSessions, orders } from "../drizzle/schema";
+import { orderSessions, orders, reservations } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
+import { notifyOwner } from "./_core/notification";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -323,6 +324,69 @@ async function generateResponse(
       console.error("[Chatbot] Erro ao verificar status do pedido:", err);
       aiResponse = aiResponse.replace(statusMatch[0], "Não consegui verificar o status agora. Tente novamente em instantes.");
     }
+  }
+
+  // Processar [SALVAR_RESERVA:...] — salvar reserva no banco e remover marcador da mensagem
+  const reservaRegex = /\[SALVAR_RESERVA:([^\]]+)\]/;
+  const reservaMatch = aiResponse.match(reservaRegex);
+  if (reservaMatch) {
+    try {
+      const params: Record<string, string> = {};
+      reservaMatch[1]!.split(';').forEach((pair: string) => {
+        const [key, ...rest] = pair.split('=');
+        if (key) params[key.trim()] = rest.join('=').trim();
+      });
+
+      const db = await getDb();
+      if (db) {
+        const dateStr = new Date().toISOString().slice(0, 8).replace(/-/g, '');
+        const suffix = randomBytes(2).toString('hex').toUpperCase();
+        const reservationNumber = `RES-${dateStr}-${suffix}`;
+
+        // Parsear data da reserva
+        let reservationDate = new Date();
+        try {
+          if (params.data) {
+            // Formato esperado: DD/MM/YYYY HH:MM
+            const match = params.data.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
+            if (match) {
+              const [, day, month, year, hour, min] = match;
+              reservationDate = new Date(parseInt(year!), parseInt(month!) - 1, parseInt(day!), parseInt(hour!), parseInt(min!));
+            } else {
+              const parsed = new Date(params.data);
+              if (!isNaN(parsed.getTime())) reservationDate = parsed;
+            }
+          }
+        } catch {}
+
+        const customerPhone = params.telefone || phone;
+
+        await db.insert(reservations).values({
+          customerId: null,
+          reservationNumber,
+          customerName: params.nome || 'Cliente via WhatsApp',
+          customerPhone,
+          date: reservationDate,
+          numberOfPeople: parseInt(params.pessoas || '1', 10),
+          customerNotes: params.obs && params.obs !== 'OBSERVACOES' && params.obs.trim() ? params.obs : null,
+          status: 'pending',
+          source: 'chatbot',
+        });
+
+        console.log(`[Chatbot] Reserva salva: ${reservationNumber} para ${params.nome} em ${reservationDate.toISOString()}`);
+
+        // Notificar o dono via sistema
+        await notifyOwner({
+          title: `📅 Nova reserva via WhatsApp`,
+          content: `Nome: ${params.nome || '-'}\nTelefone: ${customerPhone}\nData/Hora: ${params.data || '-'}\nPessoas: ${params.pessoas || '-'}\nObs: ${params.obs && params.obs !== 'OBSERVACOES' ? params.obs : '-'}`,
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.error('[Chatbot] Erro ao salvar reserva:', err);
+    }
+
+    // Remover o marcador da mensagem enviada ao cliente
+    aiResponse = aiResponse.replace(reservaRegex, '').replace(/\n{3,}/g, '\n\n').trim();
   }
 
   // Detectar intenção para atualizar contexto

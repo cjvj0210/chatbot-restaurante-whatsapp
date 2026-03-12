@@ -128,6 +128,7 @@ export async function formatOrderForWhatsApp(orderId: number): Promise<string> {
 
 /**
  * Formata mensagem de confirmação do pedido (enviada ao cliente quando operador aceita)
+ * Mostra horário estimado de chegada em vez de minutos
  */
 export function formatConfirmationMessage(
   orderNumber: string,
@@ -139,17 +140,24 @@ export function formatConfirmationMessage(
   const dayOfWeek = now.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
+  // Calcular horário estimado de chegada
+  const chegadaMin = new Date(now.getTime() + tempo.min * 60 * 1000);
+  const chegadaMax = new Date(now.getTime() + tempo.max * 60 * 1000);
+  const formatHora = (d: Date) =>
+    d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+  const horarioEstimado = `${formatHora(chegadaMin)} – ${formatHora(chegadaMax)}`;
+
   let message = `✅ *Pedido #${orderNumber} Confirmado!*\n\n`;
   message += `Olá, *${customerName}*! 🎉\n`;
   message += `Seu pedido foi *aceito* pelo restaurante e já está sendo preparado com todo carinho! 🔥🍖\n\n`;
 
   if (orderType === "delivery") {
-    message += `🚚 *Previsão de entrega:* ${tempo.min} a ${tempo.max} minutos\n`;
+    message += `🚚 *Previsão de entrega:* ${horarioEstimado}\n`;
     if (isWeekend) {
-      message += `_(Fim de semana — pode haver variação no tempo)_\n`;
+      message += `_(Fim de semana — pode haver variação no horário)_\n`;
     }
   } else {
-    message += `🏪 *Estará pronto para retirada em:* ${tempo.min} a ${tempo.max} minutos\n`;
+    message += `🏦 *Pronto para retirada às:* ${horarioEstimado}\n`;
   }
 
   message += `\n_Obrigado pela preferência! ❤️_`;
