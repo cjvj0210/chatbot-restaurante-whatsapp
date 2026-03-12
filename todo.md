@@ -805,3 +805,7 @@
 - [x] Validação no backend (update): impedir renomear categoria para nome já existente em outra categoria
 - [x] Frontend exibe toast de erro com mensagem clara quando tenta criar/renomear para nome duplicado
 - [x] Testes corrigidos para usar nomes únicos com timestamp (evitar conflito com dados reais do banco)
+
+## Bugs Reportados (12/03/2026 - 10:51)
+- [x] Bug: "Último pedido" mostra "1x Item" sem nome e sem imagem para pedidos antigos (PED32254670) — corrigido: getOrderHistory agora busca por preço quando itemName é null, salva retroativamente no banco, e filtra pedidos cancelados
+- [x] Bug: Endereço novo digitado no checkout não é salvo como endereço padrão do cliente — corrigido: createOrder agora atualiza customer.address e customer.name no banco sempre que um pedido é criado com sucesso

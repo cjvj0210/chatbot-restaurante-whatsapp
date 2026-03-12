@@ -1,0 +1,28 @@
+{
+  "query": "\nSELECT oi.id, oi.menuItemId, oi.itemName, oi.itemImageUrl, oi.quantity, oi.unitPrice,\n       mi.name as currentMenuItemName\nFROM order_items oi\nLEFT JOIN menu_items mi ON oi.menuItemId = mi.id\nWHERE oi.orderId IN (\n  SELECT id FROM orders WHERE orderNumber = 'PED32254670'\n)\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT oi.id, oi.menuItemId, oi.itemName, oi.itemImageUrl, oi.quantity, oi.unitPrice,\n       mi.name as currentMenuItemName\nFROM order_items oi\nLEFT JOIN menu_items mi ON oi.menuItemId = mi.id\nWHERE oi.orderId IN (\n  SELECT id FROM orders WHERE orderNumber = 'PED32254670'\n)\nLIMIT 10;\n",
+  "rows": [
+    {
+      "id": "30001",
+      "menuItemId": "60001",
+      "itemName": "NULL",
+      "itemImageUrl": "NULL",
+      "quantity": "1",
+      "unitPrice": "3400",
+      "currentMenuItemName": "NULL"
+    },
+    {
+      "id": "30002",
+      "menuItemId": "60002",
+      "itemName": "NULL",
+      "itemImageUrl": "NULL",
+      "quantity": "1",
+      "unitPrice": "3000",
+      "currentMenuItemName": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmenuItemId\titemName\titemImageUrl\tquantity\tunitPrice\tcurrentMenuItemName\n30001\t60001\tNULL\tNULL\t1\t3400\tNULL\n30002\t60002\tNULL\tNULL\t1\t3000\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

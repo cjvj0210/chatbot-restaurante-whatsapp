@@ -154,6 +154,27 @@ export const orderRouter = router({
         .set({ status: "completed" })
         .where(eq(orderSessions.id, session.id));
 
+      // Atualizar dados do cliente no banco (endereço e nome sempre que fizer pedido)
+      if (session.customerId) {
+        try {
+          const customerUpdate: Record<string, any> = {};
+          // Atualizar nome se foi fornecido
+          if (input.customerName) {
+            customerUpdate.name = input.customerName;
+          }
+          // Atualizar endereço se for delivery e tiver endereço
+          if (input.deliveryType === "delivery" && input.address) {
+            customerUpdate.address = input.address;
+          }
+          if (Object.keys(customerUpdate).length > 0) {
+            await db.update(customers).set(customerUpdate).where(eq(customers.id, session.customerId));
+          }
+        } catch (err) {
+          console.error("Erro ao atualizar dados do cliente:", err);
+          // Não falhar o pedido se atualização do cliente falhar
+        }
+      }
+
       // Enviar notificação para WhatsApp
       try {
         await notifyWhatsAppBot(
@@ -387,14 +408,18 @@ export const orderRouter = router({
         .limit(1);
       const customer = customersList[0];
       if (!customer) return null;
-      // Buscar último pedido para pegar o endereço mais recente
+      // Buscar último pedido com delivery para pegar nome e endereço mais recentes
       const lastOrders = await db
         .select()
         .from(orders)
         .where(like(orders.customerPhone, `%${phone.slice(-8)}%`))
         .orderBy(desc(orders.createdAt))
-        .limit(1);
+        .limit(10); // buscar últimos 10 para encontrar um com endereço
       const lastOrder = lastOrders[0];
+      // Último pedido com endereço de delivery (não cancelado preferencialmente)
+      const lastDeliveryOrder = lastOrders.find(o => o.deliveryAddress && o.status !== 'cancelled')
+        || lastOrders.find(o => o.deliveryAddress); // fallback: qualquer um com endereço
+
       // Usar nome do último pedido se customer.name for null/vazio
       const resolvedName = customer.name || lastOrder?.customerName || "";
       // Atualizar customer.name no banco se estava vazio e encontramos o nome no pedido
@@ -403,8 +428,9 @@ export const orderRouter = router({
           .set({ name: lastOrder.customerName })
           .where(eq(customers.id, customer.id));
       }
-      // Endereço: sempre usar o do último pedido (mais recente) se disponível
-      const resolvedAddress = lastOrder?.deliveryAddress || customer.address || "";
+      // Endereço: prioridade = customer.address (sempre atualizado pelo createOrder),
+      // fallback = último pedido de delivery não cancelado
+      const resolvedAddress = customer.address || lastDeliveryOrder?.deliveryAddress || "";
       return {
         name: resolvedName,
         phone: customer.phone || session.whatsappNumber,
@@ -438,19 +464,24 @@ export const orderRouter = router({
 
       const phone = session.whatsappNumber.replace(/\D/g, "");
 
-      // Buscar últimos 5 pedidos do cliente (excluindo cancelados)
+      // Buscar últimos 8 pedidos do cliente para filtrar cancelados e mostrar 5 válidos
       const pastOrders = await db
         .select()
         .from(orders)
         .where(like(orders.customerPhone, `%${phone.slice(-8)}%`))
         .orderBy(desc(orders.createdAt))
-        .limit(5);
+        .limit(8);
+
+      // Filtrar pedidos cancelados e pegar os 5 mais recentes válidos
+      const validOrders = pastOrders.filter(o => o.status !== 'cancelled').slice(0, 5);
+      // Se não houver pedidos válidos, usar todos (incluindo cancelados)
+      const ordersToShow = validOrders.length > 0 ? validOrders : pastOrders.slice(0, 5);
 
       if (pastOrders.length === 0) return [];
 
       // Para cada pedido, buscar os itens
       const result = await Promise.all(
-        pastOrders.map(async (order) => {
+        ordersToShow.map(async (order) => {
           const items = await db
             .select({
               id: orderItems.id,
@@ -479,15 +510,37 @@ export const orderRouter = router({
             deliveryAddress: order.deliveryAddress,
             paymentMethod: order.paymentMethod,
             createdAt: order.createdAt,
-            items: items.map((item) => ({
-              menuItemId: item.menuItemId,
-              // Usar nome/imagem salvos no pedido (itemName/itemImageUrl) como fallback quando o item foi deletado
-              name: item.menuItemName || item.itemNameSaved || "Item",
-              price: item.unitPrice,
-              quantity: item.quantity,
-              observations: item.observations || undefined,
-              imageUrl: item.menuItemImage || item.itemImageUrlSaved || undefined,
-              addons: item.addons ? (() => { try { return JSON.parse(item.addons as string); } catch { return undefined; } })() : undefined,
+            items: await Promise.all(items.map(async (item) => {
+              // Resolver nome e imagem: prioridade = dados atuais do menu > dados salvos no pedido > busca por preço
+              let resolvedName = item.menuItemName || item.itemNameSaved;
+              let resolvedImage = item.menuItemImage || item.itemImageUrlSaved;
+
+              // Se ainda não tiver nome (pedido antigo sem itemName), tentar buscar pelo preço
+              if (!resolvedName && item.unitPrice) {
+                const [byPrice] = await db
+                  .select({ name: menuItems.name, imageUrl: menuItems.imageUrl })
+                  .from(menuItems)
+                  .where(eq(menuItems.price, item.unitPrice))
+                  .limit(1);
+                if (byPrice) {
+                  resolvedName = byPrice.name;
+                  resolvedImage = resolvedImage || byPrice.imageUrl || null;
+                  // Salvar retroativamente no banco para não precisar buscar sempre
+                  await db.update(orderItems)
+                    .set({ itemName: byPrice.name, itemImageUrl: byPrice.imageUrl || null })
+                    .where(eq(orderItems.id, item.id));
+                }
+              }
+
+              return {
+                menuItemId: item.menuItemId,
+                name: resolvedName || "Item",
+                price: item.unitPrice,
+                quantity: item.quantity,
+                observations: item.observations || undefined,
+                imageUrl: resolvedImage || undefined,
+                addons: item.addons ? (() => { try { return JSON.parse(item.addons as string); } catch { return undefined; } })() : undefined,
+              };
             })),
           };
         })
