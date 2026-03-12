@@ -813,3 +813,6 @@
 ## Bugs Reportados (12/03/2026 - 11:06)
 - [x] Bug: Testes automatizados criam categorias reais no banco de produção (Test_Bebidas_...) — corrigido: adicionado afterEach que deleta todas as categorias/itens com nome 'Test_%' após cada teste; categorias antigas já foram deletadas do banco
 - [x] Bug: "Último pedido" no cardápio mostra PED32254670 (R$69, antigo) em vez de PED23423451 (R$49,40, mais recente) — corrigido: problema era que pedidos novos têm telefone formatado '(17) 98811-2791' e o LIKE '%88112791%' não encontrava por causa do traço; agora busca por OR com 11 dígitos e 8 dígitos; createOrder também normaliza o telefone antes de salvar
+
+## Atualização de Banner (12/03/2026)
+- [x] Substituir banner do cardápio digital enviado pelo bot pelo novo arquivo banner2_FINAL.jpg (recortado para 900x900px, CDN: banner2_900x900_781f01cb.jpg)
