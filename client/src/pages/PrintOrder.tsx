@@ -367,13 +367,29 @@ export default function PrintOrder() {
 
           <div className="sec">RESUMO:</div>
 
-          {order.items?.map((item: any, idx: number) => (
-            <div key={item.id ?? idx} className="item">
-              <span className="item-qty">{item.quantity}x</span>
-              <span className="item-name">{item.menuItemName}</span>
-              <span className="item-price">{fmt(item.unitPrice * item.quantity)}</span>
-            </div>
-          ))}
+          {order.items?.map((item: any, idx: number) => {
+            const addons = parseAddons(item.addons);
+            return (
+              <div key={item.id ?? idx} style={{ marginBottom: "4px" }}>
+                <div className="item">
+                  <span className="item-qty">{item.quantity}x</span>
+                  <span className="item-name">{item.menuItemName}</span>
+                  <span className="item-price">{fmt(item.unitPrice * item.quantity)}</span>
+                </div>
+                {/* Addons na Via Caixa: essencial para bebidas e itens com seleção */}
+                {addons.length > 0 && addons.map((a, ai) => (
+                  <div key={ai} className="addon">
+                    {a.quantity && a.quantity > 1 ? `${a.quantity}x ` : ""}
+                    {a.optionName}
+                    {a.priceExtra > 0 ? ` (+${fmt(a.priceExtra)})` : ""}
+                  </div>
+                ))}
+                {item.observations && (
+                  <div className="obs">Obs: {item.observations}</div>
+                )}
+              </div>
+            );
+          })}
 
           <div className="ln-d" />
 

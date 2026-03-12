@@ -1030,6 +1030,63 @@ export default function Pedido() {
               </div>
             )}
 
+            {/* ===== MINIATURA DO ÚCLTIMO PEDIDO (apenas para clientes reconhecidos) ===== */}
+            {!searchQuery && orderHistory.length > 0 && (() => {
+              const lastOrder = orderHistory[0];
+              const lastItems = lastOrder.items.slice(0, 3);
+              return (
+                <div className="mx-4 mb-4">
+                  <div className="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl overflow-hidden shadow-md">
+                    <div className="px-4 pt-3 pb-1">
+                      <p className="text-white text-xs font-semibold opacity-80 uppercase tracking-wide">Seu último pedido</p>
+                      <p className="text-white text-sm font-bold mt-0.5">{lastOrder.orderNumber} · R$ {((lastOrder.total || 0) / 100).toFixed(2).replace(".", ",")}</p>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2">
+                      {lastItems.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="w-9 h-9 rounded-lg object-cover border-2 border-white/30" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center text-base">🍽️</div>
+                          )}
+                        </div>
+                      ))}
+                      {lastOrder.items.length > 3 && (
+                        <span className="text-white/70 text-xs">+{lastOrder.items.length - 3}</span>
+                      )}
+                      <div className="flex-1 min-w-0 ml-1">
+                        <p className="text-white text-xs leading-snug line-clamp-2">
+                          {lastItems.map(i => `${i.quantity}x ${i.name}`).join(", ")}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newItems: CartItem[] = lastOrder.items
+                          .filter((item) => item.menuItemId !== null)
+                          .map((item) => ({
+                            menuItemId: item.menuItemId as number,
+                            name: item.name,
+                            price: item.price,
+                            basePrice: item.price,
+                            quantity: item.quantity,
+                            observations: item.observations,
+                            imageUrl: item.imageUrl,
+                            addons: item.addons as SelectedAddon[] | undefined,
+                          }));
+                        setCart(newItems);
+                        setDeliveryType(lastOrder.orderType as DeliveryType);
+                      }}
+                      className="w-full bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors px-4 py-3 flex items-center justify-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4 text-white" />
+                      <span className="text-white text-sm font-bold">Clique aqui para repetir o último pedido</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
             {filteredCategories.map((category) => (
               <div
                 key={category.id}

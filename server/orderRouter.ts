@@ -482,6 +482,34 @@ export const orderRouter = router({
     }),
 
   /**
+   * Atualizar endereço do cliente (quando ele escolhe novo endereço no checkout)
+   */
+  updateCustomerAddress: publicProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+        address: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+      // Buscar a sessão para obter o whatsappNumber
+      const [session] = await db
+        .select()
+        .from(orderSessions)
+        .where(eq(orderSessions.sessionId, input.sessionId))
+        .limit(1);
+      if (!session?.whatsappNumber) return { success: false };
+      // Atualizar o endereço do cliente no banco
+      await db
+        .update(customers)
+        .set({ address: input.address })
+        .where(eq(customers.whatsappId, session.whatsappNumber));
+      return { success: true };
+    }),
+
+  /**
    * Atualizar status do pedido (admin)
    */
   updateStatus: protectedProcedure

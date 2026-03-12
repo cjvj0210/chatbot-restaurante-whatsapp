@@ -67,6 +67,7 @@ export default function Checkout() {
   // Controle do modal de confirmação de endereço
   const [showAddressConfirm, setShowAddressConfirm] = useState(false);
   const [savedAddressFull, setSavedAddressFull] = useState("");
+  const [usingNewAddress, setUsingNewAddress] = useState(false);
 
   useEffect(() => {
     const savedCart = localStorage.getItem(`cart_${sessionId}`);
@@ -140,6 +141,8 @@ export default function Checkout() {
     setStep(2);
   };
 
+  const updateCustomerAddressMutation = trpc.order.updateCustomerAddress.useMutation();
+
   // Usar novo endereço
   const handleUseNewAddress = () => {
     setAddressStreet("");
@@ -147,6 +150,7 @@ export default function Checkout() {
     setAddressNeighborhood("");
     setAddressReference("");
     setAddressComplement("");
+    setUsingNewAddress(true);
     setShowAddressConfirm(false);
     setStep(2);
   };
@@ -164,6 +168,10 @@ export default function Checkout() {
     }
     setIsSubmitting(true);
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // Se o cliente escolheu um novo endereço, salvar no banco automaticamente
+    if (usingNewAddress && deliveryType === "delivery" && address.trim()) {
+      updateCustomerAddressMutation.mutate({ sessionId: sessionId!, address });
+    }
     createOrderMutation.mutate({
       sessionId: sessionId!,
       customerName,
@@ -344,18 +352,21 @@ export default function Checkout() {
                 Seus dados
               </h2>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Nome completo <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="João Silva"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
-                />
-              </div>
+              {/* Campo de nome: oculto quando cliente já é reconhecido */}
+              {!(customerData && prefillApplied && customerData.name) && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Nome completo <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="João Silva"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">

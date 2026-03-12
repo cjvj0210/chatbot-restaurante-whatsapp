@@ -1,15 +1,29 @@
 import { getDb } from "./db";
-import { botMessages, orders, orderItems, menuItems } from "../drizzle/schema";
+import { botMessages, orders, orderItems, menuItems, orderSessions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendTextMessage } from "./whatsapp";
 import { sendTextMessageEvolution } from "./evolutionApi";
 
 /**
+ * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
+ * Aceita: (17) 98811-2791, 17988112791, 5517988112791, 5517988112791@s.whatsapp.net
+ */
+function normalizePhoneForEvolution(phone: string): string {
+  // Remover @s.whatsapp.net se presente
+  let digits = phone.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+  // Se já tem DDI 55 (13 dígitos), retornar como está
+  if (digits.startsWith("55") && digits.length >= 12) return digits;
+  // Adicionar DDI 55 se não tiver
+  return "55" + digits;
+}
+
+/**
  * Envia mensagem de texto via Evolution API (principal) com fallback para WhatsApp Cloud API
  */
 async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
+  const normalizedPhone = normalizePhoneForEvolution(phone);
   // Tentar primeiro via Evolution API (número de teste configurado)
-  const sentEvolution = await sendTextMessageEvolution(phone, message);
+  const sentEvolution = await sendTextMessageEvolution(normalizedPhone, message);
   if (sentEvolution) return true;
   // Fallback para WhatsApp Cloud API
   return await sendTextMessage(phone, message);
@@ -238,7 +252,18 @@ export async function notifyStatusUpdate(
     order.estimatedTime || undefined
   );
 
-  const phone = order.customerPhone;
+  // Preferir o whatsappNumber da sessão (já tem DDI 55), fallback para customerPhone
+  let phone = order.customerPhone;
+  if (order.sessionId) {
+    const [session] = await db
+      .select({ whatsappNumber: orderSessions.whatsappNumber })
+      .from(orderSessions)
+      .where(eq(orderSessions.sessionId, order.sessionId))
+      .limit(1);
+    if (session?.whatsappNumber) {
+      phone = session.whatsappNumber;
+    }
+  }
 
   // Tentar envio direto via Evolution API (com fallback para WhatsApp Cloud API)
   if (phone) {

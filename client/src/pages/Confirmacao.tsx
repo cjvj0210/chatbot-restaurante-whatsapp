@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { Clock, MessageCircle, Star, Hourglass } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { checkBusinessHours } from "../../../shared/businessHours";
 
 /**
  * Retorna o intervalo de minutos e o horário estimado de chegada
@@ -9,11 +10,17 @@ import { trpc } from "@/lib/trpc";
  *   - Delivery Seg-Sex: 45–70 min
  *   - Delivery Sáb-Dom: 60–110 min
  *   - Retirada (todos os dias): 30–50 min
+ *
+ * REGRA ESPECIAL: Se for pedido antecipado (antes da abertura),
+ * o horário base para cálculo é o horário de abertura (11h ou 19h),
+ * não o horário atual.
  */
 function calcularEstimativa(deliveryType: string): {
   intervalo: string;
   horarioMin: string;
   horarioMax: string;
+  isEarlyOrder: boolean;
+  openingTime?: string;
 } {
   const now = new Date();
   const diaSemana = now.getDay(); // 0=Dom, 1=Seg … 6=Sab
@@ -36,13 +43,42 @@ function calcularEstimativa(deliveryType: string): {
   const toHHMM = (date: Date) =>
     date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-  const chegadaMin = new Date(now.getTime() + minMin * 60 * 1000);
-  const chegadaMax = new Date(now.getTime() + minMax * 60 * 1000);
+  // Verificar se é pedido antecipado
+  const businessStatus = checkBusinessHours(deliveryType as "delivery" | "pickup", now);
+  const isEarlyOrder = businessStatus.isEarlyOrder;
+
+  // Base de cálculo: se pedido antecipado, usar horário de abertura; senão, usar agora
+  let baseTime = now;
+  let openingTime: string | undefined;
+
+  if (isEarlyOrder && businessStatus.currentShift) {
+    // Determinar o horário de abertura do turno atual
+    const DELIVERY_HOURS: Record<string, Record<string, { startH: number; startM: number }>> = {
+      "0": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+      "1": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+      "2": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+      "3": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+      "4": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+      "5": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+      "6": { lunch: { startH: 11, startM: 0 }, dinner: { startH: 19, startM: 0 } },
+    };
+    const shift = DELIVERY_HOURS[diaSemana.toString()]?.[businessStatus.currentShift];
+    if (shift) {
+      baseTime = new Date(now);
+      baseTime.setHours(shift.startH, shift.startM, 0, 0);
+      openingTime = toHHMM(baseTime);
+    }
+  }
+
+  const chegadaMin = new Date(baseTime.getTime() + minMin * 60 * 1000);
+  const chegadaMax = new Date(baseTime.getTime() + minMax * 60 * 1000);
 
   return {
     intervalo: `${minMin} a ${minMax} min`,
     horarioMin: toHHMM(chegadaMin),
     horarioMax: toHHMM(chegadaMax),
+    isEarlyOrder,
+    openingTime,
   };
 }
 
@@ -169,9 +205,16 @@ export default function Confirmacao() {
               <p className="text-xs text-orange-600 mt-0.5">
                 {isPickup
                   ? `Seu pedido estará pronto para retirada no balcão em aprox. ${estimativaFinal.intervalo}.`
-                  : `Previsão de chegada em aprox. ${estimativaFinal.intervalo} a partir de agora.`}
+                  : estimativaFinal.isEarlyOrder && estimativaFinal.openingTime
+                    ? `Previsão de chegada em aprox. ${estimativaFinal.intervalo} após a abertura.`
+                    : `Previsão de chegada em aprox. ${estimativaFinal.intervalo} a partir de agora.`}
               </p>
-              {!isConfirmed && (
+              {estimativaFinal.isEarlyOrder && estimativaFinal.openingTime && (
+                <p className="text-[11px] text-orange-500 mt-1 font-medium">
+                  ⚠️ Pedido antecipado! O prazo começa a contar a partir das {estimativaFinal.openingTime} (abertura da cozinha).
+                </p>
+              )}
+              {!isConfirmed && !estimativaFinal.isEarlyOrder && (
                 <p className="text-[11px] text-orange-400 mt-1 italic">
                   * O tempo começa a contar após o aceite do restaurante.
                 </p>

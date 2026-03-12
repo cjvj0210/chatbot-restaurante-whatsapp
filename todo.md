@@ -791,3 +791,11 @@
 - [ ] Salvar horário de confirmação (confirmedAt) no banco quando pedido for aceito
 - [ ] Bot responde inteligentemente sobre tempo de entrega: calcular previsão com base no horário de confirmação e dia da semana
 - [x] Histórico de pedidos no cardápio digital com opção de repetir pedido com um clique
+- [ ] Notificações proativas de status via WhatsApp ao mudar status no painel (confirmado, a caminho, entregue)
+- [ ] Estimativa de entrega correta para pedidos antecipados (antes das 11h/19h)
+- [ ] Remover bebidas duplicadas sem imagem (Coca-Cola lata duplicada)
+- [ ] Corrigir addons do Refrigerante Econômico (apenas COTUBA 2L)
+- [ ] Remover opções de troca de arroz/feijão/batata frita dos Mix de Carnes Tradicional e Nobre
+- [ ] Atualização automática de endereço quando cliente escolhe novo endereço no delivery
+- [ ] Nome do cliente preenchido automaticamente no cardápio (sem pedir para digitar)
+- [ ] Reposicionar histórico de pedidos para dentro do cardápio (miniatura + botão repetir)
