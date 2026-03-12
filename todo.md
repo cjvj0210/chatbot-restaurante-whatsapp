@@ -846,3 +846,6 @@
 
 ## Previsão de Entrega com Horário (12/03/2026)
 - [x] Corrigir mensagem de confirmação de pedido: mostrar horário estimado de chegada (ex: "até às 14h53") em vez de "45 a 70 minutos"
+
+## Campo Data de Nascimento no Checkout (12/03/2026)
+- [x] Ocultar campo de data de nascimento no checkout quando o cliente já tiver a data cadastrada no perfil

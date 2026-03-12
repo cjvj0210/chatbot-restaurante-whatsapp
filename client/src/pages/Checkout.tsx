@@ -161,9 +161,8 @@ export default function Checkout() {
       alert("Por favor, preencha nome e telefone");
       return;
     }
-    // Validar data de nascimento apenas para novos clientes
-    const isNewCustomer = !customerData || customerData.totalOrders === 0;
-    if (isNewCustomer && birthDate && birthDate.replace(/\D/g, "").length !== 8) {
+    // Validar data de nascimento apenas quando o campo está visível (cliente sem data cadastrada)
+    if (!customerData?.birthDate && birthDate && birthDate.replace(/\D/g, "").length !== 8) {
       alert("Por favor, preencha a data de nascimento corretamente (DD/MM/AAAA)");
       return;
     }
@@ -376,8 +375,8 @@ export default function Checkout() {
                 </div>
               )}
 
-              {/* Campo de data de nascimento: apenas para novos clientes (sem pedidos anteriores) */}
-              {(!customerData || customerData.totalOrders === 0) && !customerData?.birthDate && (
+              {/* Campo de data de nascimento: apenas quando o cliente ainda não tem a data cadastrada */}
+              {customerData !== undefined && !customerData?.birthDate && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     Data de nascimento <span className="text-gray-400 font-normal text-xs">(opcional)</span>
