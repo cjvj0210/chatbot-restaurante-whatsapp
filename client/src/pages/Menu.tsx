@@ -50,6 +50,13 @@ export default function Menu() {
   const [newOptionDesc, setNewOptionDesc] = useState("");
   const [newOptionPrice, setNewOptionPrice] = useState("");
 
+  // Estado para edição inline de item do cardápio
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editItemName, setEditItemName] = useState("");
+  const [editItemDesc, setEditItemDesc] = useState("");
+  const [editItemPrice, setEditItemPrice] = useState("");
+  const [editItemPrepTime, setEditItemPrepTime] = useState("");
+
   // Estado para edição inline de opção de complemento
   const [editingOptionId, setEditingOptionId] = useState<number | null>(null);
   const [editOptionName, setEditOptionName] = useState("");
@@ -81,6 +88,44 @@ export default function Menu() {
     },
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
+
+  const updateItem = trpc.menuItems.update.useMutation({
+    onSuccess: () => {
+      utils.menuItems.list.invalidate();
+      setEditingItemId(null);
+      toast.success("Item atualizado!");
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const startEditItem = (item: { id: number; name: string; description?: string | null; price: number; preparationTime: number }) => {
+    setEditingItemId(item.id);
+    setEditItemName(item.name);
+    setEditItemDesc(item.description || "");
+    setEditItemPrice((item.price / 100).toFixed(2));
+    setEditItemPrepTime(String(item.preparationTime));
+  };
+
+  const cancelEditItem = () => {
+    setEditingItemId(null);
+    setEditItemName("");
+    setEditItemDesc("");
+    setEditItemPrice("");
+    setEditItemPrepTime("");
+  };
+
+  const saveEditItem = (id: number) => {
+    const price = parseFloat(editItemPrice);
+    if (!editItemName.trim()) { toast.error("Nome é obrigatório"); return; }
+    if (isNaN(price) || price < 0) { toast.error("Preço inválido"); return; }
+    updateItem.mutate({
+      id,
+      name: editItemName.trim(),
+      description: editItemDesc.trim() || undefined,
+      price: Math.round(price * 100),
+      preparationTime: parseInt(editItemPrepTime) || 30,
+    });
+  };
 
   const deleteItem = trpc.menuItems.delete.useMutation({
     onSuccess: () => {
@@ -339,65 +384,137 @@ export default function Menu() {
                   {items.map((item) => (
                     <div
                       key={item.id}
-                      className={`rounded-xl border p-4 flex gap-3 transition-all hover:shadow-sm ${
-                        item.isAvailable ? "border-border/50" : "border-border/30 opacity-60"
+                      className={`rounded-xl border transition-all hover:shadow-sm ${
+                        editingItemId === item.id
+                          ? "border-amber-400 bg-amber-50/50 dark:bg-amber-950/20 p-4"
+                          : item.isAvailable ? "border-border/50 p-4" : "border-border/30 opacity-60 p-4"
                       }`}
                     >
-                      {/* Foto */}
-                      <div className="w-16 h-16 rounded-xl bg-muted/50 overflow-hidden shrink-0 flex items-center justify-center">
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-2xl">🍖</span>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-1">
-                          <p className="font-semibold text-foreground text-sm truncate">{item.name}</p>
-                          <div className="flex items-center gap-1 shrink-0">
+                      {editingItemId === item.id ? (
+                        /* ===== MODO EDIÇÃO INLINE ===== */
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Editando item</p>
+                            <button onClick={cancelEditItem} className="p-1 rounded-lg hover:bg-muted text-muted-foreground">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="space-y-2">
+                            <Input
+                              value={editItemName}
+                              onChange={(e) => setEditItemName(e.target.value)}
+                              placeholder="Nome do item"
+                              className="rounded-xl text-sm h-8"
+                            />
+                            <Input
+                              value={editItemDesc}
+                              onChange={(e) => setEditItemDesc(e.target.value)}
+                              placeholder="Descrição (opcional)"
+                              className="rounded-xl text-sm h-8"
+                            />
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <p className="text-xs text-muted-foreground mb-1">Preço (R$)</p>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  value={editItemPrice}
+                                  onChange={(e) => setEditItemPrice(e.target.value)}
+                                  placeholder="0,00"
+                                  className="rounded-xl text-sm h-8"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-xs text-muted-foreground mb-1">Preparo (min)</p>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={editItemPrepTime}
+                                  onChange={(e) => setEditItemPrepTime(e.target.value)}
+                                  placeholder="30"
+                                  className="rounded-xl text-sm h-8"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 pt-1">
                             <button
-                              onClick={() => openAddonDialog(item.id, item.name)}
-                              title="Gerenciar complementos"
-                              className="p-1 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                              onClick={() => saveEditItem(item.id)}
+                              disabled={updateItem.isPending}
+                              className="flex-1 flex items-center justify-center gap-1.5 bg-amber-500 text-white py-1.5 rounded-xl text-xs font-semibold hover:bg-amber-600 transition-colors disabled:opacity-60"
                             >
-                              <Settings2 className="w-3.5 h-3.5" />
+                              {updateItem.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                              Salvar
                             </button>
                             <button
-                              onClick={() => {
-                                if (confirm(`Remover "${item.name}"?`)) {
-                                  deleteItem.mutate({ id: item.id });
-                                }
-                              }}
-                              className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                              onClick={cancelEditItem}
+                              className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-border text-muted-foreground hover:bg-muted transition-colors"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              Cancelar
                             </button>
                           </div>
                         </div>
-                        {item.description && (
-                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                            {item.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-sm font-bold text-primary">
-                            R$ {(item.price / 100).toFixed(2).replace(".", ",")}
-                          </span>
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            {item.preparationTime}min
-                          </span>
-                          {!item.isAvailable && (
-                            <span className="text-xs text-red-500 font-medium">Indisponível</span>
-                          )}
+                      ) : (
+                        /* ===== MODO VISUALIZAÇÃO ===== */
+                        <div className="flex gap-3">
+                          {/* Foto */}
+                          <div className="w-16 h-16 rounded-xl bg-muted/50 overflow-hidden shrink-0 flex items-center justify-center">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-2xl">🥖</span>
+                            )}
+                          </div>
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-1">
+                              <p className="font-semibold text-foreground text-sm truncate">{item.name}</p>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  onClick={() => startEditItem(item)}
+                                  title="Editar item"
+                                  className="p-1 rounded-lg hover:bg-amber-50 text-muted-foreground hover:text-amber-600 transition-colors"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => openAddonDialog(item.id, item.name)}
+                                  title="Gerenciar complementos"
+                                  className="p-1 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                                >
+                                  <Settings2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Remover "${item.name}"?`)) {
+                                      deleteItem.mutate({ id: item.id });
+                                    }
+                                  }}
+                                  className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            {item.description && (
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
+                            )}
+                            <div className="flex items-center gap-3 mt-1.5">
+                              <span className="text-sm font-bold text-primary">
+                                R$ {(item.price / 100).toFixed(2).replace(".", ",")}
+                              </span>
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                {item.preparationTime}min
+                              </span>
+                              {!item.isAvailable && (
+                                <span className="text-xs text-red-500 font-medium">Indisponível</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>

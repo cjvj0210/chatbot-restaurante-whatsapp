@@ -13,7 +13,7 @@ import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
 import { handleEvolutionWebhook } from "../webhookEvolution";
 import { startKeepAlive } from "../keepAlive";
 import { sendReservationReminders } from "../reservationReminder";
-import { runMaintenance, monitorWhatsAppInstance } from "../maintenance";
+import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages } from "../maintenance";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -188,6 +188,14 @@ async function startServer() {
     }, 60 * 60 * 1000);
     runMaintenance().catch(() => {});
     console.log('[Cron] Manutenção automática iniciada (a cada 1 hora)');
+
+    // Worker de retry: reenviar mensagens com falha (a cada 5 minutos)
+    setInterval(() => {
+      retryFailedMessages().catch(err =>
+        console.error('[Cron] Erro no worker de retry:', err)
+      );
+    }, 5 * 60 * 1000);
+    console.log('[Cron] Worker de retry de mensagens iniciado (a cada 5 min)');
   });
 }
 

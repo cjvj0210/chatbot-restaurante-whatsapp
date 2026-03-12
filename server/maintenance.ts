@@ -1,7 +1,7 @@
 import { getDb } from "./db";
-import { orderSessions, testSessions, testMessages, conversations, messages } from "../drizzle/schema";
-import { lt, and, eq } from "drizzle-orm";
-import { checkInstanceStatus } from "./evolutionApi";
+import { orderSessions, testSessions, testMessages, conversations, messages, botMessages } from "../drizzle/schema";
+import { lt, and, eq, lte } from "drizzle-orm";
+import { checkInstanceStatus, sendTextMessageEvolution } from "./evolutionApi";
 import { notifyOwner } from "./_core/notification";
 
 let lastInstanceStatus: string = "unknown";
@@ -77,5 +77,69 @@ export async function monitorWhatsAppInstance(): Promise<void> {
     }
   } catch (err) {
     console.error("[Monitor] Erro ao verificar instância WhatsApp:", err);
+  }
+}
+
+/**
+ * Worker de retry: reprocessa mensagens com falha (rodar a cada 5 minutos)
+ * Tenta reenviar mensagens com status 'failed' que ainda têm retries disponíveis
+ */
+export async function retryFailedMessages(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const MAX_RETRIES = 3;
+
+  try {
+    // Buscar mensagens com falha que ainda têm tentativas disponíveis
+    const failedMessages = await db
+      .select()
+      .from(botMessages)
+      .where(
+        and(
+          eq(botMessages.status, "failed"),
+          lte(botMessages.retries, MAX_RETRIES)
+        )
+      )
+      .limit(10); // Processar no máximo 10 por vez
+
+    if (failedMessages.length === 0) return;
+
+    console.log(`[RetryWorker] Processando ${failedMessages.length} mensagens com falha...`);
+
+    for (const msg of failedMessages) {
+      if (!msg.whatsappNumber) continue;
+
+      const sent = await sendTextMessageEvolution(msg.whatsappNumber, msg.message);
+
+      if (sent) {
+        await db
+          .update(botMessages)
+          .set({
+            status: "sent",
+            sentAt: new Date(),
+            errorMessage: null,
+            retries: msg.retries + 1,
+          })
+          .where(eq(botMessages.id, msg.id));
+        console.log(`[RetryWorker] Mensagem ${msg.id} reenviada com sucesso.`);
+      } else {
+        const newRetries = msg.retries + 1;
+        await db
+          .update(botMessages)
+          .set({
+            retries: newRetries,
+            errorMessage: `Falha no retry ${newRetries} de ${MAX_RETRIES}`,
+            // Se esgotou tentativas, manter como failed mas não tentar mais
+          })
+          .where(eq(botMessages.id, msg.id));
+
+        if (newRetries >= MAX_RETRIES) {
+          console.warn(`[RetryWorker] Mensagem ${msg.id} esgotou ${MAX_RETRIES} tentativas. Abandonando.`);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[RetryWorker] Erro no worker de retry:", err);
   }
 }

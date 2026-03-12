@@ -891,3 +891,15 @@
 - [x] 6.1 Corrigir página de impressão: usar token aleatório em vez de ID sequencial
 - [x] 6.2 Feedback visual inline de erros no checkout
 - [x] 6.3 Estado de erro nas páginas do painel admin (Orders, Reservations)
+
+## Sprint 2 — Pontos Pendentes da Auditoria + Melhorias (12/03/2026)
+
+### Auditoria — Pontos Pendentes
+- [x] 2.2 Soft delete: campo deletedAt em customers e conversations
+- [x] 2.3 Foreign keys explícitas no schema do banco
+- [x] 3.3 Foreign keys explícitas no schema do banco (aplicadas via SQL)
+- [x] 3.4 Índices de banco para queries frequentes (whatsappId, phone, status, createdAt)
+- [x] 5.4 Worker de retry para fila de mensagens com falha (botMessages)
+
+### Melhorias
+- [x] Edição inline de itens do cardápio: botão editar preço/nome/descrição/disponibilidade sem deletar

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, index } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -77,7 +77,7 @@ export type InsertMenuCategory = typeof menuCategories.$inferInsert;
  */
 export const menuItems = mysqlTable("menu_items", {
   id: int("id").autoincrement().primaryKey(),
-  categoryId: int("categoryId").notNull(),
+  categoryId: int("categoryId").notNull().references(() => menuCategories.id),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   price: int("price").notNull(), // em centavos
@@ -87,13 +87,17 @@ export const menuItems = mysqlTable("menu_items", {
   preparationTime: int("preparationTime").default(30).notNull(), // em minutos
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_menu_items_category").on(t.categoryId),
+  index("idx_menu_items_available").on(t.isAvailable),
+]);
 
 export type MenuItem = typeof menuItems.$inferSelect;
 export type InsertMenuItem = typeof menuItems.$inferInsert;
 
 /**
  * Clientes do WhatsApp
+ * Soft delete: deletedAt preenchido = cliente excluído (LGPD direito ao esquecimento)
  */
 export const customers = mysqlTable("customers", {
   id: int("id").autoincrement().primaryKey(),
@@ -104,9 +108,13 @@ export const customers = mysqlTable("customers", {
   totalOrders: int("totalOrders").default(0).notNull(),
   totalSpent: int("totalSpent").default(0).notNull(), // em centavos
   birthDate: varchar("birthDate", { length: 10 }), // formato DD/MM/AAAA
+  deletedAt: timestamp("deletedAt"), // LGPD: soft delete — null = ativo, preenchido = excluído
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_customers_phone").on(t.phone),
+  index("idx_customers_deleted").on(t.deletedAt),
+]);
 
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = typeof customers.$inferInsert;
@@ -117,15 +125,15 @@ export type InsertCustomer = typeof customers.$inferInsert;
 export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: varchar("sessionId", { length: 255 }), // Link para orderSession (pedidos via web)
-  customerId: int("customerId"), // Opcional (pode ser pedido via web sem cadastro)
+  customerId: int("customerId").references(() => customers.id), // FK explícita
   orderNumber: varchar("orderNumber", { length: 20 }).notNull().unique(),
   status: mysqlEnum("status", ["pending", "confirmed", "preparing", "ready", "delivering", "delivered", "cancelled"]).default("pending").notNull(),
   orderType: mysqlEnum("orderType", ["delivery", "pickup"]).notNull(),
-  
+
   // Dados do cliente (para pedidos via web)
   customerName: varchar("customerName", { length: 255 }).notNull(),
   customerPhone: varchar("customerPhone", { length: 20 }).notNull(),
-  
+
   items: text("items").notNull(), // JSON array de itens (manter para compatibilidade)
   subtotal: int("subtotal").notNull(), // em centavos
   deliveryFee: int("deliveryFee").default(0).notNull(),
@@ -137,10 +145,16 @@ export const orders = mysqlTable("orders", {
   changeFor: int("changeFor"), // em centavos - valor para troco quando pagamento em dinheiro
   confirmedAt: timestamp("confirmedAt"), // horário em que o restaurante confirmou o pedido
   printedAt: timestamp("printedAt"), // horário em que a comanda foi impressa
-  printToken: varchar("printToken", { length: 64 }), // token aleatório para acesso à comanda (evita enumeração por ID)
+  printToken: varchar("printToken", { length: 64 }), // token aleatório para acesso à comanda
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_orders_status").on(t.status),
+  index("idx_orders_customer_phone").on(t.customerPhone),
+  index("idx_orders_created_at").on(t.createdAt),
+  index("idx_orders_session").on(t.sessionId),
+  index("idx_orders_print_token").on(t.printToken),
+]);
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
@@ -150,7 +164,7 @@ export type InsertOrder = typeof orders.$inferInsert;
  */
 export const reservations = mysqlTable("reservations", {
   id: int("id").autoincrement().primaryKey(),
-  customerId: int("customerId"), // Opcional: pode ser reserva via chatbot sem cliente cadastrado
+  customerId: int("customerId").references(() => customers.id), // FK explícita
   reservationNumber: varchar("reservationNumber", { length: 20 }).notNull().unique(),
   status: mysqlEnum("status", ["pending", "confirmed", "cancelled", "completed"]).default("pending").notNull(),
   date: timestamp("date").notNull(),
@@ -162,26 +176,37 @@ export const reservations = mysqlTable("reservations", {
   reminderSent: boolean("reminderSent").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_reservations_status").on(t.status),
+  index("idx_reservations_date").on(t.date),
+  index("idx_reservations_phone").on(t.customerPhone),
+  index("idx_reservations_reminder").on(t.reminderSent, t.date),
+]);
 
 export type Reservation = typeof reservations.$inferSelect;
 export type InsertReservation = typeof reservations.$inferInsert;
 
 /**
  * Conversas/Sessões do WhatsApp
+ * Soft delete: deletedAt preenchido = conversa excluída (LGPD)
  */
 export const conversations = mysqlTable("conversations", {
   id: int("id").autoincrement().primaryKey(),
-  customerId: int("customerId").notNull(),
+  customerId: int("customerId").notNull().references(() => customers.id), // FK explícita
   whatsappMessageId: varchar("whatsappMessageId", { length: 255 }),
   intent: mysqlEnum("intent", ["order", "reservation", "info", "feedback", "other"]),
   context: text("context"), // JSON com contexto da conversa
   isActive: boolean("isActive").default(true).notNull(),
   humanMode: boolean("humanMode").default(false).notNull(), // true quando operador assumiu a conversa
   humanModeUntil: timestamp("humanModeUntil"), // bot silencioso até este momento
+  deletedAt: timestamp("deletedAt"), // LGPD: soft delete
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_conversations_customer").on(t.customerId),
+  index("idx_conversations_active").on(t.isActive),
+  index("idx_conversations_deleted").on(t.deletedAt),
+]);
 
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
@@ -191,13 +216,16 @@ export type InsertConversation = typeof conversations.$inferInsert;
  */
 export const messages = mysqlTable("messages", {
   id: int("id").autoincrement().primaryKey(),
-  conversationId: int("conversationId").notNull(),
+  conversationId: int("conversationId").notNull().references(() => conversations.id),
   role: mysqlEnum("role", ["user", "assistant"]).notNull(),
   content: text("content").notNull(),
   messageType: mysqlEnum("messageType", ["text", "image", "audio", "interactive"]).default("text").notNull(),
   metadata: text("metadata"), // JSON com dados adicionais
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_messages_conversation").on(t.conversationId),
+  index("idx_messages_created_at").on(t.createdAt),
+]);
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
@@ -207,12 +235,14 @@ export type InsertMessage = typeof messages.$inferInsert;
  */
 export const feedback = mysqlTable("feedback", {
   id: int("id").autoincrement().primaryKey(),
-  customerId: int("customerId").notNull(),
-  orderId: int("orderId"),
+  customerId: int("customerId").notNull().references(() => customers.id),
+  orderId: int("orderId").references(() => orders.id),
   rating: int("rating").notNull(), // 1-5
   comment: text("comment"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_feedback_customer").on(t.customerId),
+]);
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = typeof feedback.$inferInsert;
@@ -244,7 +274,9 @@ export const testMessages = mysqlTable("test_messages", {
   audioUrl: text("audioUrl"), // URL do áudio no S3 (se for áudio)
   transcription: text("transcription"), // Transcrição do áudio (se for áudio)
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_test_messages_session").on(t.sessionId),
+]);
 
 export type TestMessage = typeof testMessages.$inferSelect;
 export type InsertTestMessage = typeof testMessages.$inferInsert;
@@ -256,11 +288,14 @@ export const orderSessions = mysqlTable("order_sessions", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: varchar("sessionId", { length: 255 }).notNull().unique(),
   whatsappNumber: varchar("whatsappNumber", { length: 20 }),
-  customerId: int("customerId"),
+  customerId: int("customerId").references(() => customers.id),
   status: mysqlEnum("status", ["pending", "completed", "expired"]).default("pending").notNull(),
   expiresAt: timestamp("expiresAt").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_order_sessions_expires").on(t.expiresAt),
+  index("idx_order_sessions_status").on(t.status),
+]);
 
 export type OrderSession = typeof orderSessions.$inferSelect;
 export type InsertOrderSession = typeof orderSessions.$inferInsert;
@@ -270,8 +305,8 @@ export type InsertOrderSession = typeof orderSessions.$inferInsert;
  */
 export const orderItems = mysqlTable("order_items", {
   id: int("id").autoincrement().primaryKey(),
-  orderId: int("orderId").notNull(),
-  menuItemId: int("menuItemId").notNull(),
+  orderId: int("orderId").notNull().references(() => orders.id),
+  menuItemId: int("menuItemId").notNull().references(() => menuItems.id),
   quantity: int("quantity").notNull(),
   unitPrice: int("unitPrice").notNull(), // em centavos (preço no momento do pedido)
   itemName: varchar("itemName", { length: 255 }), // nome do item salvo no momento do pedido
@@ -279,13 +314,16 @@ export const orderItems = mysqlTable("order_items", {
   observations: text("observations"),
   addons: text("addons"), // JSON array de adicionais
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_order_items_order").on(t.orderId),
+]);
 
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = typeof orderItems.$inferInsert;
 
 /**
  * Fila de mensagens do bot (para notificações WhatsApp)
+ * Worker de retry processa status=pending e status=failed com retries < 3
  */
 export const botMessages = mysqlTable("bot_messages", {
   id: int("id").autoincrement().primaryKey(),
@@ -294,50 +332,56 @@ export const botMessages = mysqlTable("bot_messages", {
   message: text("message").notNull(),
   messageType: varchar("messageType", { length: 50 }).notNull(), // order_confirmation, order_update, etc
   status: mysqlEnum("status", ["pending", "sent", "failed"]).default("pending").notNull(),
+  retries: int("retries").default(0).notNull(), // número de tentativas de envio
   sentAt: timestamp("sentAt"),
   errorMessage: text("errorMessage"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_bot_messages_status").on(t.status),
+  index("idx_bot_messages_created").on(t.createdAt),
+]);
 
 export type BotMessage = typeof botMessages.$inferSelect;
 export type InsertBotMessage = typeof botMessages.$inferInsert;
 
 /**
  * Grupos de complementos/adicionais por item do cardápio
- * Ex: "Escolha as carnes", "Ponto da carne", "Molho para o churrasco?", "Precisa de talheres?"
  */
 export const menuAddonGroups = mysqlTable("menu_addon_groups", {
   id: int("id").autoincrement().primaryKey(),
-  menuItemId: int("menuItemId").notNull(), // FK para menu_items
-  name: varchar("name", { length: 150 }).notNull(), // "Escolha as carnes"
-  description: text("description"), // descrição opcional do grupo
-  isRequired: boolean("isRequired").default(false).notNull(), // OBRIGATÓRIO ou opcional
-  minSelections: int("minSelections").default(0).notNull(), // mínimo de seleções
-  maxSelections: int("maxSelections").default(1).notNull(), // máximo de seleções (1 = radio, >1 = checkbox)
+  menuItemId: int("menuItemId").notNull().references(() => menuItems.id),
+  name: varchar("name", { length: 150 }).notNull(),
+  description: text("description"),
+  isRequired: boolean("isRequired").default(false).notNull(),
+  minSelections: int("minSelections").default(0).notNull(),
+  maxSelections: int("maxSelections").default(1).notNull(),
   displayOrder: int("displayOrder").default(0).notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_addon_groups_item").on(t.menuItemId),
+]);
 
 export type MenuAddonGroup = typeof menuAddonGroups.$inferSelect;
 export type InsertMenuAddonGroup = typeof menuAddonGroups.$inferInsert;
 
 /**
  * Opções dentro de cada grupo de complementos
- * Ex: "Com cupim", "Com costela no bafo", "Molho chimichurri (+R$3,99)", "Com talher (+R$0,50)"
  */
 export const menuAddonOptions = mysqlTable("menu_addon_options", {
   id: int("id").autoincrement().primaryKey(),
-  groupId: int("groupId").notNull(), // FK para menu_addon_groups
-  name: varchar("name", { length: 150 }).notNull(), // "Com cupim"
-  description: text("description"), // "Delicioso cupim cozido por mais de 6 horas..."
+  groupId: int("groupId").notNull().references(() => menuAddonGroups.id),
+  name: varchar("name", { length: 150 }).notNull(),
+  description: text("description"),
   priceExtra: int("priceExtra").default(0).notNull(), // preço adicional em centavos (0 = grátis)
   displayOrder: int("displayOrder").default(0).notNull(),
   isActive: boolean("isActive").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => [
+  index("idx_addon_options_group").on(t.groupId),
+]);
 
 export type MenuAddonOption = typeof menuAddonOptions.$inferSelect;
 export type InsertMenuAddonOption = typeof menuAddonOptions.$inferInsert;
