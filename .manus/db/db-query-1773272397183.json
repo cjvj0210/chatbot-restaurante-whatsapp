@@ -1,0 +1,90 @@
+{
+  "query": "\nSELECT c.id as cat_id, c.name as categoria, mi.id as item_id, mi.name as item_nome, \nCASE WHEN mi.imageUrl IS NULL OR mi.imageUrl = '' THEN 'SEM IMAGEM' ELSE 'TEM IMAGEM' END as status_imagem,\nmi.imageUrl\nFROM menu_categories c\nJOIN menu_items mi ON mi.categoryId = c.id\nWHERE LOWER(c.name) LIKE '%bebida%'\nORDER BY c.id, mi.id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT c.id as cat_id, c.name as categoria, mi.id as item_id, mi.name as item_nome, \nCASE WHEN mi.imageUrl IS NULL OR mi.imageUrl = '' THEN 'SEM IMAGEM' ELSE 'TEM IMAGEM' END as status_imagem,\nmi.imageUrl\nFROM menu_categories c\nJOIN menu_items mi ON mi.categoryId = c.id\nWHERE LOWER(c.name) LIKE '%bebida%'\nORDER BY c.id, mi.id;\n",
+  "rows": [
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150028",
+      "item_nome": "Refrigerantes 2 Litros",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/REFRI2L_7f7767c4.jpg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150029",
+      "item_nome": "Refrigerantes Econômicos",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/REFRIGERANTESECONOMICOS_00a8fd56.jpg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150030",
+      "item_nome": "Suco de abacaxi natural",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCODEABACAXINATURAL_b65ef6cf.jpg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150031",
+      "item_nome": "Suco de Laranja Natural",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCODELARANJANATURAL_b6d91c04.png"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150032",
+      "item_nome": "Sucos Del Valle lata",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCOSDELLVALE_12ce6161.jpeg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150033",
+      "item_nome": "Refrigerantes lata",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/REFRIGERANTESLATA_13f2d179.jpg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150034",
+      "item_nome": "Suco de limão natural",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCODELIMAONATURAL_44799903.jpg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150035",
+      "item_nome": "Água mineral",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/AGUAS_71ffee78.jpg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150036",
+      "item_nome": "Cervejas Long Neck",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/CERVEJALONGNECK_c8cfe8d5.jpeg"
+    },
+    {
+      "cat_id": "150007",
+      "categoria": "Bebidas",
+      "item_id": "150037",
+      "item_nome": "Cervejas lata",
+      "status_imagem": "TEM IMAGEM",
+      "imageUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/CERVEJASLATA_335de922.png"
+    }
+  ],
+  "messages": [],
+  "stdout": "cat_id\tcategoria\titem_id\titem_nome\tstatus_imagem\timageUrl\n150007\tBebidas\t150028\tRefrigerantes 2 Litros\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/REFRI2L_7f7767c4.jpg\n150007\tBebidas\t150029\tRefrigerantes Econômicos\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/REFRIGERANTESECONOMICOS_00a8fd56.jpg\n150007\tBebidas\t150030\tSuco de abacaxi natural\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCODEABACAXINATURAL_b65ef6cf.jpg\n150007\tBebidas\t150031\tSuco de Laranja Natural\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCODELARANJANATURAL_b6d91c04.png\n150007\tBebidas\t150032\tSucos Del Valle lata\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCOSDELLVALE_12ce6161.jpeg\n150007\tBebidas\t150033\tRefrigerantes lata\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/REFRIGERANTESLATA_13f2d179.jpg\n150007\tBebidas\t150034\tSuco de limão natural\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/SUCODELIMAONATURAL_44799903.jpg\n150007\tBebidas\t150035\tÁgua mineral\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/AGUAS_71ffee78.jpg\n150007\tBebidas\t150036\tCervejas Long Neck\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/CERVEJALONGNECK_c8cfe8d5.jpeg\n150007\tBebidas\t150037\tCervejas lata\tTEM IMAGEM\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/CERVEJASLATA_335de922.png\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}
