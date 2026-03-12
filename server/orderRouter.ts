@@ -393,10 +393,20 @@ export const orderRouter = router({
         .orderBy(desc(orders.createdAt))
         .limit(1);
       const lastOrder = lastOrders[0];
+      // Usar nome do último pedido se customer.name for null/vazio
+      const resolvedName = customer.name || lastOrder?.customerName || "";
+      // Atualizar customer.name no banco se estava vazio e encontramos o nome no pedido
+      if (!customer.name && lastOrder?.customerName) {
+        await db.update(customers)
+          .set({ name: lastOrder.customerName })
+          .where(eq(customers.id, customer.id));
+      }
+      // Endereço: sempre usar o do último pedido (mais recente) se disponível
+      const resolvedAddress = lastOrder?.deliveryAddress || customer.address || "";
       return {
-        name: customer.name || "",
+        name: resolvedName,
         phone: customer.phone || session.whatsappNumber,
-        address: lastOrder?.deliveryAddress || customer.address || "",
+        address: resolvedAddress,
         totalOrders: customer.totalOrders,
         totalSpent: customer.totalSpent,
       };

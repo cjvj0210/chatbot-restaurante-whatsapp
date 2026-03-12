@@ -375,6 +375,7 @@ export default function Pedido() {
 
   // Estado do modal de histórico
   const [showHistory, setShowHistory] = useState(false);
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
 
   // Status de horário de funcionamento (atualiza ao mudar tipo de pedido)
   const businessStatus = useMemo(() => {
@@ -1033,57 +1034,112 @@ export default function Pedido() {
             {/* ===== MINIATURA DO ÚCLTIMO PEDIDO (apenas para clientes reconhecidos) ===== */}
             {!searchQuery && orderHistory.length > 0 && (() => {
               const lastOrder = orderHistory[0];
-              const lastItems = lastOrder.items.slice(0, 3);
+              const lastItems = lastOrder.items.slice(0, 4);
               return (
-                <div className="mx-4 mb-4">
-                  <div className="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl overflow-hidden shadow-md">
-                    <div className="px-4 pt-3 pb-1">
-                      <p className="text-white text-xs font-semibold opacity-80 uppercase tracking-wide">Seu último pedido</p>
-                      <p className="text-white text-sm font-bold mt-0.5">{lastOrder.orderNumber} · R$ {((lastOrder.total || 0) / 100).toFixed(2).replace(".", ",")}</p>
-                    </div>
-                    <div className="flex items-center gap-2 px-4 py-2">
-                      {lastItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.name} className="w-9 h-9 rounded-lg object-cover border-2 border-white/30" />
-                          ) : (
-                            <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center text-base">🍽️</div>
-                          )}
-                        </div>
-                      ))}
-                      {lastOrder.items.length > 3 && (
-                        <span className="text-white/70 text-xs">+{lastOrder.items.length - 3}</span>
-                      )}
-                      <div className="flex-1 min-w-0 ml-1">
-                        <p className="text-white text-xs leading-snug line-clamp-2">
-                          {lastItems.map(i => `${i.quantity}x ${i.name}`).join(", ")}
-                        </p>
+                <>
+                  {/* Miniatura do último pedido */}
+                  <div className="mx-4 mb-4">
+                    <div
+                      className="bg-gradient-to-r from-red-700 to-red-600 rounded-2xl overflow-hidden shadow-md cursor-pointer active:opacity-90"
+                      onClick={() => setShowRepeatModal(true)}
+                    >
+                      <div className="px-4 pt-3 pb-1">
+                        <p className="text-white text-xs font-semibold opacity-80 uppercase tracking-wide">Seu último pedido</p>
+                        <p className="text-white text-sm font-bold mt-0.5">{lastOrder.orderNumber} · R$ {((lastOrder.total || 0) / 100).toFixed(2).replace(".", ",")}</p>
+                      </div>
+                      {/* Imagens + nomes dos itens */}
+                      <div className="px-4 py-2 space-y-1.5">
+                        {lastItems.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-lg object-cover border-2 border-white/30 flex-shrink-0" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-base flex-shrink-0">🍽️</div>
+                            )}
+                            <span className="text-white text-xs font-medium leading-tight">{item.quantity}x {item.name}</span>
+                          </div>
+                        ))}
+                        {lastOrder.items.length > 4 && (
+                          <p className="text-white/70 text-xs pl-12">+{lastOrder.items.length - 4} item(ns)</p>
+                        )}
+                      </div>
+                      <div className="w-full bg-white/15 px-4 py-3 flex items-center justify-center gap-2">
+                        <RotateCcw className="w-4 h-4 text-white" />
+                        <span className="text-white text-sm font-bold">Clique aqui para repetir o último pedido</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        const newItems: CartItem[] = lastOrder.items
-                          .filter((item) => item.menuItemId !== null)
-                          .map((item) => ({
-                            menuItemId: item.menuItemId as number,
-                            name: item.name,
-                            price: item.price,
-                            basePrice: item.price,
-                            quantity: item.quantity,
-                            observations: item.observations,
-                            imageUrl: item.imageUrl,
-                            addons: item.addons as SelectedAddon[] | undefined,
-                          }));
-                        setCart(newItems);
-                        setDeliveryType(lastOrder.orderType as DeliveryType);
-                      }}
-                      className="w-full bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors px-4 py-3 flex items-center justify-center gap-2"
-                    >
-                      <RotateCcw className="w-4 h-4 text-white" />
-                      <span className="text-white text-sm font-bold">Clique aqui para repetir o último pedido</span>
-                    </button>
                   </div>
-                </div>
+
+                  {/* Modal de confirmação do último pedido */}
+                  {showRepeatModal && (
+                    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={() => setShowRepeatModal(false)}>
+                      <div
+                        className="bg-white rounded-t-3xl w-full max-w-lg max-h-[80vh] overflow-y-auto"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div className="px-5 pt-5 pb-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-base font-bold text-gray-900">Repetir pedido</h3>
+                            <button onClick={() => setShowRepeatModal(false)} className="p-1 rounded-full hover:bg-gray-100">
+                              <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mb-3">{lastOrder.orderNumber} · {new Date(lastOrder.createdAt).toLocaleDateString("pt-BR")} · R$ {((lastOrder.total || 0) / 100).toFixed(2).replace(".", ",")}</p>
+                          <div className="space-y-3">
+                            {lastOrder.items.map((item, idx) => (
+                              <div key={idx} className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-0">
+                                {item.imageUrl ? (
+                                  <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+                                ) : (
+                                  <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🍽️</div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900">{item.quantity}x {item.name}</p>
+                                  <p className="text-xs text-red-600 font-medium">R$ {((item.price * item.quantity) / 100).toFixed(2).replace(".", ",")}</p>
+                                  {item.addons && item.addons.length > 0 && (
+                                    <div className="mt-1 space-y-0.5">
+                                      {(item.addons as SelectedAddon[]).map((a, ai) => (
+                                        <p key={ai} className="text-xs text-gray-500">· {a.optionName}{a.priceExtra > 0 ? ` (+R$ ${(a.priceExtra / 100).toFixed(2).replace(".", ",")})` : ""}</p>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {item.observations && (
+                                    <p className="text-xs text-gray-400 italic mt-0.5">{item.observations}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="px-5 pb-6 pt-3 bg-white sticky bottom-0">
+                          <button
+                            onClick={() => {
+                              const newItems: CartItem[] = lastOrder.items
+                                .filter((item) => item.menuItemId !== null)
+                                .map((item) => ({
+                                  menuItemId: item.menuItemId as number,
+                                  name: item.name,
+                                  price: item.price,
+                                  basePrice: item.price,
+                                  quantity: item.quantity,
+                                  observations: item.observations,
+                                  imageUrl: item.imageUrl,
+                                  addons: item.addons as SelectedAddon[] | undefined,
+                                }));
+                              setCart(newItems);
+                              setDeliveryType(lastOrder.orderType as DeliveryType);
+                              setShowRepeatModal(false);
+                            }}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                            Adicionar ao carrinho
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               );
             })()}
 
