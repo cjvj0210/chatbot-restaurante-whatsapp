@@ -799,3 +799,9 @@
 - [ ] Atualização automática de endereço quando cliente escolhe novo endereço no delivery
 - [ ] Nome do cliente preenchido automaticamente no cardápio (sem pedir para digitar)
 - [ ] Reposicionar histórico de pedidos para dentro do cardápio (miniatura + botão repetir)
+
+## Validação de Categorias Duplicadas (12/03/2026)
+- [x] Validação no backend (create): impedir criação de categoria com nome duplicado (case-insensitive)
+- [x] Validação no backend (update): impedir renomear categoria para nome já existente em outra categoria
+- [x] Frontend exibe toast de erro com mensagem clara quando tenta criar/renomear para nome duplicado
+- [x] Testes corrigidos para usar nomes únicos com timestamp (evitar conflito com dados reais do banco)

@@ -1,0 +1,9 @@
+{
+  "query": "\nDELETE FROM menu_items WHERE categoryId IN (300006, 300008);\nDELETE FROM menu_categories WHERE id IN (300006, 300008);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nDELETE FROM menu_items WHERE categoryId IN (300006, 300008);\nDELETE FROM menu_categories WHERE id IN (300006, 300008);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 69
+}

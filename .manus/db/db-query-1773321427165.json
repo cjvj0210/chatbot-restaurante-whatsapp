@@ -1,0 +1,94 @@
+{
+  "query": "\nSELECT c.id as cat_id, c.name as cat_name, i.id as item_id, i.name as item_name, \n       CASE WHEN i.imageUrl IS NOT NULL AND i.imageUrl != '' THEN 'SIM' ELSE 'NAO' END as tem_imagem\nFROM menu_categories c\nLEFT JOIN menu_items i ON i.categoryId = c.id\nWHERE LOWER(c.name) LIKE '%bebida%'\nORDER BY c.id, i.id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT c.id as cat_id, c.name as cat_name, i.id as item_id, i.name as item_name, \n       CASE WHEN i.imageUrl IS NOT NULL AND i.imageUrl != '' THEN 'SIM' ELSE 'NAO' END as tem_imagem\nFROM menu_categories c\nLEFT JOIN menu_items i ON i.categoryId = c.id\nWHERE LOWER(c.name) LIKE '%bebida%'\nORDER BY c.id, i.id;\n",
+  "rows": [
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150028",
+      "item_name": "Refrigerantes 2 Litros",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150029",
+      "item_name": "Refrigerantes Econômicos",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150030",
+      "item_name": "Suco de abacaxi natural",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150031",
+      "item_name": "Suco de Laranja Natural",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150032",
+      "item_name": "Sucos Del Valle lata",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150033",
+      "item_name": "Refrigerantes lata",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150034",
+      "item_name": "Suco de limão natural",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150035",
+      "item_name": "Água mineral",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150036",
+      "item_name": "Cervejas Long Neck",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "150007",
+      "cat_name": "Bebidas",
+      "item_id": "150037",
+      "item_name": "Cervejas lata",
+      "tem_imagem": "SIM"
+    },
+    {
+      "cat_id": "300006",
+      "cat_name": "Bebidas",
+      "item_id": "300003",
+      "item_name": "Coca-Cola",
+      "tem_imagem": "NAO"
+    },
+    {
+      "cat_id": "300008",
+      "cat_name": "Bebidas",
+      "item_id": "300004",
+      "item_name": "Coca-Cola",
+      "tem_imagem": "NAO"
+    }
+  ],
+  "messages": [],
+  "stdout": "cat_id\tcat_name\titem_id\titem_name\ttem_imagem\n150007\tBebidas\t150028\tRefrigerantes 2 Litros\tSIM\n150007\tBebidas\t150029\tRefrigerantes Econômicos\tSIM\n150007\tBebidas\t150030\tSuco de abacaxi natural\tSIM\n150007\tBebidas\t150031\tSuco de Laranja Natural\tSIM\n150007\tBebidas\t150032\tSucos Del Valle lata\tSIM\n150007\tBebidas\t150033\tRefrigerantes lata\tSIM\n150007\tBebidas\t150034\tSuco de limão natural\tSIM\n150007\tBebidas\t150035\tÁgua mineral\tSIM\n150007\tBebidas\t150036\tCervejas Long Neck\tSIM\n150007\tBebidas\t150037\tCervejas lata\tSIM\n300006\tBebidas\t300003\tCoca-Cola\tNAO\n300008\tBebidas\t300004\tCoca-Cola\tNAO\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

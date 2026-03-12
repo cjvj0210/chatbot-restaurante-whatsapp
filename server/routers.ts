@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -119,6 +120,16 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
+        // Validação: impedir categoria com nome duplicado (case-insensitive)
+        const existing = await db.getMenuCategories();
+        const nameNormalized = input.name.trim().toLowerCase();
+        const duplicate = existing.find(c => c.name.trim().toLowerCase() === nameNormalized);
+        if (duplicate) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: `Já existe uma categoria com o nome "${duplicate.name}". Escolha um nome diferente.`,
+          });
+        }
         return await db.createMenuCategory(input);
       }),
     update: protectedProcedure
@@ -133,6 +144,18 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
+        // Validação: impedir renomear para um nome já existente em outra categoria (case-insensitive)
+        if (data.name) {
+          const existing = await db.getMenuCategories();
+          const nameNormalized = data.name.trim().toLowerCase();
+          const duplicate = existing.find(c => c.id !== id && c.name.trim().toLowerCase() === nameNormalized);
+          if (duplicate) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: `Já existe uma categoria com o nome "${duplicate.name}". Escolha um nome diferente.`,
+            });
+          }
+        }
         await db.updateMenuCategory(id, data);
         return { success: true };
       }),

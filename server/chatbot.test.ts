@@ -94,15 +94,16 @@ describe("Menu Categories", () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
+    const uniqueName = `Test_Category_${Date.now()}`;
     const category = await caller.menuCategories.create({
-      name: "Pizzas",
-      description: "Pizzas artesanais",
-      displayOrder: 1,
+      name: uniqueName,
+      description: "Categoria de teste",
+      displayOrder: 99,
     });
 
     expect(category).toBeDefined();
-    expect(category.name).toBe("Pizzas");
-    expect(category.description).toBe("Pizzas artesanais");
+    expect(category.name).toBe(uniqueName);
+    expect(category.description).toBe("Categoria de teste");
   });
 });
 
@@ -120,10 +121,11 @@ describe("Menu Items", () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
-    // First create a category
+    // First create a category with unique name to avoid duplicate conflict
+    const uniqueCatName = `Test_Bebidas_${Date.now()}`;
     const category = await caller.menuCategories.create({
-      name: "Bebidas",
-      displayOrder: 1,
+      name: uniqueCatName,
+      displayOrder: 99,
     });
 
     // Then create an item
