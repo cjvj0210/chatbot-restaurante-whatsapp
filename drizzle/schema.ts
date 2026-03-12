@@ -134,6 +134,7 @@ export const orders = mysqlTable("orders", {
   estimatedTime: int("estimatedTime"), // em minutos
   paymentMethod: varchar("paymentMethod", { length: 50 }),
   changeFor: int("changeFor"), // em centavos - valor para troco quando pagamento em dinheiro
+  confirmedAt: timestamp("confirmedAt"), // horário em que o restaurante confirmou o pedido
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

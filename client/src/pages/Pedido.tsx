@@ -361,6 +361,12 @@ export default function Pedido() {
   const [deliveryType, setDeliveryType] = useState<DeliveryType | null>(null);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
+  // Buscar dados do cliente pelo número WhatsApp da sessão (para reconhecimento na tela inicial)
+  const { data: customerData } = trpc.order.getCustomerByWhatsapp.useQuery(
+    { sessionId: sessionId || "" },
+    { enabled: !!sessionId }
+  );
+
   // Status de horário de funcionamento (atualiza ao mudar tipo de pedido)
   const businessStatus = useMemo(() => {
     if (!deliveryType) return null;
@@ -557,6 +563,7 @@ export default function Pedido() {
 
   // ===== TELA DE SELEÇÃO ENTREGA/RETIRADA =====
   if (!deliveryType) {
+    const firstName = customerData?.name?.split(" ")[0];
     return (
       <div
         className="min-h-screen bg-gray-50 max-w-md mx-auto flex flex-col"
@@ -577,9 +584,28 @@ export default function Pedido() {
 
         {/* Conteúdo */}
         <div className="flex-1 flex flex-col justify-center px-5 py-8">
+          {/* Banner de cliente reconhecido */}
+          {customerData && firstName && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 text-xl">
+                👋
+              </div>
+              <div>
+                <p className="font-bold text-green-800 text-sm">Olá, {firstName}!</p>
+                <p className="text-xs text-green-700 mt-0.5">
+                  {customerData.totalOrders > 0
+                    ? `Que bom te ver de volta! Você já fez ${customerData.totalOrders} pedido${customerData.totalOrders > 1 ? "s" : ""} conosco. 🎉`
+                    : "Seus dados já estão salvos para agilizar seu pedido!"}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="text-center mb-8">
             <div className="text-5xl mb-4">🥩</div>
-            <h2 className="text-xl font-bold text-gray-900">Bem-vindo ao nosso cardápio!</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {firstName ? `Pronto para pedir, ${firstName}?` : "Bem-vindo ao nosso cardápio!"}
+            </h2>
             <p className="text-gray-500 text-sm mt-2">Como você prefere receber seu pedido?</p>
           </div>
 

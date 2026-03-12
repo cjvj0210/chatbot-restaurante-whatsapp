@@ -274,7 +274,44 @@ async function generateResponse(
           const statusText = statusMap[order.status] || order.status;
           const tipoEntrega = order.orderType === 'pickup' ? 'Retirada no balcão' : `Delivery — ${order.deliveryAddress || 'endereço não informado'}`;
           const totalVal = `R$ ${((order.total || 0) / 100).toFixed(2).replace('.', ',')}`;
-          const statusMsg = `📦 *Pedido ${orderNum}*\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}`;
+
+          // Calcular previsão de entrega baseada no horário de confirmação
+          let previsaoMsg = '';
+          if ((order.status === 'confirmed' || order.status === 'preparing' || order.status === 'delivering') && (order as any).confirmedAt) {
+            const confirmedAt = new Date((order as any).confirmedAt);
+            const now = new Date();
+            const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
+            const dayOfWeek = confirmedAt.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+            if (order.orderType === 'delivery') {
+              const minTime = isWeekend ? 60 : 45;
+              const maxTime = isWeekend ? 110 : 70;
+              const minRemaining = Math.max(0, minTime - minutesElapsed);
+              const maxRemaining = Math.max(0, maxTime - minutesElapsed);
+              if (minutesElapsed < minTime) {
+                previsaoMsg = `\n⏱️ *Previsão de entrega:* ${minRemaining} a ${maxRemaining} min restantes`;
+              } else if (minutesElapsed <= maxTime) {
+                previsaoMsg = `\n⏱️ *Previsão de entrega:* chegando em breve!`;
+              } else {
+                previsaoMsg = `\n⏱️ *Previsão:* já deveria ter chegado — qualquer dúvida fale conosco!`;
+              }
+            } else {
+              const minTime = 30;
+              const maxTime = 50;
+              const minRemaining = Math.max(0, minTime - minutesElapsed);
+              const maxRemaining = Math.max(0, maxTime - minutesElapsed);
+              if (minutesElapsed < minTime) {
+                previsaoMsg = `\n⏱️ *Previsão para retirada:* ${minRemaining} a ${maxRemaining} min restantes`;
+              } else if (minutesElapsed <= maxTime) {
+                previsaoMsg = `\n⏱️ *Previsão:* seu pedido já deve estar pronto!`;
+              } else {
+                previsaoMsg = `\n⏱️ *Previsão:* já deve estar pronto — pode vir retirar!`;
+              }
+            }
+          }
+
+          const statusMsg = `📦 *Pedido ${orderNum}*\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}${previsaoMsg}`;
           aiResponse = aiResponse.replace(statusMatch[0], statusMsg);
         } else {
           aiResponse = aiResponse.replace(statusMatch[0], `Não encontrei o pedido *${orderNum}*. Verifique o número e tente novamente.`);

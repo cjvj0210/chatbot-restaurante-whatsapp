@@ -783,3 +783,10 @@
 - [x] Implementar envio de imagem do restaurante + legenda com link quando cliente pedir cardápio delivery
 - [x] Gerar imagem de banner do cardápio (churrasco, logo, call-to-action visual)
 - [x] Testar mensagem visual chegando no WhatsApp real - confirmado como imageMessage
+
+## Melhorias UX Cardápio Digital e Notificações (12/03/2026)
+- [ ] Reconhecimento automático do cliente ao abrir cardápio: buscar dados pelo número WhatsApp da sessão e pré-preencher nome/endereço
+- [ ] Tela de confirmação de dados: mostrar nome, endereço e opção de alterar antes de escolher entrega/retirada
+- [ ] Notificação WhatsApp automática ao confirmar pedido: enviar mensagem ao cliente via Evolution API
+- [ ] Salvar horário de confirmação (confirmedAt) no banco quando pedido for aceito
+- [ ] Bot responde inteligentemente sobre tempo de entrega: calcular previsão com base no horário de confirmação e dia da semana

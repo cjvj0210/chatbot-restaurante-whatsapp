@@ -2,6 +2,18 @@ import { getDb } from "./db";
 import { botMessages, orders, orderItems, menuItems } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendTextMessage } from "./whatsapp";
+import { sendTextMessageEvolution } from "./evolutionApi";
+
+/**
+ * Envia mensagem de texto via Evolution API (principal) com fallback para WhatsApp Cloud API
+ */
+async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
+  // Tentar primeiro via Evolution API (número de teste configurado)
+  const sentEvolution = await sendTextMessageEvolution(phone, message);
+  if (sentEvolution) return true;
+  // Fallback para WhatsApp Cloud API
+  return await sendTextMessage(phone, message);
+}
 
 /**
  * Formata valor em centavos para Real brasileiro
@@ -149,9 +161,9 @@ export async function notifyWhatsAppBot(
   const message = await formatOrderForWhatsApp(orderId);
   const phone = whatsappNumber || null;
 
-  // Tentar envio direto via WhatsApp API
+  // Tentar envio direto via Evolution API (com fallback para WhatsApp Cloud API)
   if (phone) {
-    const sent = await sendTextMessage(phone, message);
+    const sent = await sendWhatsAppMessage(phone, message);
     if (sent) {
       console.log(`[Notification] Mensagem de recebimento enviada diretamente para ${phone}`);
       return;
@@ -228,9 +240,9 @@ export async function notifyStatusUpdate(
 
   const phone = order.customerPhone;
 
-  // Tentar envio direto via WhatsApp API
+  // Tentar envio direto via Evolution API (com fallback para WhatsApp Cloud API)
   if (phone) {
-    const sent = await sendTextMessage(phone, message);
+    const sent = await sendWhatsAppMessage(phone, message);
     if (sent) {
       console.log(`[Notification] Status '${newStatus}' enviado diretamente para ${phone}`);
       return;

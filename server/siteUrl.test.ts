@@ -11,6 +11,12 @@ describe("getSiteUrl", () => {
     process.env = originalEnv;
   });
 
+  it("retorna a URL de produção correta", async () => {
+    const { getSiteUrl } = await import("./_core/siteUrl");
+    const url = getSiteUrl();
+    expect(url).toBe("https://chatbotwa-hesngyeo.manus.space");
+  });
+
   it("em produção, retorna VITE_SITE_URL quando configurado", async () => {
     process.env.NODE_ENV = "production";
     process.env.VITE_SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -37,11 +43,12 @@ describe("getSiteUrl", () => {
     expect(url).toBe("https://chatbotwa-hesngyeo.manus.space");
   });
 
-  it("em desenvolvimento, retorna SITE_DEV_URL quando configurado", async () => {
+  it("sempre retorna a URL de produção (URL hardcoded, ignora SITE_DEV_URL)", async () => {
     process.env.NODE_ENV = "development";
     process.env.SITE_DEV_URL = "https://3000-test.manus.computer";
     const { getSiteUrl } = await import("./_core/siteUrl");
     const url = getSiteUrl();
-    expect(url).toBe("https://3000-test.manus.computer");
+    // A URL é hardcoded para evitar que SITE_DEV_URL sobrescreva em produção
+    expect(url).toBe("https://chatbotwa-hesngyeo.manus.space");
   });
 });

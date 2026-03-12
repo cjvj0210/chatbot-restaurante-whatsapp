@@ -418,9 +418,15 @@ export const orderRouter = router({
         throw new Error("Database connection failed");
       }
 
+      // Salvar horário de confirmação quando restaurante aceita o pedido
+      const updateData: Record<string, any> = { status: input.status };
+      if (input.status === "confirmed") {
+        updateData.confirmedAt = new Date();
+      }
+
       await db
         .update(orders)
-        .set({ status: input.status })
+        .set(updateData)
         .where(eq(orders.id, input.orderId));
 
       // Buscar pedido atualizado
