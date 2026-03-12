@@ -958,3 +958,10 @@
 - [x] Logging detalhado no webhook com timestamp e detecção de CONNECTION_UPDATE
 - [x] Webhook reconfigurado e instância reiniciada
 - [x] 58 testes passando (16 novos: FAQ cache, dashboard stats, debounce hook)
+
+## Bug: Bot não responde (20:34-20:35) — Investigar novamente (12/03/2026)
+- [x] Verificar estado da Evolution API e webhook publicado
+- [x] Verificar se mensagens chegaram ao banco de dados
+- [x] Causa raiz: webhook apontava para URL de dev (manus.computer) em vez da URL publicada (manus.space)
+- [x] Corrigido: webhook reconfigurado para URL publicada permanente
+- [x] keepAlive.ts corrigido: usa VITE_SITE_URL em vez de SITE_DEV_URL

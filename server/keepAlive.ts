@@ -30,8 +30,9 @@ function getEvolutionConfig() {
 }
 
 function getWebhookUrl(): string {
-  // Usar o domínio publicado
-  const siteUrl = process.env.SITE_DEV_URL || "https://chatbotwa-hesngyeo.manus.space";
+  // IMPORTANTE: usar VITE_SITE_URL (URL publicada permanente, manus.space)
+  // NÃO usar SITE_DEV_URL pois é a URL temporária de desenvolvimento do sandbox
+  const siteUrl = process.env.VITE_SITE_URL || "https://chatbotwa-hesngyeo.manus.space";
   return `${siteUrl}/api/webhook/evolution`;
 }
 
