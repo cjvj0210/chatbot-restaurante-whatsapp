@@ -376,6 +376,13 @@ export default function Pedido() {
   // Estado do modal de histórico
   const [showHistory, setShowHistory] = useState(false);
   const [showRepeatModal, setShowRepeatModal] = useState(false);
+  const [resolvingItems, setResolvingItems] = useState(false);
+  const [resolveError, setResolveError] = useState<string | null>(null);
+  const resolveOrderItemsMutation = trpc.order.resolveOrderItems.useQuery(
+    { items: [] },
+    { enabled: false } // desabilitado por padrão, chamado manualmente
+  );
+  const utils = trpc.useUtils();
 
   // Status de horário de funcionamento (atualiza ao mudar tipo de pedido)
   const businessStatus = useMemo(() => {
@@ -1112,12 +1119,45 @@ export default function Pedido() {
                           </div>
                         </div>
                         <div className="px-5 pb-6 pt-3 bg-white sticky bottom-0">
+                          {resolveError && (
+                            <p className="text-red-500 text-xs text-center mb-2">{resolveError}</p>
+                          )}
                           <button
-                            onClick={() => {
-                              const newItems: CartItem[] = lastOrder.items
-                                .filter((item) => item.menuItemId !== null)
-                                .map((item) => ({
-                                  menuItemId: item.menuItemId as number,
+                            disabled={resolvingItems}
+                            onClick={async () => {
+                              setResolvingItems(true);
+                              setResolveError(null);
+                              try {
+                                // Resolver os IDs atuais dos itens (caso tenham sido recriados)
+                                const itemsToResolve = lastOrder.items
+                                  .filter((item) => item.menuItemId !== null)
+                                  .map((item) => ({
+                                    menuItemId: item.menuItemId as number,
+                                    name: item.name || "",
+                                    price: item.price,
+                                    quantity: item.quantity,
+                                    observations: item.observations,
+                                    imageUrl: item.imageUrl,
+                                    addons: item.addons as any[] | undefined,
+                                  }));
+
+                                const resolved = await utils.order.resolveOrderItems.fetch({ items: itemsToResolve });
+
+                                const unavailable = resolved.filter((r: any) => r.notFound);
+                                if (unavailable.length > 0) {
+                                  const names = unavailable.map((r: any) => r.name).join(", ");
+                                  setResolveError(`Atenção: os seguintes itens não estão mais disponíveis e foram removidos: ${names}`);
+                                }
+
+                                const availableItems = resolved.filter((r: any) => !r.notFound);
+                                if (availableItems.length === 0) {
+                                  setResolveError("Nenhum item deste pedido está disponível no momento.");
+                                  setResolvingItems(false);
+                                  return;
+                                }
+
+                                const newItems: CartItem[] = availableItems.map((item: any) => ({
+                                  menuItemId: item.menuItemId,
                                   name: item.name,
                                   price: item.price,
                                   basePrice: item.price,
@@ -1126,14 +1166,27 @@ export default function Pedido() {
                                   imageUrl: item.imageUrl,
                                   addons: item.addons as SelectedAddon[] | undefined,
                                 }));
-                              setCart(newItems);
-                              setDeliveryType(lastOrder.orderType as DeliveryType);
-                              setShowRepeatModal(false);
+
+                                setCart(newItems);
+                                setDeliveryType(lastOrder.orderType as DeliveryType);
+                                setShowRepeatModal(false);
+                                if (unavailable.length === 0) {
+                                  // Ir direto para o carrinho
+                                  setActiveTab("cart");
+                                }
+                              } catch (err) {
+                                setResolveError("Erro ao carregar itens. Tente novamente.");
+                              } finally {
+                                setResolvingItems(false);
+                              }
                             }}
-                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm"
+                            className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm"
                           >
-                            <RotateCcw className="w-4 h-4" />
-                            Adicionar ao carrinho
+                            {resolvingItems ? (
+                              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Carregando...</>
+                            ) : (
+                              <><RotateCcw className="w-4 h-4" /> Adicionar ao carrinho</>
+                            )}
                           </button>
                         </div>
                       </div>

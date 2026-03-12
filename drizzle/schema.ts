@@ -269,6 +269,8 @@ export const orderItems = mysqlTable("order_items", {
   menuItemId: int("menuItemId").notNull(),
   quantity: int("quantity").notNull(),
   unitPrice: int("unitPrice").notNull(), // em centavos (preço no momento do pedido)
+  itemName: varchar("itemName", { length: 255 }), // nome do item salvo no momento do pedido
+  itemImageUrl: text("itemImageUrl"), // imagem do item salva no momento do pedido
   observations: text("observations"),
   addons: text("addons"), // JSON array de adicionais
   createdAt: timestamp("createdAt").defaultNow().notNull(),

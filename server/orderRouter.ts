@@ -91,6 +91,8 @@ export const orderRouter = router({
           menuItemId: item.menuItemId,
           quantity: item.quantity,
           unitPrice: menuItem.price,
+          itemName: menuItem.name, // salvar nome no momento do pedido
+          itemImageUrl: menuItem.imageUrl || null, // salvar imagem no momento do pedido
           observations: item.observations || null,
           addons: item.addons && item.addons.length > 0 ? JSON.stringify(item.addons) : null,
         };
@@ -457,8 +459,10 @@ export const orderRouter = router({
               unitPrice: orderItems.unitPrice,
               observations: orderItems.observations,
               addons: orderItems.addons,
-              menuItemName: menuItems.name,
-              menuItemImage: menuItems.imageUrl,
+              itemNameSaved: orderItems.itemName, // nome salvo no momento do pedido
+              itemImageUrlSaved: orderItems.itemImageUrl, // imagem salva no momento do pedido
+              menuItemName: menuItems.name, // nome atual (pode ser null se item foi deletado)
+              menuItemImage: menuItems.imageUrl, // imagem atual (pode ser null se item foi deletado)
             })
             .from(orderItems)
             .leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
@@ -477,11 +481,12 @@ export const orderRouter = router({
             createdAt: order.createdAt,
             items: items.map((item) => ({
               menuItemId: item.menuItemId,
-              name: item.menuItemName || "Item",
+              // Usar nome/imagem salvos no pedido (itemName/itemImageUrl) como fallback quando o item foi deletado
+              name: item.menuItemName || item.itemNameSaved || "Item",
               price: item.unitPrice,
               quantity: item.quantity,
               observations: item.observations || undefined,
-              imageUrl: item.menuItemImage || undefined,
+              imageUrl: item.menuItemImage || item.itemImageUrlSaved || undefined,
               addons: item.addons ? (() => { try { return JSON.parse(item.addons as string); } catch { return undefined; } })() : undefined,
             })),
           };
@@ -489,6 +494,83 @@ export const orderRouter = router({
       );
 
       return result;
+    }),
+
+  /**
+   * Resolver itens do histórico para repetir pedido
+   * Busca o menuItemId atual pelo nome quando o ID original não existe mais
+   */
+  resolveOrderItems: publicProcedure
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            menuItemId: z.number(),
+            name: z.string(),
+            price: z.number(),
+            quantity: z.number(),
+            observations: z.string().optional(),
+            imageUrl: z.string().optional(),
+            addons: z.array(z.any()).optional(),
+          })
+        ),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const resolvedItems = await Promise.all(
+        input.items.map(async (item) => {
+          // Verificar se o menuItemId ainda existe
+          const [existingItem] = await db
+            .select({ id: menuItems.id, name: menuItems.name, price: menuItems.price, imageUrl: menuItems.imageUrl })
+            .from(menuItems)
+            .where(eq(menuItems.id, item.menuItemId))
+            .limit(1);
+
+          if (existingItem) {
+            // Item ainda existe, usar dados atuais
+            return {
+              ...item,
+              menuItemId: existingItem.id,
+              name: existingItem.name,
+              price: existingItem.price,
+              imageUrl: existingItem.imageUrl || item.imageUrl,
+              resolved: true,
+              notFound: false,
+            };
+          }
+
+          // Item não existe mais — buscar pelo nome
+          const [itemByName] = await db
+            .select({ id: menuItems.id, name: menuItems.name, price: menuItems.price, imageUrl: menuItems.imageUrl })
+            .from(menuItems)
+            .where(eq(menuItems.name, item.name))
+            .limit(1);
+
+          if (itemByName) {
+            return {
+              ...item,
+              menuItemId: itemByName.id,
+              name: itemByName.name,
+              price: itemByName.price,
+              imageUrl: itemByName.imageUrl || item.imageUrl,
+              resolved: true,
+              notFound: false,
+            };
+          }
+
+          // Item não encontrado nem pelo nome — marcar como não disponível
+          return {
+            ...item,
+            resolved: false,
+            notFound: true,
+          };
+        })
+      );
+
+      return resolvedItems;
     }),
 
   /**
