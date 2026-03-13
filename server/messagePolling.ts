@@ -14,6 +14,7 @@ import { storagePut } from "./storage";
 import { getDb } from "./db";
 import { conversations, customers } from "../drizzle/schema";
 import { eq, like, or } from "drizzle-orm";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 const POLL_INTERVAL_MS = 3000; // 3 segundos (respostas rápidas)
 const INITIAL_DELAY_MS = 15000; // 15 segundos após iniciar (dar tempo pro servidor subir)
@@ -41,7 +42,7 @@ function getEvolutionConfig() {
  * Extrai o número de telefone do JID do WhatsApp
  */
 function extractPhoneFromJid(jid: string): string {
-  return jid.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
+  return phoneNormalizer.normalize(jid);
 }
 
 /**
@@ -177,7 +178,7 @@ async function pollMessages(): Promise<void> {
       const whatsappId = remoteJid;
       // Extrair número real do telefone quando JID é @lid (via key.remoteJidAlt)
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
-      const realPhone = remoteJidAlt ? remoteJidAlt.replace("@s.whatsapp.net", "").replace(/\D/g, "") : undefined;
+      const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
       console.log(`[Polling] Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
 

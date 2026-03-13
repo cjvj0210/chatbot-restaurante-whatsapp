@@ -4,6 +4,7 @@ import { getDb } from "./db";
 import { orders, orderItems, orderSessions, menuItems, menuAddonOptions, customers } from "../drizzle/schema";
 import { eq, desc, inArray, like } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 /**
  * Router para gerenciamento de pedidos
@@ -151,7 +152,7 @@ export const orderRouter = router({
 
       // Criar pedido
       // Normalizar telefone: remover tudo que não é dígito para garantir consistência nas buscas
-      const normalizedPhone = input.customerPhone.replace(/\D/g, "");
+      const normalizedPhone = phoneNormalizer.normalize(input.customerPhone);
 
       const result = await db
         .insert(orders)

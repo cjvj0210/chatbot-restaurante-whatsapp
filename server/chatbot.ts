@@ -35,6 +35,7 @@ import { sanitizeLLMOutput } from "./sanitize";
 import { checkChatbotRateLimit } from "./chatbotRateLimit";
 import { checkFaqCache } from "./faqCache";
 import { logger } from "./utils/logger";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -177,7 +178,7 @@ async function _processIncomingMessageInternal(
     // Se temos realPhone (via remoteJidAlt), usar ele. Caso contrário, usar phone.
     const effectivePhone = realPhone || phone;
     // Normalizar: se o effectivePhone contém @s.whatsapp.net, extrair só os dígitos
-    const normalizedPhone = effectivePhone.replace("@s.whatsapp.net", "").replace("@lid", "").replace(/\D/g, "");
+    const normalizedPhone = phoneNormalizer.normalize(effectivePhone);
 
     // 1. Buscar ou criar cliente
     // Passar realPhone para permitir busca inteligente quando JID é @lid
@@ -185,7 +186,7 @@ async function _processIncomingMessageInternal(
     if (!customer) {
       // Se temos o número real (via remoteJidAlt), usar ele como whatsappId canônico
       const canonicalWhatsappId = realPhone
-        ? realPhone.replace(/\D/g, "") + "@s.whatsapp.net"
+        ? phoneNormalizer.toJid(realPhone)
         : whatsappId;
       customer = await createCustomer({
         whatsappId: canonicalWhatsappId,
@@ -201,7 +202,7 @@ async function _processIncomingMessageInternal(
       }
       // Se o whatsappId atual é @lid mas temos o número real, atualizar para o formato canônico
       if (realPhone && customer.whatsappId.endsWith("@lid")) {
-        const canonicalId = realPhone.replace(/\D/g, "") + "@s.whatsapp.net";
+        const canonicalId = phoneNormalizer.toJid(realPhone);
         updates.whatsappId = canonicalId;
         updates.phone = normalizedPhone;
       }

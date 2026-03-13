@@ -9,6 +9,7 @@ import { storagePut } from "./storage";
 import { getDb, getCustomerByWhatsappId, getActiveConversation, updateConversation } from "./db";
 import { conversations, customers } from "../drizzle/schema";
 import { eq, like, or } from "drizzle-orm";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -81,7 +82,7 @@ interface EvolutionWebhookPayload {
  *   - "212454869074102@lid" → "212454869074102" (Linked ID)
  */
 function extractPhoneFromJid(jid: string): string {
-  return jid.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
+  return phoneNormalizer.normalize(jid);
 }
 
 /**
@@ -257,7 +258,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     const messageId = key.id;
     // Extrair número real do telefone quando JID é @lid (via remoteJidAlt)
     const remoteJidAlt = key.remoteJidAlt || undefined;
-    const realPhone = remoteJidAlt ? remoteJidAlt.replace("@s.whatsapp.net", "").replace(/\D/g, "") : undefined;
+    const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
     console.log(`[EvolutionWebhook] Mensagem de ${phone} (${pushName || "sem nome"}) | Tipo: ${messageType} | realPhone: ${realPhone || 'N/A'}`);
 
