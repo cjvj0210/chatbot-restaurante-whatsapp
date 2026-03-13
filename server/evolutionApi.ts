@@ -25,8 +25,10 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
       return false;
     }
 
-    // Normalizar número: remover @s.whatsapp.net se vier assim, garantir formato 55XXXXXXXXXXX
-    const normalizedTo = to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+    // Normalizar número: aceitar JID @lid diretamente ou formato 55XXXXXXXXXXX
+    // Se for JID @lid, enviar como está (a Evolution API aceita)
+    const isLid = to.endsWith("@lid");
+    const normalizedTo = isLid ? to : to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
 
     const response = await axios.post(
       `${baseUrl}/message/sendText/${instanceName}`,
@@ -111,7 +113,9 @@ export async function sendMediaMessageEvolution(
       return false;
     }
 
-    const normalizedTo = to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+    // Aceitar JID @lid diretamente ou formato 55XXXXXXXXXXX
+    const isLid = to.endsWith("@lid");
+    const normalizedTo = isLid ? to : to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
 
     const response = await axios.post(
       `${baseUrl}/message/sendMedia/${instanceName}`,

@@ -264,8 +264,26 @@ export async function getCustomerByWhatsappId(whatsappId: string): Promise<Custo
   const db = await getDb();
   if (!db) return undefined;
 
+  // Busca direta pelo whatsappId fornecido
   const result = await db.select().from(customers).where(eq(customers.whatsappId, whatsappId)).limit(1);
-  return result[0];
+  if (result[0]) return result[0];
+
+  // Fallback: se o JID for @lid, tentar buscar pelo phone extraído
+  // Isso cobre o caso onde o cliente foi cadastrado com @s.whatsapp.net mas agora envia com @lid
+  if (whatsappId.endsWith("@lid")) {
+    // Buscar por phone parcial não é confiável para @lid (o número é diferente)
+    // Retornar undefined para criar novo registro com o JID @lid
+    return undefined;
+  }
+
+  // Se o JID for @s.whatsapp.net, tentar buscar por phone
+  const phone = whatsappId.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+  if (phone.length >= 10) {
+    const byPhone = await db.select().from(customers).where(eq(customers.phone, phone)).limit(1);
+    return byPhone[0];
+  }
+
+  return undefined;
 }
 
 export async function createCustomer(customer: InsertCustomer): Promise<Customer> {

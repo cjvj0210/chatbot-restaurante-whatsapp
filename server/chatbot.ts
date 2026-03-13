@@ -55,7 +55,7 @@ export async function processIncomingMessage(
       const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
       const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
       if (useEvo) {
-        await sendTextMessageEvolution(phone, limitMsg);
+        await sendTextMessageEvolution(whatsappId, limitMsg);
       } else {
         await sendTextMessage(phone, limitMsg);
       }
@@ -150,7 +150,7 @@ export async function processIncomingMessage(
       // Enviar resposta via WhatsApp
       const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
       if (useEvo) {
-        await sendTextMessageEvolution(phone, faqResponse);
+        await sendTextMessageEvolution(whatsappId, faqResponse);
       } else {
         await sendTextMessage(phone, faqResponse);
       }
@@ -229,13 +229,13 @@ export async function processIncomingMessage(
         
         // Enviar banner visual com o link embutido na legenda
         const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
-        const sent = await sendMediaMessageEvolution(phone, bannerUrl, caption);
+        const sent = await sendMediaMessageEvolution(whatsappId, bannerUrl, caption);
         if (!sent) {
           // Fallback: enviar como texto simples se a imagem falhar
-          await sendTextMessageEvolution(phone, response.text);
+          await sendTextMessageEvolution(whatsappId, response.text);
         }
       } else {
-        await sendTextMessageEvolution(phone, response.text);
+        await sendTextMessageEvolution(whatsappId, response.text);
       }
     } else if (response.buttons) {
       await sendButtonMessage(phone, response.text, response.buttons);
@@ -248,7 +248,7 @@ export async function processIncomingMessage(
     console.error("[Chatbot] Error processing message:", error);
     const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
     if (useEvolution) {
-      await sendTextMessageEvolution(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
+      await sendTextMessageEvolution(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
     } else {
       await sendTextMessage(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
     }

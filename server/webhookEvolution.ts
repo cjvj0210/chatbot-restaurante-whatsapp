@@ -71,10 +71,37 @@ interface EvolutionWebhookPayload {
 
 /**
  * Extrai o número de telefone do JID do WhatsApp
- * Ex: "5517999999999@s.whatsapp.net" → "5517999999999"
+ * Suporta formatos:
+ *   - "5517999999999@s.whatsapp.net" → "5517999999999"
+ *   - "212454869074102@lid" → "212454869074102" (Linked ID)
  */
 function extractPhoneFromJid(jid: string): string {
-  return jid.replace("@s.whatsapp.net", "").replace("@g.us", "").replace(/\D/g, "");
+  return jid.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
+}
+
+/**
+ * Verifica se o JID é de uma conversa individual (não grupo/status)
+ * Aceita tanto @s.whatsapp.net quanto @lid (Linked ID)
+ */
+function isIndividualChat(jid: string): boolean {
+  return (
+    jid.endsWith("@s.whatsapp.net") ||
+    jid.endsWith("@lid")
+  );
+}
+
+/**
+ * Verifica se o JID é de grupo
+ */
+function isGroupChat(jid: string): boolean {
+  return jid.includes("@g.us");
+}
+
+/**
+ * Verifica se o JID é de status/broadcast (deve ser ignorado)
+ */
+function isStatusBroadcast(jid: string): boolean {
+  return jid === "status@broadcast" || jid.includes("status");
 }
 
 /**
@@ -119,8 +146,8 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
 
     // Detectar mensagens enviadas pelo OPERADOR (fromMe=true) para ativar modo humano
     if (key.fromMe) {
-      // Verificar se é mensagem para um cliente (não para grupos)
-      if (!key.remoteJid.includes("@g.us") && !key.remoteJid.includes("status")) {
+      // Verificar se é mensagem para um cliente (não para grupos/status)
+      if (isIndividualChat(key.remoteJid) && !isStatusBroadcast(key.remoteJid)) {
         const clientPhone = extractPhoneFromJid(key.remoteJid);
         try {
           const db = await getDb();
@@ -159,10 +186,15 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       return;
     }
 
-    // Ignorar mensagens de grupos
-    if (key.remoteJid.includes("@g.us")) {
-      console.log("[EvolutionWebhook] Mensagem de grupo ignorada:", key.remoteJid);
+    // Ignorar mensagens de grupos e status/broadcast
+    if (isGroupChat(key.remoteJid) || isStatusBroadcast(key.remoteJid)) {
+      console.log(`[EvolutionWebhook] Mensagem de grupo/status ignorada: ${key.remoteJid}`);
       return;
+    }
+
+    // Verificar se é conversa individual válida
+    if (!isIndividualChat(key.remoteJid)) {
+      console.log(`[EvolutionWebhook] JID não reconhecido, tentando processar mesmo assim: ${key.remoteJid}`);
     }
 
     const phone = extractPhoneFromJid(key.remoteJid);

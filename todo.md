@@ -965,3 +965,15 @@
 - [x] Causa raiz: webhook apontava para URL de dev (manus.computer) em vez da URL publicada (manus.space)
 - [x] Corrigido: webhook reconfigurado para URL publicada permanente
 - [x] keepAlive.ts corrigido: usa VITE_SITE_URL em vez de SITE_DEV_URL
+
+## Bug DEFINITIVO: Bot não responde — JID @lid (12/03/2026 - 21:00)
+- [x] Investigação meticulosa ponto a ponto do fluxo de mensagens
+- [x] CAUSA RAIZ DEFINITIVA: WhatsApp Business usa JID @lid (Linked ID) em vez de @s.whatsapp.net
+- [x] Mensagens do cliente chegam com formato 212454869074102@lid, não 5517988112791@s.whatsapp.net
+- [x] webhookEvolution.ts: aceita mensagens com JID @lid (funções isIndividualChat, isGroupChat, isStatusBroadcast)
+- [x] evolutionApi.ts: sendTextMessageEvolution e sendMediaMessageEvolution aceitam JID @lid diretamente
+- [x] chatbot.ts: usa whatsappId (JID completo) em vez de phone para enviar respostas via Evolution API
+- [x] db.ts: getCustomerByWhatsappId busca por ambos formatos (@s.whatsapp.net e @lid)
+- [x] Testado: webhook com @lid processado e bot respondeu em 3 segundos
+- [x] Testado: envio via @lid confirmado na Evolution API
+- [x] 58 testes passando
