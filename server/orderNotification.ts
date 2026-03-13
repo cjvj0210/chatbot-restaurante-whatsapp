@@ -3,6 +3,7 @@ import { botMessages, orders, orderItems, menuItems, orderSessions } from "../dr
 import { eq } from "drizzle-orm";
 import { sendTextMessage } from "./whatsapp";
 import { sendTextMessageEvolution } from "./evolutionApi";
+import { checkBusinessHours } from "../shared/businessHours";
 
 /**
  * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
@@ -140,9 +141,39 @@ export function formatConfirmationMessage(
   const dayOfWeek = now.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
+  // Verificar horário de funcionamento para calcular base correta
+  const businessStatus = checkBusinessHours(orderType === 'delivery' ? 'delivery' : 'pickup', now);
+
+  let baseTime = now;
+  let isOutsideHours = false;
+
+  if (!businessStatus.isOpen && !businessStatus.isEarlyOrder) {
+    // Restaurante fechado — usar próximo horário de abertura
+    isOutsideHours = true;
+    const currentHour = now.getHours();
+    if (currentHour >= 22 || currentHour < 11) {
+      // Após jantar ou antes do almoço — usar amanhã 11h
+      baseTime = new Date(now);
+      if (currentHour >= 22) baseTime.setDate(baseTime.getDate() + 1);
+      baseTime.setHours(11, 0, 0, 0);
+    } else {
+      // Entre almoço e jantar — usar 19h
+      baseTime = new Date(now);
+      baseTime.setHours(19, 0, 0, 0);
+    }
+  } else if (businessStatus.isEarlyOrder && businessStatus.currentShift) {
+    // Pedido antecipado — usar horário de abertura do turno
+    baseTime = new Date(now);
+    if (businessStatus.currentShift === 'lunch') {
+      baseTime.setHours(11, 0, 0, 0);
+    } else {
+      baseTime.setHours(19, 0, 0, 0);
+    }
+  }
+
   // Calcular horário estimado de chegada
-  const chegadaMin = new Date(now.getTime() + tempo.min * 60 * 1000);
-  const chegadaMax = new Date(now.getTime() + tempo.max * 60 * 1000);
+  const chegadaMin = new Date(baseTime.getTime() + tempo.min * 60 * 1000);
+  const chegadaMax = new Date(baseTime.getTime() + tempo.max * 60 * 1000);
   const formatHora = (d: Date) =>
     d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
   const horarioEstimado = `${formatHora(chegadaMin)} – ${formatHora(chegadaMax)}`;
@@ -155,6 +186,9 @@ export function formatConfirmationMessage(
     message += `🚚 *Previsão de entrega:* ${horarioEstimado}\n`;
     if (isWeekend) {
       message += `_(Fim de semana — pode haver variação no horário)_\n`;
+    }
+    if (isOutsideHours) {
+      message += `_(⚠️ Pedido fora do horário — previsão baseada na próxima abertura)_\n`;
     }
   } else {
     message += `🏦 *Pronto para retirada às:* ${horarioEstimado}\n`;

@@ -1014,7 +1014,8 @@
 - [x] BUG: Endereço não salvo/pré-preenchido no checkout
   - Corrigido: `updateCustomerAddress` busca por múltiplos formatos
   - Corrigido: `getCustomerByWhatsapp` inclui busca por whatsappId além de phone
-- [ ] BUG: Previsão de entrega fora do horário de funcionamento (00:21-00:46 em vez de horário real)
+- [x] BUG: Previsão de entrega fora do horário de funcionamento (00:21-00:46 em vez de horário real)
+  - Corrigido: previsão agora usa próximo horário de abertura como base quando restaurante fechado
 - [x] BUG: Pedido anterior não disponível para repetir
   - Corrigido: `getOrderHistory` busca por múltiplos formatos de phone/whatsappId
 - [x] AUDITORIA: Merge de registros duplicados no banco de dados
@@ -1022,3 +1023,13 @@
   - whatsappId canônico: `5517988112791@s.whatsapp.net`
   - Conversas e pedidos reatribuídos ao registro principal
 - [x] TESTES: 72 testes passando (14 novos para normalização de whatsappId)
+
+## Correção Previsão de Entrega (13/03/2026)
+- [x] BUG: Previsão de entrega mostra horários fora do funcionamento (ex: 00:21-00:46)
+  - Corrigido: Confirmacao.tsx agora detecta restaurante fechado e usa próximo horário de abertura como base
+  - Corrigido: orderNotification.ts também ajusta base para horário de abertura quando fora do expediente
+  - 3 cenários tratados: aberto (usa now), antecipado (usa abertura do turno), fechado (usa próxima abertura)
+- [x] Analisar como o horário estimado é calculado no checkout e no chatbot
+- [x] Ajustar para respeitar horário de funcionamento do restaurante
+- [x] Aplicar regras corretas: Delivery seg-sex 45-70min, sáb-dom 60-110min, Retirada 30-50min
+- [x] Testar e validar — 88 testes passando (16 novos para previsão de entrega)
