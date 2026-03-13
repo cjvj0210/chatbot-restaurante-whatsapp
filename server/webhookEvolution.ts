@@ -4,11 +4,9 @@ import { sendTextMessageEvolution, deleteMessageForEveryone } from "./evolutionA
 import { whatsappService } from "./services/whatsappService";
 import { markMessageAsProcessed } from "./messagePolling";
 import { isBotSentMessage } from "./botMessageTracker";
-import { getDb, getCustomerByWhatsappId, getActiveConversation, updateConversation } from "./db";
-import { conversations, customers } from "../drizzle/schema";
-import { eq, like, or } from "drizzle-orm";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromEvolution } from "./services/audioService";
+import { activateHumanModeForJid, deactivateHumanModeForJid, isHumanModeActiveForJid } from "./services/humanModeService";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -311,69 +309,6 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
   }
 }
 
-/**
- * Ativa o modo humano para uma conversa baseada no JID do WhatsApp.
- * Quando o operador responde manualmente, o bot fica silencioso por 30 minutos.
- */
-async function activateHumanModeForJid(remoteJid: string): Promise<void> {
-  try {
-    const phone = extractPhoneFromJid(remoteJid);
-    const customer = await getCustomerByWhatsappId(remoteJid);
-    
-    if (!customer) {
-      console.log(`[EvolutionWebhook] Cliente não encontrado para ${phone} — modo humano não ativado`);
-      return;
-    }
-    
-    const conversation = await getActiveConversation(customer.id);
-    if (!conversation) {
-      console.log(`[EvolutionWebhook] Conversa ativa não encontrada para ${phone} — modo humano não ativado`);
-      return;
-    }
-    
-    const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
-    await updateConversation(conversation.id, {
-      humanMode: true,
-      humanModeUntil,
-    });
-    
-    console.log(`[EvolutionWebhook] ✅ Modo humano ATIVADO para ${phone} até ${humanModeUntil.toISOString()}`);
-    console.log(`[EvolutionWebhook] Bot ficará silencioso. Operador pode enviar #bot para reativar.`);
-  } catch (err) {
-    console.error("[EvolutionWebhook] Erro ao ativar modo humano:", err);
-  }
-}
-
-/**
- * Desativa o modo humano para uma conversa baseada no JID do WhatsApp.
- * Chamada quando o operador envia o comando #bot.
- */
-async function deactivateHumanModeForJid(remoteJid: string): Promise<void> {
-  try {
-    const phone = extractPhoneFromJid(remoteJid);
-    const customer = await getCustomerByWhatsappId(remoteJid);
-    
-    if (!customer) {
-      console.log(`[EvolutionWebhook] Cliente não encontrado para ${phone}`);
-      return;
-    }
-    
-    const conversation = await getActiveConversation(customer.id);
-    if (!conversation) {
-      console.log(`[EvolutionWebhook] Conversa ativa não encontrada para ${phone}`);
-      return;
-    }
-    
-    await updateConversation(conversation.id, {
-      humanMode: false,
-      humanModeUntil: null,
-    });
-    
-    console.log(`[EvolutionWebhook] ✅ Modo humano DESATIVADO para ${phone} — bot retomando atendimento`);
-  } catch (err) {
-    console.error("[EvolutionWebhook] Erro ao desativar modo humano:", err);
-  }
-}
 
 /**
  * Envia uma mensagem de texto e retorna o ID da mensagem enviada.
@@ -413,31 +348,3 @@ async function sendTextAndGetId(remoteJid: string, text: string): Promise<string
   }
 }
 
-/**
- * Verifica se o modo humano está ativo para uma conversa baseada no JID.
- * Retorna true se o modo humano está ativo e ainda não expirou.
- */
-async function isHumanModeActiveForJid(remoteJid: string): Promise<boolean> {
-  try {
-    const customer = await getCustomerByWhatsappId(remoteJid);
-    if (!customer) return false;
-
-    const conversation = await getActiveConversation(customer.id);
-    if (!conversation) return false;
-
-    if (!conversation.humanMode) return false;
-
-    // Verificar se ainda não expirou
-    if (conversation.humanModeUntil) {
-      const until = new Date(conversation.humanModeUntil);
-      if (until > new Date()) {
-        return true;
-      }
-    }
-
-    return false;
-  } catch (err) {
-    console.error("[EvolutionWebhook] Erro ao verificar modo humano:", err);
-    return false;
-  }
-}
