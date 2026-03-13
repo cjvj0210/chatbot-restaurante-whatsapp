@@ -8,6 +8,7 @@ import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromEvolution } from "./services/audioService";
 import { activateHumanModeForJid, deactivateHumanModeForJid, isHumanModeActiveForJid } from "./services/humanModeService";
 import { CHATBOT } from "../shared/constants";
+import { logger } from "./utils/logger";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -148,27 +149,27 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     const configuredKey = process.env.EVOLUTION_API_KEY || "";
     const receivedKey = payload.apikey || (req.headers["apikey"] as string) || "";
     if (!receivedKey || receivedKey !== configuredKey) {
-      console.warn("[EvolutionWebhook] apikey inválida ou ausente — payload rejeitado");
+      logger.warn("Webhook", "apikey inválida ou ausente — payload rejeitado");
       return;
     }
 
     const timestamp = new Date().toISOString();
-    console.log(`[EvolutionWebhook] [${timestamp}] Evento: ${payload.event} | Instância: ${payload.instance}`);
+    logger.info("Webhook", `[${timestamp}] Evento: ${payload.event} | Instância: ${payload.instance}`);
 
     // Tratar evento de conexão (detectar desconexão em tempo real)
     const eventNormalized = payload.event?.toUpperCase().replace(".", "_");
     if (eventNormalized === "CONNECTION_UPDATE") {
       const state = (payload.data as any)?.state || (payload.data as any)?.status;
-      console.log(`[EvolutionWebhook] Conexão atualizada: ${JSON.stringify(payload.data)}`);
+      logger.info("Webhook", `Conexão atualizada: ${JSON.stringify(payload.data)}`);
       if (state === "close" || state === "disconnected") {
-        console.error(`[EvolutionWebhook] ⚠️ DESCONEXÃO DETECTADA via webhook!`);
+        logger.error("Webhook", "⚠️ DESCONEXÃO DETECTADA via webhook!");
       }
       return;
     }
 
     // Só processar evento de mensagens recebidas
     if (eventNormalized !== "MESSAGES_UPSERT") {
-      console.log(`[EvolutionWebhook] Evento ignorado: ${payload.event}`);
+      logger.info("Webhook", `Evento ignorado: ${payload.event}`);
       return;
     }
 
@@ -178,36 +179,38 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     // A Evolution API pode enviar múltiplos eventos MESSAGES_UPSERT para a mesma mensagem
     const webhookMsgId = key.id;
     if (webhookMsgId && isWebhookDuplicate(webhookMsgId)) {
-      console.log(`[EvolutionWebhook] ⚠️ Evento duplicado ignorado: ${webhookMsgId}`);
+      logger.info("Webhook", `⚠️ Evento duplicado ignorado: ${webhookMsgId}`);
       return;
     }
 
     // Mensagens fromMe=true: verificar se foi o BOT ou o OPERADOR
     if (key.fromMe) {
       const messageId = key.id;
-      
+
       // Se o ID está registrado no tracker, foi o BOT que enviou → ignorar
       if (await isBotSentMessage(messageId)) {
-        console.log(`[EvolutionWebhook] Mensagem do BOT detectada (ID registrado): ${messageId}`);
+        logger.info("Webhook", `Mensagem do BOT detectada (ID registrado): ${messageId}`);
         return;
       }
-      
+
       // Se o ID NÃO está registrado, foi o OPERADOR que digitou manualmente
-      console.log(`[EvolutionWebhook] Mensagem do OPERADOR detectada (ID não registrado): ${messageId}`);
-      
+      logger.info("Webhook", `Mensagem do OPERADOR detectada (ID não registrado): ${messageId}`);
+
       // Extrair texto da mensagem do operador
       const operatorMsg = payload.data.message?.conversation || payload.data.message?.extendedTextMessage?.text || "";
-      
-      // Verificar se é o comando #bot (devolver ao bot)
-      if (operatorMsg.trim().toLowerCase() === "#bot") {
-        console.log(`[EvolutionWebhook] Comando #bot recebido — apagando mensagem e reativando bot`);
-        
+
+      // Aceitar variações do comando para reativar o bot
+      const BOT_COMMANDS = new Set(["#bot", "#ativar", "#reativar"]);
+      const normalizedCmd = operatorMsg.trim().toLowerCase();
+      if (BOT_COMMANDS.has(normalizedCmd)) {
+        logger.info("Webhook", `Comando ${normalizedCmd} recebido — apagando mensagem e reativando bot`);
+
         // 1. Apagar a mensagem #bot antes do cliente ver
         await deleteMessageForEveryone(key.remoteJid, messageId, true);
-        
+
         // 2. Desativar modo humano
         await deactivateHumanModeForJid(key.remoteJid);
-        
+
         // 3. Enviar confirmação silenciosa ao operador (mensagem que se auto-apaga)
         // Enviamos uma confirmação e apagamos em 3 segundos
         const confirmMsg = await sendTextAndGetId(key.remoteJid, "✅ Bot reativado para esta conversa!");
@@ -218,12 +221,12 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
         }
         return;
       }
-      
+
       // Qualquer outra mensagem do operador → ativar modo humano (30 min)
       // Verificar se já está em modo humano para não enviar notificação repetida
       const isAlreadyHuman = await isHumanModeActiveForJid(key.remoteJid);
       await activateHumanModeForJid(key.remoteJid);
-      
+
       if (!isAlreadyHuman) {
         // Primeira mensagem do operador: enviar notificação silenciosa
         const notifMsg = await sendTextAndGetId(
@@ -242,13 +245,13 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
 
     // Ignorar mensagens de grupos e status/broadcast
     if (isGroupChat(key.remoteJid) || isStatusBroadcast(key.remoteJid)) {
-      console.log(`[EvolutionWebhook] Mensagem de grupo/status ignorada: ${key.remoteJid}`);
+      logger.info("Webhook", `Mensagem de grupo/status ignorada: ${key.remoteJid}`);
       return;
     }
 
     // Verificar se é conversa individual válida
     if (!isIndividualChat(key.remoteJid)) {
-      console.log(`[EvolutionWebhook] JID não reconhecido, tentando processar mesmo assim: ${key.remoteJid}`);
+      logger.info("Webhook", `JID não reconhecido, tentando processar mesmo assim: ${key.remoteJid}`);
     }
 
     const phone = extractPhoneFromJid(key.remoteJid);
@@ -258,7 +261,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     const remoteJidAlt = key.remoteJidAlt || undefined;
     const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
-    console.log(`[EvolutionWebhook] Mensagem de ${phone} (${pushName || "sem nome"}) | Tipo: ${messageType} | realPhone: ${realPhone || 'N/A'}`);
+    logger.info("Webhook", `Mensagem de ${phone} (${pushName || "sem nome"}) | Tipo: ${messageType} | realPhone: ${realPhone || 'N/A'}`);
 
     let messageText = "";
 
@@ -275,28 +278,31 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       messageText = message.imageMessage.caption || "[Imagem enviada]";
     } else if (message?.audioMessage || messageType === "audioMessage" || messageType === "pttMessage") {
       // Processar áudio: baixar e transcrever
-      console.log(`[EvolutionWebhook] Áudio recebido, transcrevendo... ID: ${messageId}`);
+      logger.info("Webhook", `Áudio recebido, transcrevendo... ID: ${messageId}`);
       const transcription = await transcribeFromEvolution(messageId);
       if (transcription) {
         messageText = transcription;
-        console.log(`[EvolutionWebhook] Áudio transcrito: "${messageText}"`);
+        logger.info("Webhook", `Áudio transcrito: "${messageText}"`);
       } else {
         messageText = "[Áudio recebido - não foi possível transcrever]";
       }
     } else if (message?.stickerMessage) {
-      console.log("[EvolutionWebhook] Sticker ignorado");
+      logger.info("Webhook", "Sticker ignorado");
       return;
     } else {
-      console.log(`[EvolutionWebhook] Tipo de mensagem não suportado: ${messageType}`);
+      logger.info("Webhook", `Tipo de mensagem não suportado: ${messageType}`);
       return;
     }
 
-    if (!messageText.trim()) {
-      console.log("[EvolutionWebhook] Mensagem vazia, ignorando");
+    // Validar e sanitizar messageText antes de processar
+    const safeText = typeof messageText === "string" ? messageText.slice(0, 2000) : "";
+    if (!safeText.trim()) {
+      logger.info("Webhook", "Mensagem vazia ou inválida, ignorando");
       return;
     }
+    messageText = safeText;
 
-    console.log(`[EvolutionWebhook] Processando: "${messageText.substring(0, 100)}..."`);
+    logger.info("Webhook", `Processando: "${messageText.substring(0, 100)}..."`);
 
     // Marcar como processada para que o polling não reprocesse
     markMessageAsProcessed(messageId);
@@ -304,9 +310,9 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     // Processar mensagem pelo chatbot (passar pushName e realPhone para enriquecer dados do cliente)
     await processIncomingMessage(whatsappId, phone, messageText, messageId, pushName || undefined, realPhone);
 
-    console.log(`[EvolutionWebhook] Mensagem processada com sucesso`);
+    logger.info("Webhook", "Mensagem processada com sucesso");
   } catch (error) {
-    console.error("[EvolutionWebhook] Erro ao processar webhook:", error);
+    logger.error("Webhook", "Erro ao processar webhook:", error);
   }
 }
 
@@ -344,7 +350,7 @@ async function sendTextAndGetId(remoteJid: string, text: string): Promise<string
     }
     return sentId || null;
   } catch (error: any) {
-    console.error("[EvolutionWebhook] Erro ao enviar mensagem silenciosa:", error?.message);
+    logger.error("Webhook", `Erro ao enviar mensagem silenciosa: ${error?.message}`);
     return null;
   }
 }

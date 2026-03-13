@@ -101,7 +101,7 @@ export async function processIncomingMessage(
   // processe cada mensagem, mesmo com múltiplos servidores rodando.
   const claimed = await tryClaimMessage(messageId, "chatbot");
   if (!claimed) {
-    console.log(`[Chatbot] ⚠️ Mensagem já processada por outra instância: ${messageId} (de ${phone})`);
+    logger.info("Chatbot", `⚠️ Mensagem já processada por outra instância: ${messageId} (de ${phone})`);
     return;
   }
 
@@ -129,7 +129,7 @@ async function _processIncomingMessageInternal(
   try {
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
     if (!(await checkChatbotRateLimit(whatsappId))) {
-      console.warn(`[Chatbot] Rate limit atingido para ${phone} (${whatsappId})`);
+      logger.warn("Chatbot", `Rate limit atingido para ${phone} (${whatsappId})`);
       const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
       await whatsappService.sendText(whatsappId, limitMsg);
       return;
@@ -137,7 +137,7 @@ async function _processIncomingMessageInternal(
 
     // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
     if (messageText.length > CHATBOT.MAX_MESSAGE_LENGTH) {
-      console.warn(`[Chatbot] Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
+      logger.warn("Chatbot", `Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
       messageText = messageText.slice(0, CHATBOT.MAX_MESSAGE_LENGTH) + "...";
     }
 
@@ -169,7 +169,7 @@ async function _processIncomingMessageInternal(
     ];
     for (const pattern of injectionPatterns) {
       if (pattern.test(messageText)) {
-        console.warn(`[Chatbot] Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
+        logger.warn("Chatbot", `Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
         messageText = messageText.replace(pattern, "[mensagem filtrada]");
       }
     }
@@ -216,9 +216,9 @@ async function _processIncomingMessageInternal(
           await updateCustomer(customer.id, updates);
           // Atualizar o objeto local
           Object.assign(customer, updates);
-          console.log(`[Chatbot] Cliente ${customer.id} atualizado:`, Object.keys(updates).join(", "));
+          logger.info("Chatbot", `Cliente ${customer.id} atualizado: ${Object.keys(updates).join(", ")}`);
         } catch (err) {
-          console.error("[Chatbot] Erro ao atualizar cliente:", err);
+          logger.error("Chatbot", "Erro ao atualizar cliente", err);
         }
       }
     }
@@ -254,20 +254,19 @@ async function _processIncomingMessageInternal(
     if (conversation.humanMode && conversation.humanModeUntil) {
       const now = new Date();
       if (now < new Date(conversation.humanModeUntil)) {
-        console.log(`[Chatbot] Modo humano ativo até ${new Date(conversation.humanModeUntil).toLocaleString('pt-BR')} — bot silencioso para ${phone}`);
-        console.log(`[Chatbot] Operador pode enviar "bot" para reativar o atendimento automático.`);
+        logger.info("Chatbot", `Modo humano ativo até ${new Date(conversation.humanModeUntil).toLocaleString('pt-BR')} — bot silencioso para ${phone}`);
         return; // Bot não responde enquanto o operador está no controle
       } else {
         // Expirou: desativar modo humano automaticamente
         await updateConversation(conversation.id, { humanMode: false, humanModeUntil: null });
-        console.log(`[Chatbot] Modo humano expirado para ${phone} — bot retomando atendimento`);
+        logger.info("Chatbot", `Modo humano expirado para ${phone} — bot retomando atendimento`);
       }
     }
 
     // 5. Verificar cache de FAQ antes de chamar o LLM (economia de tokens e latência)
     const faqResponse = checkFaqCache(messageText);
     if (faqResponse) {
-      console.log(`[Chatbot] FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
+      logger.info("Chatbot", `FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
       // Salvar resposta do FAQ como mensagem do assistente
       await createMessage({
         conversationId: conversation.id,
@@ -316,7 +315,7 @@ async function _processIncomingMessageInternal(
           humanMode: true,
           humanModeUntil,
         });
-        console.log(`[Chatbot] ✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
+        logger.info("Chatbot", `✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
 
         // Enviar alerta ao restaurante
         const settings = await getRestaurantSettings();
@@ -338,9 +337,9 @@ async function _processIncomingMessageInternal(
         await whatsappService.sendText(restaurantPhoneNorm, alertMsg).catch((err: unknown) => {
           logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
         });
-        console.log(`[Chatbot] Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
+        logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
       } catch (err) {
-        console.error("[Chatbot] Erro ao ativar modo humano preventivo:", err);
+        logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);
       }
     }
 
@@ -375,7 +374,7 @@ async function _processIncomingMessageInternal(
       await whatsappService.sendText(whatsappId, response.text);
     }
   } catch (error) {
-    console.error("[Chatbot] Error processing message:", error);
+    logger.error("Chatbot", "Error processing message", error);
     await whatsappService.sendText(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.").catch((sendErr: unknown) => {
       logger.warn("Chatbot", "Falha ao enviar mensagem de erro ao cliente", sendErr);
     });

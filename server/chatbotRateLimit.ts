@@ -11,6 +11,7 @@ import { and, count, eq, gte } from "drizzle-orm";
 import { getDb } from "./db";
 import { messages, conversations, customers } from "../drizzle/schema";
 import { CHATBOT } from "../shared/constants";
+import { logger } from "./utils/logger";
 
 const WINDOW_MS = CHATBOT.RATE_LIMIT_WINDOW_MS;
 const MAX_MESSAGES = CHATBOT.RATE_LIMIT_MAX_MESSAGES;
@@ -105,6 +106,6 @@ export function cleanupRateLimits(): void {
     }
   }
   if (cleaned > 0) {
-    console.log(`[RateLimit] Limpou ${cleaned} entradas expiradas`);
+    logger.info("RateLimit", `Limpou ${cleaned} entradas expiradas`);
   }
 }

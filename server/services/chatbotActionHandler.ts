@@ -42,12 +42,12 @@ export async function handleOrderLink(aiResponse: string, phone: string): Promis
       // Link em linha isolada (iOS exige URL sozinha na linha para ser clicável)
       aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
       aiResponse = aiResponse.replace(/\n{3,}/g, "\n\n");
-      console.log(`[ActionHandler] Link de pedido gerado para ${phone}: ${orderLink}`);
+      logger.info("ActionHandler", `Link de pedido gerado para ${phone}: ${orderLink}`);
     } else {
       aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
     }
   } catch (err) {
-    console.error("[ActionHandler] Erro ao gerar link de pedido:", err);
+    logger.error("ActionHandler", "Erro ao gerar link de pedido", err);
     aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
   }
 
@@ -156,7 +156,7 @@ export async function handleOrderStatus(aiResponse: string): Promise<string> {
       );
     }
   } catch (err) {
-    console.error("[ActionHandler] Erro ao verificar status do pedido:", err);
+    logger.error("ActionHandler", "Erro ao verificar status do pedido", err);
     aiResponse = aiResponse.replace(
       statusMatch[0]!,
       "Não consegui verificar o status agora. Tente novamente em instantes."
@@ -223,9 +223,7 @@ export async function handleSaveReservation(aiResponse: string, phone: string): 
         source: "chatbot",
       });
 
-      console.log(
-        `[ActionHandler] Reserva salva: ${reservationNumber} para ${params.nome} em ${reservationDate.toISOString()}`
-      );
+      logger.info("ActionHandler", `Reserva salva: ${reservationNumber} para ${params.nome} em ${reservationDate.toISOString()}`);
 
       await notifyOwner({
         title: `📅 Nova reserva via WhatsApp`,
@@ -235,7 +233,7 @@ export async function handleSaveReservation(aiResponse: string, phone: string): 
       });
     }
   } catch (err) {
-    console.error("[ActionHandler] Erro ao salvar reserva:", err);
+    logger.error("ActionHandler", "Erro ao salvar reserva", err);
   }
 
   // Remover o marcador da mensagem enviada ao cliente

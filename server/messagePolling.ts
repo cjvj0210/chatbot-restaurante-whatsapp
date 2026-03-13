@@ -14,6 +14,7 @@ import { conversations, customers } from "../drizzle/schema";
 import { eq, like, or } from "drizzle-orm";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromPolling } from "./services/audioService";
+import { logger } from "./utils/logger";
 
 // Em produção usa 10s (webhook é confiável); em dev usa 3s (webhook pode não funcionar localmente)
 // Pode ser sobrescrito via POLL_INTERVAL_MS env var
@@ -164,7 +165,7 @@ async function pollMessages(): Promise<void> {
         messageText = message.imageMessage.caption || "[Imagem enviada]";
       } else if (message.audioMessage || messageType === "audioMessage" || messageType === "pttMessage") {
         // Transcrever áudio
-        console.log(`[Polling] Áudio recebido, transcrevendo... ID: ${msgId}`);
+        logger.info("Polling", `Áudio recebido, transcrevendo... ID: ${msgId}`);
         const transcription = await transcribeFromPolling(msgId, baseUrl, apiKey, instanceName);
         if (transcription) {
           messageText = transcription;
@@ -185,20 +186,20 @@ async function pollMessages(): Promise<void> {
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
       const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
-      console.log(`[Polling] Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
+      logger.info("Polling", `Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
 
       // Processar mensagem pelo chatbot (mesmo fluxo do webhook, com pushName e realPhone)
       try {
         await processIncomingMessage(whatsappId, phone, messageText, msgId, pushName || undefined, realPhone);
-        console.log(`[Polling] Mensagem processada com sucesso: ${msgId}`);
+        logger.info("Polling", `Mensagem processada com sucesso: ${msgId}`);
       } catch (err) {
-        console.error(`[Polling] Erro ao processar mensagem ${msgId}:`, err);
+        logger.error("Polling", `Erro ao processar mensagem ${msgId}`, err);
       }
     }
   } catch (error: any) {
     pollErrors++;
     if (pollErrors <= 3 || pollErrors % 10 === 0) {
-      console.error(`[Polling] Erro ao buscar mensagens (tentativa #${pollErrors}):`, error?.message);
+      logger.error("Polling", `Erro ao buscar mensagens (tentativa #${pollErrors})`, error?.message);
     }
   } finally {
     isPolling = false;
@@ -237,11 +238,11 @@ async function handleOperatorMessage(clientJid: string): Promise<void> {
           .update(conversations)
           .set({ humanMode: true, humanModeUntil })
           .where(eq(conversations.id, conv.id));
-        console.log(`[Polling] Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
+        logger.info("Polling", `Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
       }
     }
   } catch (err) {
-    console.error("[Polling] Erro ao ativar modo humano:", err);
+    logger.error("Polling", "Erro ao ativar modo humano", err);
   }
 }
 
@@ -272,13 +273,13 @@ export function startMessagePolling(): void {
   const { baseUrl } = getEvolutionConfig();
 
   if (!baseUrl) {
-    console.log("[Polling] EVOLUTION_API_URL não configurado, polling desativado");
+    logger.info("Polling", "EVOLUTION_API_URL não configurado, polling desativado");
     return;
   }
 
   // Registrar o timestamp de início para ignorar mensagens anteriores
   pollingStartTimestamp = Math.floor(Date.now() / 1000);
-  console.log(`[Polling] Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
+  logger.info("Polling", `Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
 
   // Primeira busca após delay inicial
   setTimeout(() => {

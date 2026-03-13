@@ -45,9 +45,9 @@ export async function runMaintenance(): Promise<void> {
       .delete(messages)
       .where(lt(messages.createdAt, ninetyDaysAgo));
 
-    console.log(`[Maintenance] Limpeza concluída em ${now.toISOString()}`);
+    logger.info("Maintenance", `Limpeza concluída em ${now.toISOString()}`);
   } catch (err) {
-    console.error("[Maintenance] Erro na limpeza:", err);
+    logger.error("Maintenance", "Erro na limpeza", err);
   }
 }
 
@@ -60,7 +60,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
     const status = await checkInstanceStatus();
 
     if (status !== lastInstanceStatus) {
-      console.log(`[Monitor] Status WhatsApp mudou: ${lastInstanceStatus} → ${status}`);
+      logger.info("Monitor", `Status WhatsApp mudou: ${lastInstanceStatus} → ${status}`);
       lastInstanceStatus = status;
     }
 
@@ -68,7 +68,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
       // Instância desconectada — alertar apenas uma vez até reconectar
       if (!instanceAlertSent) {
         instanceAlertSent = true;
-        console.warn(`[Monitor] WhatsApp desconectado! Status: ${status}`);
+        logger.warn("Monitor", `WhatsApp desconectado! Status: ${status}`);
         await notifyOwner({
           title: "⚠️ WhatsApp Desconectado",
           content: `A instância WhatsApp está com status "${status}". Acesse o painel de configurações e reconecte o QR Code para restaurar o atendimento automático.`,
@@ -78,7 +78,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
       // Reconectou — resetar flag para permitir próximo alerta
       if (instanceAlertSent) {
         instanceAlertSent = false;
-        console.log("[Monitor] WhatsApp reconectado.");
+        logger.info("Monitor", "WhatsApp reconectado.");
         await notifyOwner({
           title: "✅ WhatsApp Reconectado",
           content: "A instância WhatsApp voltou ao status 'open'. O atendimento automático foi restaurado.",
@@ -86,7 +86,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
       }
     }
   } catch (err) {
-    console.error("[Monitor] Erro ao verificar instância WhatsApp:", err);
+    logger.error("Monitor", "Erro ao verificar instância WhatsApp", err);
   }
 }
 
@@ -120,7 +120,7 @@ export async function retryFailedMessages(): Promise<void> {
 
     if (failedMessages.length === 0) return;
 
-    console.log(`[RetryWorker] Processando ${failedMessages.length} mensagens com falha...`);
+    logger.info("Maintenance", `RetryWorker: Processando ${failedMessages.length} mensagens com falha...`);
 
     for (const msg of failedMessages) {
       if (!msg.whatsappNumber) continue;
@@ -139,7 +139,7 @@ export async function retryFailedMessages(): Promise<void> {
             retries: msg.retries + 1,
           })
           .where(eq(botMessages.id, msg.id));
-        console.log(`[RetryWorker] Mensagem ${msg.id} reenviada com sucesso.`);
+        logger.info("Maintenance", `RetryWorker: Mensagem ${msg.id} reenviada com sucesso.`);
       } else {
         const newRetries = msg.retries + 1;
         await db
@@ -152,12 +152,12 @@ export async function retryFailedMessages(): Promise<void> {
           .where(eq(botMessages.id, msg.id));
 
         if (newRetries >= MAX_RETRIES) {
-          console.warn(`[RetryWorker] Mensagem ${msg.id} esgotou ${MAX_RETRIES} tentativas. Abandonando.`);
+          logger.warn("Maintenance", `RetryWorker: Mensagem ${msg.id} esgotou ${MAX_RETRIES} tentativas. Abandonando.`);
         }
       }
     }
   } catch (err) {
-    console.error("[RetryWorker] Erro no worker de retry:", err);
+    logger.error("Maintenance", "RetryWorker: Erro no worker de retry", err);
   }
 }
 
