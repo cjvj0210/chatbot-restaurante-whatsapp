@@ -14,6 +14,7 @@ import { getDb } from "../db";
 import { orderSessions, orders, reservations } from "../../drizzle/schema";
 import { getNowBRT } from "../../shared/businessHours";
 import { notifyOwner } from "../_core/notification";
+import { logger } from "../utils/logger";
 
 // URL do site em produção — hardcoded para evitar SITE_DEV_URL sobrescrever
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -230,7 +231,9 @@ export async function handleSaveReservation(aiResponse: string, phone: string): 
       await notifyOwner({
         title: `📅 Nova reserva via WhatsApp`,
         content: `Nome: ${params.nome || "-"}\nTelefone: ${customerPhone}\nData/Hora: ${params.data || "-"}\nPessoas: ${params.pessoas || "-"}\nObs: ${params.obs && params.obs !== "OBSERVACOES" ? params.obs : "-"}`,
-      }).catch(() => {});
+      }).catch((err: unknown) => {
+        logger.warn("ActionHandler", "Falha ao notificar dono sobre nova reserva", err);
+      });
     }
   } catch (err) {
     console.error("[ActionHandler] Erro ao salvar reserva:", err);

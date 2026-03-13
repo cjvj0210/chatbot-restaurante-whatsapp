@@ -34,6 +34,7 @@ import { notifyOwner } from "./_core/notification";
 import { sanitizeLLMOutput } from "./sanitize";
 import { checkChatbotRateLimit } from "./chatbotRateLimit";
 import { checkFaqCache } from "./faqCache";
+import { logger } from "./utils/logger";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -333,7 +334,9 @@ async function _processIncomingMessageInternal(
           `Responda diretamente para este contato no WhatsApp.\n` +
           `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
-        await whatsappService.sendText(restaurantPhoneNorm, alertMsg).catch(() => {});
+        await whatsappService.sendText(restaurantPhoneNorm, alertMsg).catch((err: unknown) => {
+          logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
+        });
         console.log(`[Chatbot] Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
       } catch (err) {
         console.error("[Chatbot] Erro ao ativar modo humano preventivo:", err);
@@ -372,7 +375,9 @@ async function _processIncomingMessageInternal(
     }
   } catch (error) {
     console.error("[Chatbot] Error processing message:", error);
-    await whatsappService.sendText(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.").catch(() => {});
+    await whatsappService.sendText(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.").catch((sendErr: unknown) => {
+      logger.warn("Chatbot", "Falha ao enviar mensagem de erro ao cliente", sendErr);
+    });
   }
 }
 
