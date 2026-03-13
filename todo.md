@@ -1064,3 +1064,21 @@
 - [x] Corrigir orderNotification.ts para respeitar horário de funcionamento
 - [x] Validar consistência: cardápio digital, chatbot, notificação WhatsApp
   - 102 testes passando (5 novos para timezone BRT)
+
+## Pesquisa: Valor de Mercado do Sistema (13/03/2026)
+- [x] Analisar completamente o sistema desenvolvido (tamanho, funcionalidades, especificidades)
+- [x] Pesquisar custos de desenvolvimento freelancer/empresa no interior de SP
+- [x] Estimar tempo de desenvolvimento sem IA
+- [x] Comparar com soluções do mercado
+
+## Pesquisa: Ferramentas de Auditoria de Código com IA (13/03/2026)
+- [x] Pesquisar ferramentas de auditoria de código com IA (Codex, Cursor, etc.)
+- [x] Comparar custo-benefício das ferramentas
+- [x] Identificar a melhor abordagem para auditar o sistema completo
+
+## Exportação GitHub + Guia de Auditoria Claude Code (13/03/2026)
+- [ ] Exportar projeto para repositório GitHub privado
+- [ ] Pesquisar detalhes atualizados do Claude Code Review e CLI
+- [ ] Criar guia completo de auditoria com prompts prontos
+- [ ] Incluir metodologia passo a passo para leigo
+- [ ] Entregar guia e confirmar exportação
