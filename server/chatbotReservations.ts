@@ -5,6 +5,7 @@
 
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { getDb } from "./db";
 import { reservations } from "../drizzle/schema";
 
@@ -29,8 +30,9 @@ export const chatbotReservationsRouter = router({
       if (!db) throw new Error("Database not available");
       
       // Gerar número de reserva único (formato: RES-YYYYMMDD-XXXX)
+      // SEGURANÇA: usar randomBytes (CSPRNG) em vez de Math.random() (não criptográfico)
       const dateStr = new Date(input.date).toISOString().slice(0, 10).replace(/-/g, '');
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const randomSuffix = (randomBytes(2).readUInt16BE(0) % 9000) + 1000; // 1000-9999
       const reservationNumber = `RES-${dateStr}-${randomSuffix}`;
 
       // Criar reserva no banco

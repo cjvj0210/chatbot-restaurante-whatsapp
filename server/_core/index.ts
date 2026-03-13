@@ -38,11 +38,18 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-// Middleware para verificar se a requisição vem de um admin (via query param ou header)
+// Middleware para verificar se a requisição vem de um admin (apenas via header, nunca query string)
+// SEGURANÇA: DIAG_SECRET dedicado — NÃO usar JWT_SECRET como fallback
 function requireDiagAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const diagSecret = process.env.DIAG_SECRET || process.env.JWT_SECRET || "";
-  const provided = (req.headers["x-diag-secret"] as string) || req.query.secret as string;
-  if (!diagSecret || provided !== diagSecret) {
+  const diagSecret = process.env.DIAG_SECRET || "";
+  if (!diagSecret) {
+    // DIAG_SECRET não configurado — bloquear acesso por segurança
+    res.status(503).json({ error: "Diagnóstico não disponível" });
+    return;
+  }
+  // Aceitar segredo APENAS via header X-Diag-Secret (nunca via query string — evita logs)
+  const provided = req.headers["x-diag-secret"] as string;
+  if (!provided || provided !== diagSecret) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -58,9 +65,48 @@ async function startServer() {
 
   // ── Segurança: Helmet (headers HTTP defensivos) ──
   app.use(helmet({
-    contentSecurityPolicy: false, // Vite/React gerencia CSP
-    crossOriginEmbedderPolicy: false, // Necessário para iframes de mapas
+    // CSP: proteção contra XSS — React em produção não precisa desativar CSP
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-inline/eval necessário para Vite dev + React
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:", "https://d2xsxph8kpxj0f.cloudfront.net", "https://*.cloudfront.net"],
+        connectSrc: ["'self'", "wss:", "ws:"],
+        fontSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'", "blob:"],
+        frameSrc: ["'none'"],
+        upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Necessário para iframes externos
   }));
+
+  // ── Segurança: CORS — aceitar apenas origens conhecidas ──
+  const allowedOrigins = [
+    process.env.VITE_SITE_URL,
+    process.env.SITE_DEV_URL,
+    "https://chatbotwa-hesngyeo.manus.space",
+  ].filter(Boolean) as string[];
+  app.use((_req, res, next) => {
+    const origin = _req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,X-Diag-Secret");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    if (_req.method === "OPTIONS") { res.sendStatus(204); return; }
+    next();
+  });
+
+  // ── Segurança: Permissions-Policy ──
+  app.use((_req, res, next) => {
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    next();
+  });
 
   // ── Compressão gzip para respostas HTTP ──
   app.use(compression());
@@ -114,21 +160,30 @@ async function startServer() {
     });
   });
 
-  // Endpoint de teste de envio direto via Evolution API
-  app.get("/api/diag/send-test", requireDiagAuth, async (_req, res) => {
-    try {
-      const { sendTextMessageEvolution } = await import("../evolutionApi");
-      const result = await sendTextMessageEvolution("5517992253886", "[TESTE DIAG] Bot funcionando em producao! " + new Date().toLocaleString('pt-BR'));
-      res.json({ success: result, timestamp: new Date().toISOString() });
-    } catch (e: any) {
-      res.json({ success: false, error: e.message, timestamp: new Date().toISOString() });
-    }
-  });
+  // Endpoint de teste de envio direto via Evolution API (apenas em desenvolvimento)
+  if (process.env.NODE_ENV !== "production") {
+    app.get("/api/diag/send-test", requireDiagAuth, async (_req, res) => {
+      try {
+        const { sendTextMessageEvolution } = await import("../evolutionApi");
+        const result = await sendTextMessageEvolution("5517992253886", "[TESTE DIAG] Bot funcionando! " + new Date().toLocaleString('pt-BR'));
+        res.json({ success: result, timestamp: new Date().toISOString() });
+      } catch (e: any) {
+        res.json({ success: false, error: e.message, timestamp: new Date().toISOString() });
+      }
+    });
+  }
 
   // Endpoint para capturar payload real da Evolution API
-  const lastPayloads: any[] = [];
+  // SEGURANÇA: sanitizar campos sensíveis antes de armazenar
+  const lastPayloads: Array<{ ts: string; instance?: string; event?: string }> = [];
   app.post("/api/diag/capture", requireDiagAuth, (req, res) => {
-    lastPayloads.unshift({ ts: new Date().toISOString(), body: req.body });
+    // Armazenar apenas metadados, não o payload completo (evitar exposição de PII)
+    const sanitized = {
+      ts: new Date().toISOString(),
+      instance: req.body?.instance,
+      event: req.body?.event,
+    };
+    lastPayloads.unshift(sanitized);
     if (lastPayloads.length > 5) lastPayloads.pop();
     res.json({ ok: true });
   });

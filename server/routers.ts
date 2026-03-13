@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { verifyWebhook } from "./whatsapp";
@@ -44,12 +44,12 @@ export const appRouter = router({
     }),
   }),
   
-  // Debug - Monitoramento de Webhooks
+  // Debug - Monitoramento de Webhooks (apenas admin)
   debug: router({
-    getWebhookLogs: protectedProcedure.query(async () => {
+    getWebhookLogs: adminProcedure.query(async () => {
       return getWebhookLogs();
     }),
-    clearWebhookLogs: protectedProcedure.mutation(async () => {
+    clearWebhookLogs: adminProcedure.mutation(async () => {
       clearWebhookLogs();
       return { success: true };
     }),
@@ -65,12 +65,12 @@ export const appRouter = router({
     }),
   }),
 
-  // Configurações do Restaurante
+  // Configurações do Restaurante (apenas admin)
   restaurant: router({
-    getSettings: protectedProcedure.query(async () => {
+    getSettings: adminProcedure.query(async () => {
       return await db.getRestaurantSettings();
     }),
-    updateSettings: protectedProcedure
+    updateSettings: adminProcedure
       .input(
         z.object({
           name: z.string(),
@@ -90,12 +90,20 @@ export const appRouter = router({
       }),
   }),
 
-  // Configurações do WhatsApp
+  // Configurações do WhatsApp (apenas admin — contém accessToken sensível)
   whatsapp: router({
-    getSettings: protectedProcedure.query(async () => {
-      return await db.getWhatsappSettings();
+    getSettings: adminProcedure.query(async () => {
+      const settings = await db.getWhatsappSettings();
+      if (!settings) return null;
+      // Mascarar accessToken: nunca retornar o token completo ao frontend
+      return {
+        ...settings,
+        accessToken: settings.accessToken
+          ? `${settings.accessToken.slice(0, 4)}${"*".repeat(Math.max(0, settings.accessToken.length - 8))}${settings.accessToken.slice(-4)}`
+          : "",
+      };
     }),
-    updateSettings: protectedProcedure
+    updateSettings: adminProcedure
       .input(
         z.object({
           phoneNumberId: z.string(),
@@ -111,12 +119,12 @@ export const appRouter = router({
       }),
   }),
 
-  // Cardápio - Categorias
+  // Cardápio - Categorias (apenas admin para mutações)
   menuCategories: router({
-    list: protectedProcedure.query(async () => {
+    list: adminProcedure.query(async () => {
       return await db.getMenuCategories();
     }),
-    create: protectedProcedure
+    create: adminProcedure
       .input(
         z.object({
           name: z.string(),
@@ -139,7 +147,7 @@ export const appRouter = router({
         invalidateCachePrefix("menu:");
         return result;
       }),
-    update: protectedProcedure
+    update: adminProcedure
       .input(
         z.object({
           id: z.number(),
@@ -167,20 +175,20 @@ export const appRouter = router({
         invalidateCachePrefix("menu:");
         return { success: true };
       }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
       await db.deleteMenuCategory(input.id);
       invalidateCachePrefix("menu:");
-      await logAudit({ userId: ctx.user?.id, action: "category.delete", entityType: "menuCategory", entityId: input.id });
+      await logAudit({ userId: ctx.user?.id, action: "category.delete", entityType: "menuCategory", entityId: input.id, ipAddress: ctx.req?.ip ?? null });
       return { success: true };
     }),
   }),
 
-  // Cardápio - Itens
+  // Cardápio - Itens (apenas admin)
   menuItems: router({
-    list: protectedProcedure.input(z.object({ categoryId: z.number().optional() }).optional()).query(async ({ input }) => {
+    list: adminProcedure.input(z.object({ categoryId: z.number().optional() }).optional()).query(async ({ input }) => {
       return await db.getMenuItems(input?.categoryId);
     }),
-    create: protectedProcedure
+    create: adminProcedure
       .input(
         z.object({
           categoryId: z.number(),
@@ -196,7 +204,7 @@ export const appRouter = router({
         invalidateCachePrefix("menu:");
         return result;
       }),
-    update: protectedProcedure
+    update: adminProcedure
       .input(
         z.object({
           id: z.number(),
@@ -215,30 +223,30 @@ export const appRouter = router({
         invalidateCachePrefix("menu:");
         return { success: true };
       }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
       await db.deleteMenuItem(input.id);
       invalidateCachePrefix("menu:");
-      await logAudit({ userId: ctx.user?.id, action: "item.delete", entityType: "menuItem", entityId: input.id });
+      await logAudit({ userId: ctx.user?.id, action: "item.delete", entityType: "menuItem", entityId: input.id, ipAddress: ctx.req?.ip ?? null });
       return { success: true };
     }),
   }),
 
-  // Clientes
+  // Clientes (apenas admin — contém PII)
   customers: router({
-    list: protectedProcedure.query(async () => {
+    list: adminProcedure.query(async () => {
       return await db.getAllCustomers();
     }),
   }),
 
-  // Pedidos
+  // Pedidos (apenas admin)
   orders: router({
-    list: protectedProcedure.query(async () => {
+    list: adminProcedure.query(async () => {
       return await db.getAllOrders();
     }),
-    getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    getById: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
       return await db.getOrderById(input.id);
     }),
-    updateStatus: protectedProcedure
+    updateStatus: adminProcedure
       .input(
         z.object({
           id: z.number(),
@@ -247,20 +255,20 @@ export const appRouter = router({
       )
       .mutation(async ({ input, ctx }) => {
         await db.updateOrderStatus(input.id, input.status);
-        await logAudit({ userId: ctx.user?.id, action: `order.${input.status}`, entityType: "order", entityId: input.id, details: { status: input.status } });
+        await logAudit({ userId: ctx.user?.id, action: `order.${input.status}`, entityType: "order", entityId: input.id, details: { status: input.status }, ipAddress: ctx.req?.ip ?? null });
         return { success: true };
       }),
   }),
 
-  // Reservas
+  // Reservas (apenas admin)
   reservations: router({
-    list: protectedProcedure.query(async () => {
+    list: adminProcedure.query(async () => {
       return await db.getAllReservations();
     }),
-    getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    getById: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
       return await db.getReservationById(input.id);
     }),
-    updateStatus: protectedProcedure
+    updateStatus: adminProcedure
       .input(
         z.object({
           id: z.number(),
@@ -269,7 +277,7 @@ export const appRouter = router({
       )
       .mutation(async ({ input, ctx }) => {
         await db.updateReservationStatus(input.id, input.status);
-        await logAudit({ userId: ctx.user?.id, action: `reservation.${input.status}`, entityType: "reservation", entityId: input.id, details: { status: input.status } });
+        await logAudit({ userId: ctx.user?.id, action: `reservation.${input.status}`, entityType: "reservation", entityId: input.id, details: { status: input.status }, ipAddress: ctx.req?.ip ?? null });
 
         // Enviar notificação WhatsApp ao cliente quando confirmado ou cancelado
         if (input.status === "confirmed" || input.status === "cancelled") {
@@ -306,16 +314,16 @@ export const appRouter = router({
       }),
   }),
 
-  // Feedback
+  // Feedback (apenas admin)
   feedback: router({
-    list: protectedProcedure.query(async () => {
+    list: adminProcedure.query(async () => {
       return await db.getAllFeedback();
     }),
   }),
 
   // Complementos do Cardápio (Addon Groups e Options)
   menuAddons: router({
-    // Leitura pública: busca grupos e opções de um item
+    // Leitura pública: busca grupos e opções de um item (necessário para o cardápio do cliente)
     getByItem: publicProcedure
       .input(z.object({ menuItemId: z.number() }))
       .query(async ({ input }) => {
@@ -328,7 +336,7 @@ export const appRouter = router({
         return await db.getAddonGroupsForItems(input.menuItemIds);
       }),
     // Admin: criar grupo de complementos
-    createGroup: protectedProcedure
+    createGroup: adminProcedure
       .input(z.object({
         menuItemId: z.number(),
         name: z.string(),
@@ -342,7 +350,7 @@ export const appRouter = router({
         return await db.createAddonGroup(input);
       }),
     // Admin: atualizar grupo
-    updateGroup: protectedProcedure
+    updateGroup: adminProcedure
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
@@ -359,15 +367,15 @@ export const appRouter = router({
         return { success: true };
       }),
     // Admin: deletar grupo (e suas opções)
-    deleteGroup: protectedProcedure
+    deleteGroup: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input, ctx }) => {
         await db.deleteAddonGroup(input.id);
-        await logAudit({ userId: ctx.user?.id, action: "addon.deleteGroup", entityType: "addonGroup", entityId: input.id });
+        await logAudit({ userId: ctx.user?.id, action: "addon.deleteGroup", entityType: "addonGroup", entityId: input.id, ipAddress: ctx.req?.ip ?? null });
         return { success: true };
       }),
     // Admin: criar opção dentro de um grupo
-    createOption: protectedProcedure
+    createOption: adminProcedure
       .input(z.object({
         groupId: z.number(),
         name: z.string(),
@@ -379,7 +387,7 @@ export const appRouter = router({
         return await db.createAddonOption(input);
       }),
     // Admin: atualizar opção
-    updateOption: protectedProcedure
+    updateOption: adminProcedure
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
@@ -394,18 +402,18 @@ export const appRouter = router({
         return { success: true };
       }),
     // Admin: deletar opção
-    deleteOption: protectedProcedure
+    deleteOption: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input, ctx }) => {
         await db.deleteAddonOption(input.id);
-        await logAudit({ userId: ctx.user?.id, action: "addon.deleteOption", entityType: "addonOption", entityId: input.id });
+        await logAudit({ userId: ctx.user?.id, action: "addon.deleteOption", entityType: "addonOption", entityId: input.id, ipAddress: ctx.req?.ip ?? null });
         return { success: true };
       }),
   }),
 
-  // Dashboard Stats
+  // Dashboard Stats (apenas admin)
   dashboard: router({
-    stats: protectedProcedure.query(async () => {
+    stats: adminProcedure.query(async () => {
       // Query otimizada: usa COUNT/SUM/AVG no SQL em vez de carregar tudo na memória
       return await db.getDashboardStats();
     }),

@@ -141,15 +141,31 @@ async function _processIncomingMessageInternal(
       messageText = messageText.slice(0, MAX_MSG_LENGTH) + "...";
     }
 
-    // Guardrail: sanitizar tentativas óbvias de prompt injection
-    // Remover instruções que tentam redefinir o papel do bot
+    // Guardrail: sanitizar tentativas de prompt injection
+    // Cobre inglês, português e variantes comuns de obfuscação
     const injectionPatterns = [
+      // Inglês
       /ignore (all )?(previous|prior|above) instructions?/gi,
       /you are now/gi,
       /act as (a |an )?/gi,
-      /forget (everything|your instructions)/gi,
+      /forget (everything|your instructions|all previous)/gi,
+      /disregard (all |any )?(previous|prior|above|your) instructions?/gi,
+      /new (system )?prompt/gi,
+      /override (your )?(instructions?|rules?|guidelines?)/gi,
+      // Português
+      /ignore (todas as |as )?(instru[çc][õo]es|regras) (anteriores?|acima)/gi,
+      /esqueça (tudo|suas instru[çc][õo]es|as regras)/gi,
+      /voc[êe] (agora |é |nao |não )?(um|uma|é)/gi,
+      /aja como (um|uma)?/gi,
+      /finja (ser|que é)/gi,
+      /novas instru[çc][õo]es/gi,
+      // Marcadores de controle do sistema (evitar que usuário injete ações)
       /\[system\]/gi,
       /\[assistant\]/gi,
+      /\[SALVAR_RESERVA:/gi,
+      /\[GERAR_LINK_PEDIDO\]/gi,
+      /\[CHAMAR_ATENDENTE\]/gi,
+      /\[VERIFICAR_STATUS_PEDIDO:/gi,
     ];
     for (const pattern of injectionPatterns) {
       if (pattern.test(messageText)) {
@@ -292,22 +308,11 @@ async function _processIncomingMessageInternal(
     }
 
     // 7b. Detectar pedido de atendente humano e ativar modo humano IMEDIATAMENTE
-    // O bot deve parar de responder assim que o cliente pede humano, não esperar o operador responder
-    const humanKeywords = [
-      "atendente", "humano", "pessoa", "falar com alguém", "falar com um humano",
-      "quero falar com", "preciso falar com", "chamar alguém", "operador",
-      "atendimento humano", "falar com atendente"
-    ];
-    const isAskingForHuman = humanKeywords.some(kw =>
-      messageText.toLowerCase().includes(kw)
-    );
-    // Também detectar quando a resposta do bot menciona transferência para humano
-    const botMentionsHuman = response.text.toLowerCase().includes("atendente") ||
-      response.text.toLowerCase().includes("aguarde") ||
-      response.text.toLowerCase().includes("conectar com nossa equipe") ||
-      response.text.toLowerCase().includes("transferir");
+    // SEGURANÇA: usar APENAS o marcador explícito [CHAMAR_ATENDENTE] gerado pelo LLM
+    // (não keyword matching no texto — evita ativação acidental por palavras comuns como "atendente")
+    const botRequestedHuman = response.text.includes("[CHAMAR_ATENDENTE]");
 
-    if (isAskingForHuman || botMentionsHuman) {
+    if (botRequestedHuman) {
       try {
         // ATIVAR MODO HUMANO IMEDIATAMENTE (30 min)
         // O bot fica silencioso a partir de agora, sem esperar o operador responder
@@ -458,12 +463,24 @@ async function generateResponse(
     customerContextBlock += 'REGRA: Se o cliente perguntar sobre tempo, status ou demora, use o n\u00famero do pedido acima para verificar com [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX]. N\u00c3O pe\u00e7a o n\u00famero do pedido se j\u00e1 tem a informa\u00e7\u00e3o acima!';
   }
   if (activeReservations.length > 0) {
+    // SEGURANÇA: sanitizar campos controlados pelo cliente antes de injetar no prompt do LLM
+    // Previne prompt injection indireto via dados de reserva (nome, obs, etc.)
+    const sanitizeContextField = (s: string | null | undefined, maxLen = 100): string => {
+      if (!s) return '';
+      // Remover marcadores de ação e tags de sistema que poderiam confundir o LLM
+      return s
+        .replace(/\[[\w_:]+\]/g, '[dado_removido]')
+        .replace(/\bsystem\b/gi, '')
+        .replace(/\bassistant\b/gi, '')
+        .slice(0, maxLen);
+    };
     customerContextBlock += '\n\n📅 RESERVAS ATIVAS DESTE CLIENTE:\n';
     for (const r of activeReservations) {
-      const dataRes = r.date ? new Date(r.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'data n\u00e3o definida';
-      customerContextBlock += `- Reserva ${r.reservationNumber}: ${r.customerName} | ${r.numberOfPeople} pessoas | ${dataRes} | Status: ${r.status}\n`;
+      const dataRes = r.date ? new Date(r.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'data não definida';
+      const safeName = sanitizeContextField(r.customerName);
+      customerContextBlock += `- Reserva ${r.reservationNumber}: ${safeName} | ${r.numberOfPeople} pessoas | ${dataRes} | Status: ${r.status}\n`;
     }
-    customerContextBlock += 'REGRA: Se o cliente perguntar sobre reserva, use as informa\u00e7\u00f5es acima. N\u00c3O diga que n\u00e3o sabe sobre a reserva!';
+    customerContextBlock += 'REGRA: Se o cliente perguntar sobre reserva, use as informações acima. NÃO diga que não sabe sobre a reserva!';
   }
 
   // Obter hist\u00f3rico de mensagens (30 mensagens para contexto mais amplo)

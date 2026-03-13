@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "./_core/trpc";
+import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
 import { getDb } from "./db";
-import { orders, orderItems, orderSessions, menuItems, customers } from "../drizzle/schema";
+import { orders, orderItems, orderSessions, menuItems, menuAddonOptions, customers } from "../drizzle/schema";
 import { eq, desc, inArray, like } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
 
@@ -79,6 +79,23 @@ export const orderRouter = router({
         throw new Error("Alguns itens do pedido não foram encontrados");
       }
 
+      // Buscar preços de addons do banco para todos os optionIds enviados pelo cliente
+      // SEGURANÇA: nunca usar preços enviados pelo cliente para addons
+      const allOptionIds = input.items.flatMap(item =>
+        (item.addons || []).map(a => a.optionId)
+      ).filter((id, i, arr) => arr.indexOf(id) === i); // unique
+
+      let addonOptionsMap = new Map<number, number>(); // optionId → priceExtra (centavos)
+      if (allOptionIds.length > 0) {
+        const addonOptionsData = await db
+          .select({ id: menuAddonOptions.id, priceExtra: menuAddonOptions.priceExtra })
+          .from(menuAddonOptions)
+          .where(inArray(menuAddonOptions.id, allOptionIds));
+        for (const opt of addonOptionsData) {
+          addonOptionsMap.set(opt.id, opt.priceExtra);
+        }
+      }
+
       // Calcular subtotal
       let subtotal = 0;
       const orderItemsData = input.items.map((item) => {
@@ -86,21 +103,28 @@ export const orderRouter = router({
         if (!menuItem) throw new Error(`Item ${item.menuItemId} não encontrado`);
 
         // Calcular preço base do item pelo preço do banco (ignorar preço enviado pelo cliente)
-        let itemBasePrice = menuItem.price;
+        const itemBasePrice = menuItem.price;
 
-        // Somar addons: usar priceExtra enviado pelo cliente (não há tabela de preços de addons
-        // no banco para validar, mas limitamos a valores positivos e razoáveis)
+        // Somar addons: usar priceExtra do BANCO (não do cliente) para evitar manipulação de preços
         let addonsTotal = 0;
         if (item.addons && item.addons.length > 0) {
           for (const addon of item.addons) {
-            // Garantir que priceExtra é número não-negativo e razoável (< R$ 500)
-            const addonPrice = Math.max(0, Math.min(addon.priceExtra || 0, 50000));
-            addonsTotal += addonPrice * (addon.quantity || 1);
+            const serverPrice = addonOptionsMap.get(addon.optionId);
+            if (serverPrice === undefined) {
+              throw new Error(`Complemento ${addon.optionId} não encontrado ou inválido`);
+            }
+            addonsTotal += serverPrice * (addon.quantity || 1);
           }
         }
 
         const itemTotal = (itemBasePrice + addonsTotal) * item.quantity;
         subtotal += itemTotal;
+
+        // Reconstituir addons com preços do servidor para salvar no pedido
+        const addonsWithServerPrices = item.addons?.map(a => ({
+          ...a,
+          priceExtra: addonOptionsMap.get(a.optionId) ?? 0,
+        }));
 
         return {
           menuItemId: item.menuItemId,
@@ -109,7 +133,7 @@ export const orderRouter = router({
           itemName: menuItem.name, // salvar nome no momento do pedido
           itemImageUrl: menuItem.imageUrl || null, // salvar imagem no momento do pedido
           observations: item.observations || null,
-          addons: item.addons && item.addons.length > 0 ? JSON.stringify(item.addons) : null,
+          addons: addonsWithServerPrices && addonsWithServerPrices.length > 0 ? JSON.stringify(addonsWithServerPrices) : null,
         };
       });
 
@@ -311,9 +335,10 @@ export const orderRouter = router({
     }),
 
   /**
-   * Buscar pedido por ID (para impressão)
+   * Buscar pedido por ID (admin only — evitar IDOR por enumeração de IDs sequenciais)
+   * Para impressão pública use getByToken (token aleatório).
    */
-  getById: publicProcedure
+  getById: adminProcedure
     .input(
       z.object({
         id: z.number(),
@@ -485,8 +510,10 @@ export const orderRouter = router({
       if (!session?.whatsappNumber) return null;
       // Buscar cliente pelo telefone — busca flexível por múltiplos formatos
       const phone = session.whatsappNumber.replace(/\D/g, "");
-      const phoneDigits = phone.slice(-11); // ex: "17988112791"
-      const phoneLast8 = phone.slice(-8);   // ex: "88112791"
+      // SEGURANÇA: escapar caracteres especiais de LIKE (%, _, \) para evitar injeção de wildcard
+      const escapeLike = (s: string) => s.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+      const phoneDigits = escapeLike(phone.slice(-11)); // ex: "17988112791"
+      const phoneLast8 = escapeLike(phone.slice(-8));   // ex: "88112791"
       const { or: orOp } = await import("drizzle-orm");
       const customersList = await db
         .select()

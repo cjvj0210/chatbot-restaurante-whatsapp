@@ -1,7 +1,13 @@
 /**
  * Rate limiter por whatsappId para o chatbot
  * Previne abuso: máximo de 30 mensagens por hora por número
- * Usa memória local (sem dependência de Redis)
+ *
+ * LIMITAÇÃO CONHECIDA: usa memória local (Map em processo).
+ * Em deployments multi-instância (dev + produção simultâneos), cada instância
+ * tem seu próprio contador — o limite efetivo pode ser multiplicado pelo número
+ * de instâncias. Para correção completa, migrar contador para o banco de dados
+ * usando a tabela processed_messages como referência (COUNT por whatsappId + janela).
+ * A deduplicação de mensagens já é feita no banco — o rate limit é uma camada adicional.
  */
 
 interface RateLimitEntry {

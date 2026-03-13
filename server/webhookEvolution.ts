@@ -144,10 +144,11 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     const payload = req.body as EvolutionWebhookPayload;
 
     // Validar autenticidade do webhook: verificar apikey enviada pela Evolution API
+    // SEGURANÇA: fail-closed — rejeitar se chave ausente OU inválida (nunca fail-open)
     const configuredKey = process.env.EVOLUTION_API_KEY || "";
     const receivedKey = payload.apikey || (req.headers["apikey"] as string) || "";
-    if (configuredKey && receivedKey && receivedKey !== configuredKey) {
-      console.warn("[EvolutionWebhook] apikey inválida — payload ignorado");
+    if (!receivedKey || receivedKey !== configuredKey) {
+      console.warn("[EvolutionWebhook] apikey inválida ou ausente — payload rejeitado");
       return;
     }
 

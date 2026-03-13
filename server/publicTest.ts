@@ -10,6 +10,27 @@ import { randomBytes } from "crypto";
 // Armazenamento em memória das conversas de teste (para contexto)
 const testConversations = new Map<string, Array<{ role: "user" | "assistant"; content: string }>>();
 
+// Rate limiting por IP para endpoints públicos de IA (proteção contra abuso de LLM)
+// Máximo de 20 mensagens por hora por IP
+const publicTestRateLimits = new Map<string, { count: number; windowStart: number }>();
+const PUBLIC_TEST_WINDOW_MS = 60 * 60 * 1000; // 1 hora
+const PUBLIC_TEST_MAX_MSGS = 20;
+
+function checkPublicTestRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = publicTestRateLimits.get(ip);
+  if (!entry || (now - entry.windowStart) > PUBLIC_TEST_WINDOW_MS) {
+    publicTestRateLimits.set(ip, { count: 1, windowStart: now });
+    return true;
+  }
+  if (entry.count >= PUBLIC_TEST_MAX_MSGS) return false;
+  entry.count++;
+  return true;
+}
+
+// Tamanho máximo de áudio base64 (~10MB de áudio ≈ ~13.5MB base64)
+const MAX_AUDIO_BASE64_LEN = 14 * 1024 * 1024;
+
 export const publicTestRouter = router({
   sendMessage: publicProcedure
     .input(
@@ -21,18 +42,24 @@ export const publicTestRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { sessionId, message } = input;
 
+      // Rate limiting por IP para proteger recursos de LLM
+      const clientIp = ctx.req?.ip || ctx.req?.socket?.remoteAddress || "unknown";
+      if (!checkPublicTestRateLimit(clientIp)) {
+        throw new Error("Limite de mensagens atingido. Tente novamente em 1 hora.");
+      }
+
       // Criar ou atualizar sessão no banco de dados
       const db = await getDb();
       if (!db) {
         throw new Error('Banco de dados não disponível');
       }
       const existingSession = await db.select().from(testSessions).where(eq(testSessions.sessionId, sessionId)).limit(1);
-      
+
       if (existingSession.length === 0) {
         await db.insert(testSessions).values({
           sessionId,
-          userAgent: null, // Pode ser capturado do header no futuro
-          ipAddress: null, // Pode ser capturado do header no futuro
+          userAgent: ctx.req?.headers?.["user-agent"] as string ?? null,
+          ipAddress: clientIp,
         });
       }
 
@@ -129,12 +156,18 @@ export const publicTestRouter = router({
     .input(
       z.object({
         sessionId: z.string(),
-        audioBase64: z.string(),
-        mimeType: z.string(),
+        audioBase64: z.string().max(MAX_AUDIO_BASE64_LEN, "Áudio muito grande. Máximo: ~10MB"),
+        mimeType: z.enum(["audio/webm", "audio/ogg", "audio/mp4", "audio/wav", "audio/mpeg"]),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const { sessionId, audioBase64, mimeType } = input;
+
+      // Rate limiting por IP
+      const clientIp = ctx.req?.ip || ctx.req?.socket?.remoteAddress || "unknown";
+      if (!checkPublicTestRateLimit(clientIp)) {
+        throw new Error("Limite de mensagens atingido. Tente novamente em 1 hora.");
+      }
 
       // Criar ou atualizar sessão no banco de dados
       const db = await getDb();
