@@ -188,7 +188,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       const messageId = key.id;
       
       // Se o ID está registrado no tracker, foi o BOT que enviou → ignorar
-      if (isBotSentMessage(messageId)) {
+      if (await isBotSentMessage(messageId)) {
         console.log(`[EvolutionWebhook] Mensagem do BOT detectada (ID registrado): ${messageId}`);
         return;
       }
@@ -455,7 +455,7 @@ async function sendTextAndGetId(remoteJid: string, text: string): Promise<string
     if (sentId) {
       // Registrar no tracker para que o webhook não trate como mensagem do operador
       const { registerBotSentMessage } = await import("./botMessageTracker");
-      registerBotSentMessage(sentId);
+      await registerBotSentMessage(sentId);
     }
     return sentId || null;
   } catch (error: any) {

@@ -50,7 +50,7 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
     console.log("[EvolutionAPI] Mensagem enviada:", sentMessageId || "ok");
     // Registrar ID para distinguir mensagens do bot vs operador
     if (sentMessageId) {
-      registerBotSentMessage(sentMessageId);
+      await registerBotSentMessage(sentMessageId);
     }
     return true;
   } catch (error: any) {
@@ -145,7 +145,7 @@ export async function sendMediaMessageEvolution(
     console.log("[EvolutionAPI] Mídia enviada:", sentMediaId || "ok");
     // Registrar ID para distinguir mensagens do bot vs operador
     if (sentMediaId) {
-      registerBotSentMessage(sentMediaId);
+      await registerBotSentMessage(sentMediaId);
     }
     return true;
   } catch (error: any) {
