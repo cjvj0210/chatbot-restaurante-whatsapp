@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, customerId, humanMode, humanModeUntil FROM conversations WHERE isActive = true AND (humanMode = true OR humanModeUntil IS NOT NULL);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, customerId, humanMode, humanModeUntil FROM conversations WHERE isActive = true AND (humanMode = true OR humanModeUntil IS NOT NULL);",
+  "rows": [
+    {
+      "id": "180001",
+      "customerId": "150001",
+      "humanMode": "1",
+      "humanModeUntil": "2026-03-13 01:32:32"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\thumanMode\thumanModeUntil\n180001\t150001\t1\t2026-03-13 01:32:32\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

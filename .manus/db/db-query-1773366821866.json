@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, customerId, humanMode, humanModeUntil, isActive, createdAt FROM conversations ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, customerId, humanMode, humanModeUntil, isActive, createdAt FROM conversations ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "180003",
+      "customerId": "150003",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-03-13 00:45:33"
+    },
+    {
+      "id": "180002",
+      "customerId": "150002",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-03-13 00:39:38"
+    },
+    {
+      "id": "180001",
+      "customerId": "150001",
+      "humanMode": "1",
+      "humanModeUntil": "2026-03-13 02:18:55",
+      "isActive": "1",
+      "createdAt": "2026-03-13 00:30:37"
+    },
+    {
+      "id": "150004",
+      "customerId": "120004",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-03-12 17:13:19"
+    },
+    {
+      "id": "150003",
+      "customerId": "120003",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-03-12 16:58:04"
+    },
+    {
+      "id": "150002",
+      "customerId": "120002",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-03-12 16:58:00"
+    },
+    {
+      "id": "150001",
+      "customerId": "120001",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-03-12 16:50:37"
+    },
+    {
+      "id": "30001",
+      "customerId": "30001",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "isActive": "0",
+      "createdAt": "2025-12-06 22:30:09"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\thumanMode\thumanModeUntil\tisActive\tcreatedAt\n180003\t150003\t0\tNULL\t1\t2026-03-13 00:45:33\n180002\t150002\t0\tNULL\t1\t2026-03-13 00:39:38\n180001\t150001\t1\t2026-03-13 02:18:55\t1\t2026-03-13 00:30:37\n150004\t120004\t0\tNULL\t1\t2026-03-12 17:13:19\n150003\t120003\t0\tNULL\t1\t2026-03-12 16:58:04\n150002\t120002\t0\tNULL\t1\t2026-03-12 16:58:00\n150001\t120001\t0\tNULL\t1\t2026-03-12 16:50:37\n30001\t30001\t0\tNULL\t0\t2025-12-06 22:30:09\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

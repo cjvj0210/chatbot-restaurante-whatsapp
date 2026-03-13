@@ -1,4 +1,5 @@
 import axios from "axios";
+import { registerBotSentMessage } from "./botMessageTracker";
 
 /**
  * Módulo de integração com a Evolution API v2.3.7
@@ -45,7 +46,12 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
       }
     );
 
-    console.log("[EvolutionAPI] Mensagem enviada:", response.data?.key?.id || "ok");
+    const sentMessageId = response.data?.key?.id;
+    console.log("[EvolutionAPI] Mensagem enviada:", sentMessageId || "ok");
+    // Registrar ID para distinguir mensagens do bot vs operador
+    if (sentMessageId) {
+      registerBotSentMessage(sentMessageId);
+    }
     return true;
   } catch (error: any) {
     console.error("[EvolutionAPI] Erro ao enviar mensagem:", error?.response?.data || error?.message);
@@ -135,7 +141,12 @@ export async function sendMediaMessageEvolution(
       }
     );
 
-    console.log("[EvolutionAPI] Mídia enviada:", response.data?.key?.id || "ok");
+    const sentMediaId = response.data?.key?.id;
+    console.log("[EvolutionAPI] Mídia enviada:", sentMediaId || "ok");
+    // Registrar ID para distinguir mensagens do bot vs operador
+    if (sentMediaId) {
+      registerBotSentMessage(sentMediaId);
+    }
     return true;
   } catch (error: any) {
     console.error("[EvolutionAPI] Erro ao enviar mídia:", error?.response?.data || error?.message);

@@ -122,16 +122,19 @@ export async function processIncomingMessage(
     const context: ChatContext = conversation.context ? JSON.parse(conversation.context) : {};
 
     // 4b. Verificar modo humano: se o operador assumiu a conversa, o bot fica silencioso
-    const db = await getDb();
-    if (db && conversation.humanMode && conversation.humanModeUntil) {
+    // O modo humano é ativado automaticamente quando o webhook detecta uma mensagem
+    // fromMe=true cujo ID NÃO está registrado no botMessageTracker (= operador humano).
+    // O operador pode enviar "bot" para desativar, ou expira após 30 minutos.
+    if (conversation.humanMode && conversation.humanModeUntil) {
       const now = new Date();
       if (now < new Date(conversation.humanModeUntil)) {
-        console.log(`[Chatbot] Modo humano ativo até ${conversation.humanModeUntil} — bot silencioso para ${phone}`);
+        console.log(`[Chatbot] Modo humano ativo até ${new Date(conversation.humanModeUntil).toLocaleString('pt-BR')} — bot silencioso para ${phone}`);
+        console.log(`[Chatbot] Operador pode enviar "bot" para reativar o atendimento automático.`);
         return; // Bot não responde enquanto o operador está no controle
       } else {
-        // Expirou: desativar modo humano
+        // Expirou: desativar modo humano automaticamente
         await updateConversation(conversation.id, { humanMode: false, humanModeUntil: null });
-        console.log(`[Chatbot] Modo humano expirado para ${phone} — bot retomando`);
+        console.log(`[Chatbot] Modo humano expirado para ${phone} — bot retomando atendimento`);
       }
     }
 

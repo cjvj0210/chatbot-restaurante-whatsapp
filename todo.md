@@ -983,3 +983,12 @@
 - [ ] Processar apenas mensagens não vistas (controle por timestamp)
 - [ ] Integrar com o mesmo fluxo do webhook (processIncomingMessage)
 - [ ] Testar e validar que o bot responde automaticamente
+
+
+## Correção Webhook/Polling e Modo Humano (13/03/2026)
+- [x] Desativar polling de mensagens (manter apenas webhook)
+- [x] Registrar IDs de mensagens enviadas pelo bot (botMessageTracker em memória com TTL)
+- [x] Detectar mensagens do operador no webhook (fromMe=true + ID não registrado = operador)
+- [x] Ativar modo humano automaticamente quando operador responde (30 min)
+- [x] Desativar modo humano após 30min ou quando operador envia comando "bot"
+- [x] Reativar verificação de modo humano no chatbot.ts com lógica correta

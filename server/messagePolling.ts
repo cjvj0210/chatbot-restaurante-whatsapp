@@ -26,6 +26,8 @@ const processedMessageIds = new Set<string>();
 let lastPollTimestamp = 0;
 let isPolling = false;
 let pollErrors = 0;
+// Timestamp de quando o polling iniciou (para ignorar mensagens anteriores)
+let pollingStartTimestamp = 0;
 
 function getEvolutionConfig() {
   return {
@@ -64,9 +66,10 @@ async function pollMessages(): Promise<void> {
   }
 
   try {
-    // Buscar apenas mensagens recentes (janela de 15 segundos com 3s de overlap)
+    // Sempre buscar mensagens dos últimos 60 segundos
+    // Confiamos no set de IDs processados para evitar duplicatas
     const now = Math.floor(Date.now() / 1000);
-    const since = lastPollTimestamp > 0 ? lastPollTimestamp - 3 : now; // Na primeira vez, só mensagens a partir de agora
+    const since = now - 60; // Janela fixa de 60 segundos
 
     const response = await axios.post(
       `${baseUrl}/chat/findMessages/${instanceName}`,
@@ -74,7 +77,7 @@ async function pollMessages(): Promise<void> {
         where: {
           messageTimestamp: { gte: since },
         },
-        limit: 20,
+        limit: 50,
       },
       {
         headers: { apikey: apiKey, "Content-Type": "application/json" },
@@ -82,9 +85,16 @@ async function pollMessages(): Promise<void> {
       }
     );
 
-    const records = response.data?.messages?.records || [];
+    const allRecords = response.data?.messages?.records || [];
     lastPollTimestamp = now;
     pollErrors = 0;
+
+    // Filtrar por timestamp NO CÓDIGO (a API ignora o filtro de timestamp)
+    // Só processar mensagens posteriores ao início do polling
+    const records = allRecords.filter((m: any) => {
+      const ts = m.messageTimestamp || 0;
+      return ts >= pollingStartTimestamp;
+    });
 
     if (records.length === 0) {
       isPolling = false;
@@ -294,10 +304,9 @@ export function startMessagePolling(): void {
     return;
   }
 
-  console.log(`[Polling] Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s`);
-
-  // Inicializar timestamp para não processar mensagens antigas
-  lastPollTimestamp = Math.floor(Date.now() / 1000);
+  // Registrar o timestamp de início para ignorar mensagens anteriores
+  pollingStartTimestamp = Math.floor(Date.now() / 1000);
+  console.log(`[Polling] Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
 
   // Primeira busca após delay inicial
   setTimeout(() => {

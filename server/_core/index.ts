@@ -214,9 +214,11 @@ async function startServer() {
     }, 30 * 60 * 1000);
     console.log('[Cron] Limpeza de rate limits iniciada (a cada 30 min)');
 
-    // Polling de mensagens: fallback robusto para quando o webhook da Evolution API não dispara
-    startMessagePolling();
-    console.log('[Polling] Serviço de polling de mensagens iniciado');
+    // Polling de mensagens: DESATIVADO — webhook está funcionando corretamente
+    // O polling causava duplicatas porque processava a mesma mensagem que o webhook.
+    // startMessagePolling();
+    // console.log('[Polling] Serviço de polling de mensagens iniciado');
+    console.log('[Polling] Serviço de polling DESATIVADO — usando apenas webhook');
   });
 }
 
