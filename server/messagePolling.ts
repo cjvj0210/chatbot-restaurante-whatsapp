@@ -15,7 +15,13 @@ import { eq, like, or } from "drizzle-orm";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromPolling } from "./services/audioService";
 
-const POLL_INTERVAL_MS = 3000; // 3 segundos (respostas rápidas)
+// Em produção usa 10s (webhook é confiável); em dev usa 3s (webhook pode não funcionar localmente)
+// Pode ser sobrescrito via POLL_INTERVAL_MS env var
+const POLL_INTERVAL_MS = process.env.POLL_INTERVAL_MS
+  ? parseInt(process.env.POLL_INTERVAL_MS, 10)
+  : process.env.NODE_ENV === "production"
+    ? 10_000
+    : 3_000;
 const INITIAL_DELAY_MS = 15000; // 15 segundos após iniciar (dar tempo pro servidor subir)
 const MAX_PROCESSED_IDS = 500; // Máximo de IDs armazenados em memória
 
