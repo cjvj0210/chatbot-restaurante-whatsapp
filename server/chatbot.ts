@@ -22,6 +22,7 @@ import {
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { getNowBRT } from "../shared/businessHours";
 import { orderSessions, orders, reservations } from "../drizzle/schema";
@@ -124,13 +125,8 @@ async function _processIncomingMessageInternal(
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
     if (!checkChatbotRateLimit(whatsappId)) {
       console.warn(`[Chatbot] Rate limit atingido para ${phone} (${whatsappId})`);
-      const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
       const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
-      if (useEvo) {
-        await sendTextMessageEvolution(whatsappId, limitMsg);
-      } else {
-        await sendTextMessage(phone, limitMsg);
-      }
+      await whatsappService.sendText(whatsappId, limitMsg);
       return;
     }
 
@@ -277,12 +273,7 @@ async function _processIncomingMessageInternal(
         metadata: JSON.stringify({ source: "faq_cache" }),
       });
       // Enviar resposta via WhatsApp
-      const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
-      if (useEvo) {
-        await sendTextMessageEvolution(whatsappId, faqResponse);
-      } else {
-        await sendTextMessage(phone, faqResponse);
-      }
+      await whatsappService.sendText(whatsappId, faqResponse);
       return;
     }
 
@@ -340,7 +331,7 @@ async function _processIncomingMessageInternal(
           `Responda diretamente para este contato no WhatsApp.\n` +
           `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
-        await sendTextMessageEvolution(restaurantPhoneNorm, alertMsg).catch(() => {});
+        await whatsappService.sendText(restaurantPhoneNorm, alertMsg).catch(() => {});
         console.log(`[Chatbot] Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
       } catch (err) {
         console.error("[Chatbot] Erro ao ativar modo humano preventivo:", err);
@@ -348,46 +339,38 @@ async function _processIncomingMessageInternal(
     }
 
     // 8. Enviar resposta ao cliente
-    // Usar Evolution API se configurada, caso contrário usar Meta Cloud API
     // IMPORTANTE: usar o whatsappId original (pode ser @lid) para enviar mensagens,
     // pois a Evolution API precisa do JID correto para rotear a mensagem
     const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
-    
+
     if (useEvolution) {
       // Se a resposta contiver um link de pedido, enviar como imagem com banner visual
       const orderLinkMatch = response.text.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
       if (orderLinkMatch) {
         const orderLink = orderLinkMatch[0];
-        // Extrair texto antes e depois do link para a legenda
         const textBeforeLink = response.text.split(orderLink)[0].trim();
         const textAfterLink = response.text.split(orderLink)[1]?.trim() || "";
         const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
-        
-        // Enviar banner visual com o link embutido na legenda
+
         const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
-        const sent = await sendMediaMessageEvolution(whatsappId, bannerUrl, caption);
+        const sent = await whatsappService.sendMedia(whatsappId, bannerUrl, caption);
         if (!sent) {
           // Fallback: enviar como texto simples se a imagem falhar
-          await sendTextMessageEvolution(whatsappId, response.text);
+          await whatsappService.sendText(whatsappId, response.text);
         }
       } else {
-        await sendTextMessageEvolution(whatsappId, response.text);
+        await whatsappService.sendText(whatsappId, response.text);
       }
     } else if (response.buttons) {
       await sendButtonMessage(phone, response.text, response.buttons);
     } else if (response.list) {
       await sendListMessage(phone, response.text, response.list.buttonText, response.list.sections);
     } else {
-      await sendTextMessage(phone, response.text);
+      await whatsappService.sendText(whatsappId, response.text);
     }
   } catch (error) {
     console.error("[Chatbot] Error processing message:", error);
-    const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
-    if (useEvolution) {
-      await sendTextMessageEvolution(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
-    } else {
-      await sendTextMessage(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
-    }
+    await whatsappService.sendText(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.").catch(() => {});
   }
 }
 

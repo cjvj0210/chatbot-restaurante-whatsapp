@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { processIncomingMessage } from "./chatbot";
 import { sendTextMessageEvolution, downloadMediaEvolution, deleteMessageForEveryone } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
 import { markMessageAsProcessed } from "./messagePolling";
 import { isBotSentMessage } from "./botMessageTracker";
 import { transcribeAudio } from "./_core/voiceTranscription";

@@ -15,7 +15,7 @@ import { getWebhookLogs, clearWebhookLogs } from "./debug";
 import { orderLinkRouter } from "./orderLinkRouter";
 import { orderRouter } from "./orderRouter";
 import { uploadRouter } from "./uploadRouter";
-import { sendTextMessageEvolution } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
 import { notifyOwner } from "./_core/notification";
 import { logAudit } from "./auditLog";
 import { sanitizeInput } from "./sanitize";
@@ -303,7 +303,7 @@ export const appRouter = router({
                 msg = `❌ *Reserva Cancelada*\n\nOlá, *${reservation.customerName}*,\n\nInfelizmente não foi possível confirmar sua reserva para ${dataFormatada}.\n\nEntre em contato conosco para reagendar:\n📞 (17) 9 8212-3269\n\n_Churrascaria Estrela do Sul 🌟_`;
               }
 
-              await sendTextMessageEvolution(normalizedPhone, msg).catch(() => {});
+              await whatsappService.sendText(normalizedPhone, msg).catch(() => {});
             }
           } catch (err) {
             console.error("[Reservations] Erro ao enviar notificação WhatsApp:", err);
