@@ -1102,4 +1102,29 @@
   - Corrigido: histórico aumentado de 15 para 30 mensagens
   - Reservas ativas injetadas no prompt do LLM
   - Bot agora lembra de reservas, pedidos e conversas anteriores na mesma sessão
-- [ ] Atualizar código no GitHub após correções
+- [x] Atualizar código no GitHub após correções (push realizado com sucesso)
+
+
+## Auditoria de Segurança (Claude Code - Rodada 1)
+- [x] CRITICAL-002: Webhook Evolution API fail-closed (rejeitar chave inválida)
+- [x] CRITICAL-001: CSP ativado com Helmet (headers HTTP defensivos)
+- [x] HIGH-001: getById → adminProcedure (fim do IDOR por enumeração)
+- [x] HIGH-002: 13 procedures migradas de protectedProcedure → adminProcedure
+- [x] HIGH-003: accessToken mascarado na resposta (**** nos dígitos centrais)
+- [x] HIGH-004: Filtros de injection expandidos para PT-BR
+- [x] HIGH-005: Preços de addons buscados do banco via optionId
+- [x] HIGH-006: Removido fallback JWT_SECRET; send-test restrito a dev
+- [x] MEDIUM-002: Rate limit 20 msgs/hora por IP nos endpoints públicos
+- [x] MEDIUM-004: escapeLike() escapa %, _, \ antes de queries LIKE
+- [x] MEDIUM-005: Human mode usa apenas [CHAMAR_ATENDENTE]
+- [x] MEDIUM-006: Dados de reserva sanitizados antes de injeção no contexto LLM
+- [x] MEDIUM-007: CORS com allowlist explícita; Permissions-Policy adicionado
+- [x] MEDIUM-008: Limitação do rate limit documentada para migração futura
+- [x] LOW-001: req.query.secret removido — segredo apenas via header X-Diag-Secret
+- [x] LOW-002: ipAddress passado a todos os logAudit()
+- [x] LOW-005: audioBase64.max(14MB) + allowlist de MIME em sendAudio
+- [x] LOW-006: Magic bytes validados (JPEG FF D8 FF, PNG 89 50 4E 47, WebP RIFF...WEBP)
+- [x] CS-003: Math.random() → randomBytes(2) (CSPRNG)
+- [x] Puxar correções do GitHub para o Manus
+- [x] Rodar testes (102 passed, 0 failed)
+- [x] Servidor reiniciado com correções aplicadas
