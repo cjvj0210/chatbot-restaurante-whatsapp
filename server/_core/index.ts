@@ -16,6 +16,7 @@ import { startKeepAlive } from "../keepAlive";
 import { sendReservationReminders } from "../reservationReminder";
 import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages } from "../maintenance";
 import { cleanupRateLimits } from "../chatbotRateLimit";
+import { startMessagePolling, getPollingStats } from "../messagePolling";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -133,6 +134,11 @@ async function startServer() {
   app.get("/api/diag/payloads", requireDiagAuth, (_req, res) => {
     res.json(lastPayloads);
   });
+
+  // Endpoint de diagnóstico do polling
+  app.get("/api/diag/polling", requireDiagAuth, (_req, res) => {
+    res.json(getPollingStats());
+  });
   
   // tRPC API
   app.use(
@@ -207,6 +213,10 @@ async function startServer() {
       cleanupRateLimits();
     }, 30 * 60 * 1000);
     console.log('[Cron] Limpeza de rate limits iniciada (a cada 30 min)');
+
+    // Polling de mensagens: fallback robusto para quando o webhook da Evolution API não dispara
+    startMessagePolling();
+    console.log('[Polling] Serviço de polling de mensagens iniciado');
   });
 }
 

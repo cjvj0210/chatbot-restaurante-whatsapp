@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { processIncomingMessage } from "./chatbot";
 import { sendTextMessageEvolution, downloadMediaEvolution } from "./evolutionApi";
+import { markMessageAsProcessed } from "./messagePolling";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { storagePut } from "./storage";
 import { getDb } from "./db";
@@ -240,6 +241,9 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     }
 
     console.log(`[EvolutionWebhook] Processando: "${messageText.substring(0, 100)}..."`);
+
+    // Marcar como processada para que o polling não reprocesse
+    markMessageAsProcessed(messageId);
 
     // Processar mensagem pelo chatbot
     await processIncomingMessage(whatsappId, phone, messageText, messageId);

@@ -977,3 +977,9 @@
 - [x] Testado: webhook com @lid processado e bot respondeu em 3 segundos
 - [x] Testado: envio via @lid confirmado na Evolution API
 - [x] 58 testes passando
+
+## Polling Fallback — Evolution API não dispara webhooks (12/03/2026)
+- [ ] Implementar polling que busca mensagens novas na Evolution API a cada 5 segundos
+- [ ] Processar apenas mensagens não vistas (controle por timestamp)
+- [ ] Integrar com o mesmo fluxo do webhook (processIncomingMessage)
+- [ ] Testar e validar que o bot responde automaticamente
