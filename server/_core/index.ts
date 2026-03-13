@@ -214,11 +214,12 @@ async function startServer() {
     }, 30 * 60 * 1000);
     console.log('[Cron] Limpeza de rate limits iniciada (a cada 30 min)');
 
-    // Polling de mensagens: DESATIVADO — webhook está funcionando corretamente
-    // O polling causava duplicatas porque processava a mesma mensagem que o webhook.
-    // startMessagePolling();
-    // console.log('[Polling] Serviço de polling de mensagens iniciado');
-    console.log('[Polling] Serviço de polling DESATIVADO — usando apenas webhook');
+    // Polling de mensagens: ATIVO como sistema principal
+    // O webhook da Evolution API no Render não dispara de forma confiável.
+    // O polling busca mensagens a cada 3s. Webhook continua ativo como complemento.
+    // Deduplicacão por messageId garante que não há respostas duplicadas.
+    startMessagePolling();
+    console.log('[Polling] Serviço de polling de mensagens ATIVO (sistema principal)');
   });
 }
 

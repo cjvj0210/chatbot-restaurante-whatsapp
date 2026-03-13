@@ -21,6 +21,8 @@ interface EvolutionWebhookPayload {
       remoteJid: string;
       fromMe: boolean;
       id: string;
+      remoteJidAlt?: string; // Número real quando JID é @lid (ex: 5517988112791@s.whatsapp.net)
+      addressingMode?: string; // "lid" quando usa Linked ID
     };
     pushName?: string;
     message?: {
@@ -218,8 +220,11 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     const phone = extractPhoneFromJid(key.remoteJid);
     const whatsappId = key.remoteJid; // Usar JID completo como ID único
     const messageId = key.id;
+    // Extrair número real do telefone quando JID é @lid (via remoteJidAlt)
+    const remoteJidAlt = key.remoteJidAlt || undefined;
+    const realPhone = remoteJidAlt ? remoteJidAlt.replace("@s.whatsapp.net", "").replace(/\D/g, "") : undefined;
 
-    console.log(`[EvolutionWebhook] Mensagem de ${phone} (${pushName || "sem nome"}) | Tipo: ${messageType}`);
+    console.log(`[EvolutionWebhook] Mensagem de ${phone} (${pushName || "sem nome"}) | Tipo: ${messageType} | realPhone: ${realPhone || 'N/A'}`);
 
     let messageText = "";
 
@@ -262,8 +267,8 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     // Marcar como processada para que o polling não reprocesse
     markMessageAsProcessed(messageId);
 
-    // Processar mensagem pelo chatbot
-    await processIncomingMessage(whatsappId, phone, messageText, messageId);
+    // Processar mensagem pelo chatbot (passar pushName e realPhone para enriquecer dados do cliente)
+    await processIncomingMessage(whatsappId, phone, messageText, messageId, pushName || undefined, realPhone);
 
     console.log(`[EvolutionWebhook] Mensagem processada com sucesso`);
   } catch (error) {

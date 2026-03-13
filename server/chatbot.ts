@@ -41,12 +41,20 @@ interface ChatContext {
 
 /**
  * Processa uma mensagem recebida do cliente via WhatsApp
+ * @param whatsappId - JID completo (ex: 212454869074102@lid ou 5517988112791@s.whatsapp.net)
+ * @param phone - Número extraído do JID (pode ser LID ou número real)
+ * @param messageText - Texto da mensagem
+ * @param messageId - ID único da mensagem
+ * @param pushName - Nome do contato no WhatsApp (opcional, usado para preencher nome do cliente)
+ * @param realPhone - Número real do telefone quando JID é @lid (extraído de remoteJidAlt)
  */
 export async function processIncomingMessage(
   whatsappId: string,
   phone: string,
   messageText: string,
-  messageId: string
+  messageId: string,
+  pushName?: string,
+  realPhone?: string
 ): Promise<void> {
   try {
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
@@ -86,15 +94,53 @@ export async function processIncomingMessage(
       }
     }
 
+    // Determinar o número real do telefone:
+    // Se temos realPhone (via remoteJidAlt), usar ele. Caso contrário, usar phone.
+    const effectivePhone = realPhone || phone;
+    // Normalizar: se o effectivePhone contém @s.whatsapp.net, extrair só os dígitos
+    const normalizedPhone = effectivePhone.replace("@s.whatsapp.net", "").replace("@lid", "").replace(/\D/g, "");
+
     // 1. Buscar ou criar cliente
-    let customer = await getCustomerByWhatsappId(whatsappId);
+    // Passar realPhone para permitir busca inteligente quando JID é @lid
+    let customer = await getCustomerByWhatsappId(whatsappId, realPhone);
     if (!customer) {
+      // Se temos o número real (via remoteJidAlt), usar ele como whatsappId canônico
+      const canonicalWhatsappId = realPhone
+        ? realPhone.replace(/\D/g, "") + "@s.whatsapp.net"
+        : whatsappId;
       customer = await createCustomer({
-        whatsappId,
-        phone,
-        name: null,
+        whatsappId: canonicalWhatsappId,
+        phone: normalizedPhone,
+        name: pushName || null,
         address: null,
       });
+    } else {
+      // Atualizar dados do cliente se estiverem faltando
+      const updates: Record<string, any> = {};
+      if (!customer.name && pushName) {
+        updates.name = pushName;
+      }
+      // Se o whatsappId atual é @lid mas temos o número real, atualizar para o formato canônico
+      if (realPhone && customer.whatsappId.endsWith("@lid")) {
+        const canonicalId = realPhone.replace(/\D/g, "") + "@s.whatsapp.net";
+        updates.whatsappId = canonicalId;
+        updates.phone = normalizedPhone;
+      }
+      // Se o phone está com o LID, atualizar para o número real
+      if (realPhone && customer.phone && customer.phone.length > 13) {
+        updates.phone = normalizedPhone;
+      }
+      if (Object.keys(updates).length > 0) {
+        try {
+          const { updateCustomer } = await import("./db");
+          await updateCustomer(customer.id, updates);
+          // Atualizar o objeto local
+          Object.assign(customer, updates);
+          console.log(`[Chatbot] Cliente ${customer.id} atualizado:`, Object.keys(updates).join(", "));
+        } catch (err) {
+          console.error("[Chatbot] Erro ao atualizar cliente:", err);
+        }
+      }
     }
 
     // 2. Buscar ou criar conversa ativa
@@ -161,7 +207,8 @@ export async function processIncomingMessage(
     }
 
     // 5b. Processar mensagem com IA usando o prompt completo do restaurante
-    const response = await generateResponse(customer.id, conversation.id, messageText, context, phone);
+    // Usar o número real do telefone (não o LID) para gerar links de pedido
+    const response = await generateResponse(customer.id, conversation.id, messageText, context, normalizedPhone);
 
     // 6. Salvar resposta do assistente
     await createMessage({
@@ -218,6 +265,8 @@ export async function processIncomingMessage(
 
     // 8. Enviar resposta ao cliente
     // Usar Evolution API se configurada, caso contrário usar Meta Cloud API
+    // IMPORTANTE: usar o whatsappId original (pode ser @lid) para enviar mensagens,
+    // pois a Evolution API precisa do JID correto para rotear a mensagem
     const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
     
     if (useEvolution) {

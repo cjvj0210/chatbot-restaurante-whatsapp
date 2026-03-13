@@ -175,12 +175,15 @@ async function pollMessages(): Promise<void> {
 
       const phone = extractPhoneFromJid(remoteJid);
       const whatsappId = remoteJid;
+      // Extrair número real do telefone quando JID é @lid (via key.remoteJidAlt)
+      const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
+      const realPhone = remoteJidAlt ? remoteJidAlt.replace("@s.whatsapp.net", "").replace(/\D/g, "") : undefined;
 
-      console.log(`[Polling] Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}"`);
+      console.log(`[Polling] Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
 
-      // Processar mensagem pelo chatbot (mesmo fluxo do webhook)
+      // Processar mensagem pelo chatbot (mesmo fluxo do webhook, com pushName e realPhone)
       try {
-        await processIncomingMessage(whatsappId, phone, messageText, msgId);
+        await processIncomingMessage(whatsappId, phone, messageText, msgId, pushName || undefined, realPhone);
         console.log(`[Polling] Mensagem processada com sucesso: ${msgId}`);
       } catch (err) {
         console.error(`[Polling] Erro ao processar mensagem ${msgId}:`, err);

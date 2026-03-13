@@ -1,0 +1,43 @@
+{
+  "query": "SELECT id, whatsappId, name, phone, address, totalOrders, totalSpent, birthDate, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i') as created FROM customers WHERE phone LIKE '%88112791%' OR whatsappId LIKE '%17988112791%' OR whatsappId LIKE '%lid%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, whatsappId, name, phone, address, totalOrders, totalSpent, birthDate, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i') as created FROM customers WHERE phone LIKE '%88112791%' OR whatsappId LIKE '%17988112791%' OR whatsappId LIKE '%lid%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "30001",
+      "whatsappId": "5517988112791",
+      "name": "Clóvis Jr",
+      "phone": "5517988112791",
+      "address": "Av Joakim Faria  - 196 - Jd Universitário  - Ed Times Square  - Apto 91 ",
+      "totalOrders": "0",
+      "totalSpent": "0",
+      "birthDate": "NULL",
+      "created": "2025-12-06 22:30"
+    },
+    {
+      "id": "120002",
+      "whatsappId": "5517988112791@s.whatsapp.net",
+      "name": "NULL",
+      "phone": "5517988112791",
+      "address": "NULL",
+      "totalOrders": "0",
+      "totalSpent": "0",
+      "birthDate": "NULL",
+      "created": "2026-03-12 16:57"
+    },
+    {
+      "id": "150001",
+      "whatsappId": "212454869074102@lid",
+      "name": "NULL",
+      "phone": "212454869074102",
+      "address": "NULL",
+      "totalOrders": "0",
+      "totalSpent": "0",
+      "birthDate": "NULL",
+      "created": "2026-03-13 00:30"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\twhatsappId\tname\tphone\taddress\ttotalOrders\ttotalSpent\tbirthDate\tcreated\n30001\t5517988112791\tClóvis Jr\t5517988112791\tAv Joakim Faria  - 196 - Jd Universitário  - Ed Times Square  - Apto 91 \t0\t0\tNULL\t2025-12-06 22:30\n120002\t5517988112791@s.whatsapp.net\tNULL\t5517988112791\tNULL\t0\t0\tNULL\t2026-03-12 16:57\n150001\t212454869074102@lid\tNULL\t212454869074102\tNULL\t0\t0\tNULL\t2026-03-13 00:30\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

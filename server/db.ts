@@ -1,4 +1,4 @@
-import { eq, and, desc, count, sum, avg, sql } from "drizzle-orm";
+import { eq, and, desc, count, sum, avg, sql, or, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -260,29 +260,92 @@ export async function deleteMenuItem(id: number): Promise<void> {
 
 // ===== Customers =====
 
-export async function getCustomerByWhatsappId(whatsappId: string): Promise<Customer | undefined> {
+/**
+ * Extrai o número de telefone real de um JID do WhatsApp.
+ * Exemplos:
+ *   "5517988112791@s.whatsapp.net" → "5517988112791"
+ *   "5517988112791" → "5517988112791"
+ *   "212454869074102@lid" → "212454869074102" (LID - não é o número real)
+ */
+export function extractPhoneFromWhatsappId(whatsappId: string): string {
+  return whatsappId.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
+}
+
+/**
+ * Busca um cliente pelo whatsappId, com fallback inteligente.
+ * 
+ * Estratégia de busca (em ordem):
+ * 1. Busca exata pelo whatsappId fornecido
+ * 2. Se o JID for @s.whatsapp.net, busca também pelo phone (sem sufixo)
+ * 3. Se o JID for @lid, busca pelo phone usando os últimos 8-11 dígitos
+ *    (o número LID é diferente do número real, então não dá para fazer match direto)
+ * 4. Busca por qualquer registro com phone parcial (últimos 8 dígitos)
+ * 
+ * NOTA: Quando o caller tem o número real (via remoteJidAlt), deve passar como realPhone
+ * para permitir busca precisa mesmo com JID @lid.
+ */
+export async function getCustomerByWhatsappId(
+  whatsappId: string,
+  realPhone?: string
+): Promise<Customer | undefined> {
   const db = await getDb();
   if (!db) return undefined;
 
-  // Busca direta pelo whatsappId fornecido
+  // 1. Busca direta pelo whatsappId fornecido
   const result = await db.select().from(customers).where(eq(customers.whatsappId, whatsappId)).limit(1);
   if (result[0]) return result[0];
 
-  // Fallback: se o JID for @lid, tentar buscar pelo phone extraído
-  // Isso cobre o caso onde o cliente foi cadastrado com @s.whatsapp.net mas agora envia com @lid
-  if (whatsappId.endsWith("@lid")) {
-    // Buscar por phone parcial não é confiável para @lid (o número é diferente)
-    // Retornar undefined para criar novo registro com o JID @lid
-    return undefined;
+  // 2. Se temos o número real (via remoteJidAlt), buscar por ele
+  if (realPhone) {
+    const digits = realPhone.replace(/\D/g, "");
+    if (digits.length >= 10) {
+      // Buscar por whatsappId com @s.whatsapp.net
+      const byJid = await db.select().from(customers)
+        .where(eq(customers.whatsappId, `${digits}@s.whatsapp.net`))
+        .limit(1);
+      if (byJid[0]) return byJid[0];
+
+      // Buscar por whatsappId sem sufixo
+      const byPlain = await db.select().from(customers)
+        .where(eq(customers.whatsappId, digits))
+        .limit(1);
+      if (byPlain[0]) return byPlain[0];
+
+      // Buscar por phone exato
+      const byPhone = await db.select().from(customers)
+        .where(eq(customers.phone, digits))
+        .limit(1);
+      if (byPhone[0]) return byPhone[0];
+
+      // Buscar por phone parcial (últimos 11 dígitos)
+      const phoneDigits = digits.slice(-11);
+      const byPhonePartial = await db.select().from(customers)
+        .where(like(customers.phone, `%${phoneDigits}%`))
+        .limit(1);
+      if (byPhonePartial[0]) return byPhonePartial[0];
+    }
   }
 
-  // Se o JID for @s.whatsapp.net, tentar buscar por phone
-  const phone = whatsappId.replace("@s.whatsapp.net", "").replace(/\D/g, "");
-  if (phone.length >= 10) {
-    const byPhone = await db.select().from(customers).where(eq(customers.phone, phone)).limit(1);
-    return byPhone[0];
+  // 3. Se o JID for @s.whatsapp.net, tentar buscar por phone
+  if (whatsappId.endsWith("@s.whatsapp.net")) {
+    const phone = whatsappId.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+    if (phone.length >= 10) {
+      // Buscar por whatsappId sem sufixo
+      const byPlain = await db.select().from(customers)
+        .where(eq(customers.whatsappId, phone))
+        .limit(1);
+      if (byPlain[0]) return byPlain[0];
+
+      // Buscar por phone
+      const byPhone = await db.select().from(customers)
+        .where(eq(customers.phone, phone))
+        .limit(1);
+      if (byPhone[0]) return byPhone[0];
+    }
   }
 
+  // 4. Se o JID for @lid e NÃO temos realPhone, não podemos fazer match confiável
+  // Retornar undefined para criar novo registro
   return undefined;
 }
 

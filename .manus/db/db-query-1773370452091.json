@@ -1,0 +1,24 @@
+{
+  "query": "SELECT id, whatsappId, phone, name, address FROM customers WHERE phone LIKE '%988112791%' OR whatsappId LIKE '%988112791%' OR whatsappId LIKE '%lid%' ORDER BY id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, whatsappId, phone, name, address FROM customers WHERE phone LIKE '%988112791%' OR whatsappId LIKE '%988112791%' OR whatsappId LIKE '%lid%' ORDER BY id",
+  "rows": [
+    {
+      "id": "30001",
+      "whatsappId": "5517988112791@s.whatsapp.net",
+      "phone": "5517988112791",
+      "name": "Clóvis Jr",
+      "address": "Av Joakim Faria  - 196 - Jd Universitário  - Ed Times Square  - Apto 91 "
+    },
+    {
+      "id": "150001",
+      "whatsappId": "212454869074102@lid",
+      "phone": "212454869074102",
+      "name": "NULL",
+      "address": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\twhatsappId\tphone\tname\taddress\n30001\t5517988112791@s.whatsapp.net\t5517988112791\tClóvis Jr\tAv Joakim Faria  - 196 - Jd Universitário  - Ed Times Square  - Apto 91 \n150001\t212454869074102@lid\t212454869074102\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

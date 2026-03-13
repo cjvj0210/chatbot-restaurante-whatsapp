@@ -1,0 +1,66 @@
+{
+  "query": "SELECT id, name, phone, whatsappId, LEFT(address, 80) as address_preview FROM customers ORDER BY id DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, name, phone, whatsappId, LEFT(address, 80) as address_preview FROM customers ORDER BY id DESC LIMIT 10",
+  "rows": [
+    {
+      "id": "150003",
+      "name": "NULL",
+      "phone": "5517999999999",
+      "whatsappId": "5517999999999@s.whatsapp.net",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "150002",
+      "name": "NULL",
+      "phone": "",
+      "whatsappId": "test@s.whatsapp.net",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "150001",
+      "name": "NULL",
+      "phone": "212454869074102",
+      "whatsappId": "212454869074102@lid",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "120004",
+      "name": "NULL",
+      "phone": "5519998213575",
+      "whatsappId": "5519998213575@s.whatsapp.net",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "120003",
+      "name": "NULL",
+      "phone": "5517981039494",
+      "whatsappId": "5517981039494@s.whatsapp.net",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "120002",
+      "name": "NULL",
+      "phone": "5517988112791",
+      "whatsappId": "5517988112791@s.whatsapp.net",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "120001",
+      "name": "NULL",
+      "phone": "5517981690331",
+      "whatsappId": "5517981690331@s.whatsapp.net",
+      "address_preview": "NULL"
+    },
+    {
+      "id": "30001",
+      "name": "Clóvis Jr",
+      "phone": "5517988112791",
+      "whatsappId": "5517988112791",
+      "address_preview": "Av Joakim Faria  - 196 - Jd Universitário  - Ed Times Square  - Apto 91 "
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\twhatsappId\taddress_preview\n150003\tNULL\t5517999999999\t5517999999999@s.whatsapp.net\tNULL\n150002\tNULL\t\ttest@s.whatsapp.net\tNULL\n150001\tNULL\t212454869074102\t212454869074102@lid\tNULL\n120004\tNULL\t5519998213575\t5519998213575@s.whatsapp.net\tNULL\n120003\tNULL\t5517981039494\t5517981039494@s.whatsapp.net\tNULL\n120002\tNULL\t5517988112791\t5517988112791@s.whatsapp.net\tNULL\n120001\tNULL\t5517981690331\t5517981690331@s.whatsapp.net\tNULL\n30001\tClóvis Jr\t5517988112791\t5517988112791\tAv Joakim Faria  - 196 - Jd Universitário  - Ed Times Square  - Apto 91 \n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

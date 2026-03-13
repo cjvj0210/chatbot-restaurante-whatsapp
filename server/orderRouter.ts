@@ -483,7 +483,7 @@ export const orderRouter = router({
         .where(eq(orderSessions.sessionId, input.sessionId))
         .limit(1);
       if (!session?.whatsappNumber) return null;
-      // Buscar cliente pelo telefone
+      // Buscar cliente pelo telefone — busca flexível por múltiplos formatos
       const phone = session.whatsappNumber.replace(/\D/g, "");
       const phoneDigits = phone.slice(-11); // ex: "17988112791"
       const phoneLast8 = phone.slice(-8);   // ex: "88112791"
@@ -492,11 +492,19 @@ export const orderRouter = router({
         .select()
         .from(customers)
         .where(orOp(
+          eq(customers.whatsappId, session.whatsappNumber),
+          eq(customers.whatsappId, `${phone}@s.whatsapp.net`),
+          eq(customers.whatsappId, phone),
           like(customers.phone, `%${phoneDigits}%`),
           like(customers.phone, `%${phoneLast8}%`)
         ))
-        .limit(1);
-      const customer = customersList[0];
+        .limit(5); // Buscar até 5 para escolher o melhor (com mais dados)
+      // Priorizar o cliente que tem mais dados preenchidos (nome + endereço)
+      const customer = customersList.sort((a, b) => {
+        const scoreA = (a.name ? 2 : 0) + (a.address ? 1 : 0);
+        const scoreB = (b.name ? 2 : 0) + (b.address ? 1 : 0);
+        return scoreB - scoreA;
+      })[0];
       if (!customer) return null;
       // Buscar último pedido com delivery para pegar nome e endereço mais recentes
       const lastOrders = await db
@@ -754,11 +762,28 @@ export const orderRouter = router({
         .where(eq(orderSessions.sessionId, input.sessionId))
         .limit(1);
       if (!session?.whatsappNumber) return { success: false };
+      // Normalizar o número para buscar o cliente de forma flexível
+      const phone = session.whatsappNumber.replace(/\D/g, "");
+      const phoneDigits = phone.slice(-11);
+      const { or: orOp } = await import("drizzle-orm");
+      // Buscar o cliente por múltiplos formatos de whatsappId/phone
+      const customersList = await db
+        .select()
+        .from(customers)
+        .where(orOp(
+          eq(customers.whatsappId, session.whatsappNumber),
+          eq(customers.whatsappId, `${phone}@s.whatsapp.net`),
+          eq(customers.whatsappId, phone),
+          like(customers.phone, `%${phoneDigits}%`)
+        ))
+        .limit(1);
+      const customer = customersList[0];
+      if (!customer) return { success: false };
       // Atualizar o endereço do cliente no banco
       await db
         .update(customers)
         .set({ address: input.address })
-        .where(eq(customers.whatsappId, session.whatsappNumber));
+        .where(eq(customers.id, customer.id));
       return { success: true };
     }),
 

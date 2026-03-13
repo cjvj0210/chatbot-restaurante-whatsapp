@@ -979,10 +979,10 @@
 - [x] 58 testes passando
 
 ## Polling Fallback — Evolution API não dispara webhooks (12/03/2026)
-- [ ] Implementar polling que busca mensagens novas na Evolution API a cada 5 segundos
-- [ ] Processar apenas mensagens não vistas (controle por timestamp)
-- [ ] Integrar com o mesmo fluxo do webhook (processIncomingMessage)
-- [ ] Testar e validar que o bot responde automaticamente
+- [x] Implementar polling que busca mensagens novas na Evolution API a cada 5 segundos
+- [x] Processar apenas mensagens não vistas (controle por timestamp)
+- [x] Integrar com o mesmo fluxo do webhook (processIncomingMessage)
+- [x] Testar e validar que o bot responde automaticamente
 
 
 ## Correção Webhook/Polling e Modo Humano (13/03/2026)
@@ -1000,3 +1000,25 @@
 - [x] Confirmação silenciosa: quando modo humano ativa, enviar aviso ao operador
 - [x] Expiração automática após 30 min sem interação do operador
 - [ ] Testar fluxo completo: operador responde → bot silencia → #bot → bot retoma (aguardando teste do Clóvis)
+
+
+## Auditoria Crítica — Bugs Encontrados (13/03/2026)
+- [x] BUG: Número de celular mostra LID (@lid) em vez do número real do WhatsApp
+  - Corrigido: webhook e polling agora extraem `remoteJidAlt` para obter número real
+  - Normalização: whatsappId sempre salvo como `{digits}@s.whatsapp.net`
+  - Merge: registros duplicados (30001, 120002, 150001) unificados no ID 30001
+- [x] BUG: Nome do cliente não preenchido no checkout ("Olá, !")
+  - Corrigido: `pushName` extraído do payload e salvo no customer
+  - Corrigido: `getCustomerByWhatsapp` busca por múltiplos formatos de whatsappId
+  - Corrigido: prioriza registro com mais dados (nome + endereço)
+- [x] BUG: Endereço não salvo/pré-preenchido no checkout
+  - Corrigido: `updateCustomerAddress` busca por múltiplos formatos
+  - Corrigido: `getCustomerByWhatsapp` inclui busca por whatsappId além de phone
+- [ ] BUG: Previsão de entrega fora do horário de funcionamento (00:21-00:46 em vez de horário real)
+- [x] BUG: Pedido anterior não disponível para repetir
+  - Corrigido: `getOrderHistory` busca por múltiplos formatos de phone/whatsappId
+- [x] AUDITORIA: Merge de registros duplicados no banco de dados
+  - 3 registros (30001, 120002, 150001) unificados em 1 (ID 30001)
+  - whatsappId canônico: `5517988112791@s.whatsapp.net`
+  - Conversas e pedidos reatribuídos ao registro principal
+- [x] TESTES: 72 testes passando (14 novos para normalização de whatsappId)
