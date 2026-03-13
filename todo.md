@@ -1128,3 +1128,5 @@
 - [x] Puxar correções do GitHub para o Manus
 - [x] Rodar testes (102 passed, 0 failed)
 - [x] Servidor reiniciado com correções aplicadas
+
+- [x] Configurar DIAG_SECRET como variável de ambiente separada
