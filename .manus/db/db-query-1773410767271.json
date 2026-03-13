@@ -1,0 +1,34 @@
+{
+  "query": "SELECT ag.id, ag.name, ag.menuItemId, ag.minSelections, ag.maxSelections, mi.name as itemName FROM menu_addon_groups ag LEFT JOIN menu_items mi ON ag.menuItemId = mi.id WHERE mi.name LIKE '%past%' OR mi.name LIKE '%Past%' ORDER BY ag.menuItemId, ag.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT ag.id, ag.name, ag.menuItemId, ag.minSelections, ag.maxSelections, mi.name as itemName FROM menu_addon_groups ag LEFT JOIN menu_items mi ON ag.menuItemId = mi.id WHERE mi.name LIKE '%past%' OR mi.name LIKE '%Past%' ORDER BY ag.menuItemId, ag.id;",
+  "rows": [
+    {
+      "id": "76",
+      "name": "Escolha o sabor",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "itemName": "Mini Pastéis"
+    },
+    {
+      "id": "77",
+      "name": "Quantidade",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "itemName": "Mini Pastéis"
+    },
+    {
+      "id": "30013",
+      "name": "Escolha o tamanho",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "itemName": "Mini Pastéis"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tmenuItemId\tminSelections\tmaxSelections\titemName\n76\tEscolha o sabor\t150012\t1\t1\tMini Pastéis\n77\tQuantidade\t150012\t1\t1\tMini Pastéis\n30013\tEscolha o tamanho\t150012\t1\t1\tMini Pastéis\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

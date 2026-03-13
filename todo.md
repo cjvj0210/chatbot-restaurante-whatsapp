@@ -1077,8 +1077,29 @@
 - [x] Identificar a melhor abordagem para auditar o sistema completo
 
 ## Exportação GitHub + Guia de Auditoria Claude Code (13/03/2026)
-- [ ] Exportar projeto para repositório GitHub privado
-- [ ] Pesquisar detalhes atualizados do Claude Code Review e CLI
-- [ ] Criar guia completo de auditoria com prompts prontos
-- [ ] Incluir metodologia passo a passo para leigo
-- [ ] Entregar guia e confirmar exportação
+- [x] Exportar projeto para repositório GitHub privado (cjvj0210/chatbot-restaurante-whatsapp)
+- [x] Pesquisar detalhes atualizados do Claude Code Review e CLI
+- [x] Criar guia completo de auditoria com prompts prontos (6 rodadas especializadas)
+- [x] Incluir metodologia passo a passo para leigo
+- [x] Entregar guia e confirmar exportação
+
+## Sprint de Correções Pré-Auditoria (13/03/2026) — CONCLUÍDA
+- [x] BUG 1: Modo humano não para o bot
+  - Corrigido: bot agora ativa modo humano IMEDIATAMENTE ao detectar [CHAMAR_ATENDENTE] na resposta da IA
+  - Modo humano ativado por 30 min antes mesmo do operador responder
+  - Bot fica 100% silencioso até operador enviar #bot
+- [x] BUG 2: Bot não lê contexto recente
+  - Corrigido: bot agora busca pedidos recentes (24h) e reservas ativas do cliente
+  - Injeta no prompt: número do pedido, status, tipo, total
+  - Regra: se cliente perguntar sobre demora, usa o pedido já conhecido sem pedir número
+- [x] BUG 3: Previsão de entrega no texto do bot via WhatsApp
+  - Corrigido: agora verifica se restaurante está aberto (11h-15h, 19h-23h)
+  - Se fechado, calcula horário estimado baseado na próxima abertura
+- [x] BUG 4: Mini pastéis com seção duplicada
+  - Corrigido: removido grupo duplicado "Quantidade" (ID 77) do banco
+  - Mantém apenas "Escolha o tamanho" (ID 30013) e "Escolha o sabor" (ID 76)
+- [x] BUG 5: Bot perde contexto de conversa
+  - Corrigido: histórico aumentado de 15 para 30 mensagens
+  - Reservas ativas injetadas no prompt do LLM
+  - Bot agora lembra de reservas, pedidos e conversas anteriores na mesma sessão
+- [ ] Atualizar código no GitHub após correções

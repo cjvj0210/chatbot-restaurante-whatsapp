@@ -1,0 +1,76 @@
+{
+  "query": "SELECT ag.id as groupId, ag.name as groupName, ag.menuItemId, ag.minSelections, ag.maxSelections, ag.displayOrder, ao.id as optionId, ao.name as optionName, ao.priceExtra FROM menu_addon_groups ag LEFT JOIN menu_addon_options ao ON ao.groupId = ag.id LEFT JOIN menu_items mi ON ag.menuItemId = mi.id WHERE mi.name LIKE '%past%' OR mi.name LIKE '%Past%' ORDER BY ag.displayOrder, ao.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT ag.id as groupId, ag.name as groupName, ag.menuItemId, ag.minSelections, ag.maxSelections, ag.displayOrder, ao.id as optionId, ao.name as optionName, ao.priceExtra FROM menu_addon_groups ag LEFT JOIN menu_addon_options ao ON ao.groupId = ag.id LEFT JOIN menu_items mi ON ag.menuItemId = mi.id WHERE mi.name LIKE '%past%' OR mi.name LIKE '%Past%' ORDER BY ag.displayOrder, ao.id;",
+  "rows": [
+    {
+      "groupId": "30013",
+      "groupName": "Escolha o tamanho",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "0",
+      "optionId": "30089",
+      "optionName": "4 unidades de pastéis",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "30013",
+      "groupName": "Escolha o tamanho",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "0",
+      "optionId": "30090",
+      "optionName": "10 unidades de pastéis",
+      "priceExtra": "800"
+    },
+    {
+      "groupId": "76",
+      "groupName": "Escolha o sabor",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "1",
+      "optionId": "298",
+      "optionName": "Catupiry (salgado)",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "76",
+      "groupName": "Escolha o sabor",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "1",
+      "optionId": "299",
+      "optionName": "Romeu e julieta (queijo c/ goiabada)",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "77",
+      "groupName": "Quantidade",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "2",
+      "optionId": "300",
+      "optionName": "4 unidades",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "77",
+      "groupName": "Quantidade",
+      "menuItemId": "150012",
+      "minSelections": "1",
+      "maxSelections": "1",
+      "displayOrder": "2",
+      "optionId": "301",
+      "optionName": "10 unidades",
+      "priceExtra": "800"
+    }
+  ],
+  "messages": [],
+  "stdout": "groupId\tgroupName\tmenuItemId\tminSelections\tmaxSelections\tdisplayOrder\toptionId\toptionName\tpriceExtra\n30013\tEscolha o tamanho\t150012\t1\t1\t0\t30089\t4 unidades de pastéis\t0\n30013\tEscolha o tamanho\t150012\t1\t1\t0\t30090\t10 unidades de pastéis\t800\n76\tEscolha o sabor\t150012\t1\t1\t1\t298\tCatupiry (salgado)\t0\n76\tEscolha o sabor\t150012\t1\t1\t1\t299\tRomeu e julieta (queijo c/ goiabada)\t0\n77\tQuantidade\t150012\t1\t1\t2\t300\t4 unidades\t0\n77\tQuantidade\t150012\t1\t1\t2\t301\t10 unidades\t800\n",
+  "stderr": "",
+  "execution_time_ms": 71
+}

@@ -1,4 +1,4 @@
-import { eq, and, desc, count, sum, avg, sql, or, like } from "drizzle-orm";
+import { eq, and, desc, count, sum, avg, sql, or, like, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -712,4 +712,58 @@ export async function cleanupProcessedMessages(): Promise<void> {
   } catch (error) {
     console.error("[Dedup] Erro ao limpar mensagens antigas:", error);
   }
+}
+
+
+// ===== Contexto do Cliente para Chatbot =====
+
+/**
+ * Busca pedidos recentes do cliente (últimas 24h) para incluir no contexto do chatbot.
+ * Isso permite que o bot saiba que o cliente tem pedidos ativos sem precisar perguntar o número.
+ */
+export async function getRecentOrdersByCustomer(customerId: number): Promise<Order[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return await db.select().from(orders)
+    .where(and(
+      eq(orders.customerId, customerId),
+      gte(orders.createdAt, oneDayAgo)
+    ))
+    .orderBy(desc(orders.createdAt))
+    .limit(5);
+}
+
+/**
+ * Busca reservas ativas/pendentes do cliente para incluir no contexto do chatbot.
+ * Isso permite que o bot saiba sobre reservas existentes sem perder o contexto.
+ */
+export async function getActiveReservationsByCustomer(customerId: number): Promise<Reservation[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(reservations)
+    .where(and(
+      eq(reservations.customerId, customerId),
+      or(
+        eq(reservations.status, "pending"),
+        eq(reservations.status, "confirmed")
+      )
+    ))
+    .orderBy(desc(reservations.date))
+    .limit(5);
+}
+
+/**
+ * Busca as últimas N mensagens da conversa para fornecer contexto mais amplo ao LLM.
+ */
+export async function getConversationMessages(conversationId: number, limit: number = 30): Promise<Message[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(desc(messages.createdAt))
+    .limit(limit);
 }

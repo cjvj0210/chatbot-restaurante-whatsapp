@@ -16,6 +16,9 @@ import {
   getMessagesByConversation,
   getDb,
   tryClaimMessage,
+  getRecentOrdersByCustomer,
+  getActiveReservationsByCustomer,
+  getConversationMessages,
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
@@ -288,7 +291,8 @@ async function _processIncomingMessageInternal(
       });
     }
 
-    // 7b. Detectar pedido de atendente humano e enviar alerta interno
+    // 7b. Detectar pedido de atendente humano e ativar modo humano IMEDIATAMENTE
+    // O bot deve parar de responder assim que o cliente pede humano, não esperar o operador responder
     const humanKeywords = [
       "atendente", "humano", "pessoa", "falar com alguém", "falar com um humano",
       "quero falar com", "preciso falar com", "chamar alguém", "operador",
@@ -297,10 +301,24 @@ async function _processIncomingMessageInternal(
     const isAskingForHuman = humanKeywords.some(kw =>
       messageText.toLowerCase().includes(kw)
     );
+    // Também detectar quando a resposta do bot menciona transferência para humano
+    const botMentionsHuman = response.text.toLowerCase().includes("atendente") ||
+      response.text.toLowerCase().includes("aguarde") ||
+      response.text.toLowerCase().includes("conectar com nossa equipe") ||
+      response.text.toLowerCase().includes("transferir");
 
-    if (isAskingForHuman) {
+    if (isAskingForHuman || botMentionsHuman) {
       try {
-        // Buscar número do restaurante nas configurações
+        // ATIVAR MODO HUMANO IMEDIATAMENTE (30 min)
+        // O bot fica silencioso a partir de agora, sem esperar o operador responder
+        const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000);
+        await updateConversation(conversation.id, {
+          humanMode: true,
+          humanModeUntil,
+        });
+        console.log(`[Chatbot] ✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
+
+        // Enviar alerta ao restaurante
         const settings = await getRestaurantSettings();
         const restaurantPhone = settings?.phone
           ? settings.phone.replace(/\D/g, "")
@@ -314,13 +332,13 @@ async function _processIncomingMessageInternal(
           `👤 *Cliente:* ${customer.name || phone}\n` +
           `📱 *Telefone:* ${phone}\n` +
           `💬 *Última mensagem:* "${messageText.substring(0, 100)}"\n\n` +
-          `Acesse o WhatsApp e responda diretamente para este contato.\n` +
-          `_O bot ficará silencioso por 30 minutos após você responder._`;
+          `Responda diretamente para este contato no WhatsApp.\n` +
+          `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
         await sendTextMessageEvolution(restaurantPhoneNorm, alertMsg).catch(() => {});
         console.log(`[Chatbot] Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
       } catch (err) {
-        console.error("[Chatbot] Erro ao enviar alerta de atendimento humano:", err);
+        console.error("[Chatbot] Erro ao ativar modo humano preventivo:", err);
       }
     }
 
@@ -412,17 +430,55 @@ async function generateResponse(
   // Usar o prompt COMPLETO do restaurante
   const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
-  // Obter histórico de mensagens
-  const history = await getMessagesByConversation(conversationId);
+  // Buscar contexto enriquecido: pedidos recentes e reservas ativas do cliente
+  const [recentOrders, activeReservations] = await Promise.all([
+    getRecentOrdersByCustomer(customerId),
+    getActiveReservationsByCustomer(customerId),
+  ]);
+
+  // Construir bloco de contexto do cliente para injetar no prompt
+  let customerContextBlock = '';
+  if (recentOrders.length > 0) {
+    customerContextBlock += '\n\n📦 PEDIDOS RECENTES DESTE CLIENTE (\u00faltimas 24h):\n';
+    for (const o of recentOrders) {
+      const statusMap: Record<string, string> = {
+        pending: 'Aguardando aceite',
+        confirmed: 'Confirmado',
+        preparing: 'Em prepara\u00e7\u00e3o',
+        ready: 'Pronto',
+        delivering: 'Saiu para entrega',
+        delivered: 'Entregue',
+        cancelled: 'Cancelado',
+      };
+      const st = statusMap[o.status] || o.status;
+      const total = `R$ ${((o.total || 0) / 100).toFixed(2).replace('.', ',')}`;
+      const tipo = o.orderType === 'pickup' ? 'Retirada' : 'Delivery';
+      customerContextBlock += `- Pedido ${o.orderNumber}: ${st} | ${tipo} | ${total}\n`;
+    }
+    customerContextBlock += 'REGRA: Se o cliente perguntar sobre tempo, status ou demora, use o n\u00famero do pedido acima para verificar com [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX]. N\u00c3O pe\u00e7a o n\u00famero do pedido se j\u00e1 tem a informa\u00e7\u00e3o acima!';
+  }
+  if (activeReservations.length > 0) {
+    customerContextBlock += '\n\n📅 RESERVAS ATIVAS DESTE CLIENTE:\n';
+    for (const r of activeReservations) {
+      const dataRes = r.date ? new Date(r.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'data n\u00e3o definida';
+      customerContextBlock += `- Reserva ${r.reservationNumber}: ${r.customerName} | ${r.numberOfPeople} pessoas | ${dataRes} | Status: ${r.status}\n`;
+    }
+    customerContextBlock += 'REGRA: Se o cliente perguntar sobre reserva, use as informa\u00e7\u00f5es acima. N\u00c3O diga que n\u00e3o sabe sobre a reserva!';
+  }
+
+  // Obter hist\u00f3rico de mensagens (30 mensagens para contexto mais amplo)
+  const history = await getConversationMessages(conversationId, 30);
+  // getConversationMessages retorna DESC, precisamos reverter para ordem cronol\u00f3gica
+  history.reverse();
 
   const messages: LLMMessage[] = [
-    { role: "system", content: systemPrompt },
+    { role: "system", content: systemPrompt + customerContextBlock },
   ];
 
-  // Adicionar histórico (últimas 15 mensagens para mais contexto)
-  // IMPORTANTE: remover links de pedido do histórico para forçar a IA a sempre usar [GERAR_LINK_PEDIDO]
-  // Isso garante que cada pedido gere um link novo, mesmo que o cliente peça várias vezes
-  const recentHistory = history.slice(-15);
+  // Adicionar hist\u00f3rico (\u00faltimas 30 mensagens para mais contexto e reten\u00e7\u00e3o de mem\u00f3ria)
+  // IMPORTANTE: remover links de pedido do hist\u00f3rico para for\u00e7ar a IA a sempre usar [GERAR_LINK_PEDIDO]
+  // Isso garante que cada pedido gere um link novo, mesmo que o cliente pe\u00e7a v\u00e1rias vezes
+  const recentHistory = history.slice(-30);
   for (const msg of recentHistory) {
     let content = msg.content;
     // Substituir links de pedido por [GERAR_LINK_PEDIDO] no histórico do assistente
@@ -502,29 +558,49 @@ async function generateResponse(
           const totalVal = `R$ ${((order.total || 0) / 100).toFixed(2).replace('.', ',')}`;
 
           // Calcular previsão de entrega baseada no horário de confirmação
+          // RESPEITANDO horário de funcionamento do restaurante
           let previsaoMsg = '';
           if ((order.status === 'confirmed' || order.status === 'preparing' || order.status === 'delivering') && (order as any).confirmedAt) {
             const confirmedAt = new Date((order as any).confirmedAt);
-            // Usar horário BRT para cálculo de tempo decorrido
-            // confirmedAt já está em UTC no banco, então a diferença é correta
-            const now = new Date(); // UTC é OK aqui pois confirmedAt também é UTC
+            const now = new Date(); // UTC é OK pois confirmedAt também é UTC
             const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
-            // Usar BRT para determinar dia da semana
             const nowBRT = getNowBRT();
             const dayOfWeek = nowBRT.getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            const currentHour = nowBRT.getHours();
+
+            // Verificar se o restaurante está aberto agora
+            // Horários: Almoço 11h-15h, Jantar 19h-23h (seg fechado jantar)
+            const isOpenNow = (currentHour >= 11 && currentHour < 15) || (currentHour >= 19 && currentHour < 23);
 
             if (order.orderType === 'delivery') {
               const minTime = isWeekend ? 60 : 45;
               const maxTime = isWeekend ? 110 : 70;
               const minRemaining = Math.max(0, minTime - minutesElapsed);
               const maxRemaining = Math.max(0, maxTime - minutesElapsed);
-              if (minutesElapsed < minTime) {
-                previsaoMsg = `\n⏱️ *Previsão de entrega:* ${minRemaining} a ${maxRemaining} min restantes`;
+
+              if (!isOpenNow && minutesElapsed < minTime) {
+                // Restaurante fechado — calcular horário estimado baseado na próxima abertura
+                let nextOpenHour = 11;
+                if (currentHour >= 15 && currentHour < 19) nextOpenHour = 19;
+                else if (currentHour >= 23 || currentHour < 11) nextOpenHour = 11;
+                const estimatedMinStart = nextOpenHour * 60 + minTime - (currentHour * 60 + nowBRT.getMinutes());
+                const estimatedMinEnd = nextOpenHour * 60 + maxTime - (currentHour * 60 + nowBRT.getMinutes());
+                if (estimatedMinStart > 0) {
+                  const startH = Math.floor((nextOpenHour * 60 + minTime) / 60) % 24;
+                  const startM = (nextOpenHour * 60 + minTime) % 60;
+                  const endH = Math.floor((nextOpenHour * 60 + maxTime) / 60) % 24;
+                  const endM = (nextOpenHour * 60 + maxTime) % 60;
+                  previsaoMsg = `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')} e ${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+                } else {
+                  previsaoMsg = `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
+                }
+              } else if (minutesElapsed < minTime) {
+                previsaoMsg = `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
               } else if (minutesElapsed <= maxTime) {
-                previsaoMsg = `\n⏱️ *Previsão de entrega:* chegando em breve!`;
+                previsaoMsg = `\n⏱️ Previsão de entrega: chegando em breve!`;
               } else {
-                previsaoMsg = `\n⏱️ *Previsão:* já deveria ter chegado — qualquer dúvida fale conosco!`;
+                previsaoMsg = `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida fale conosco!`;
               }
             } else {
               const minTime = 30;
@@ -532,11 +608,11 @@ async function generateResponse(
               const minRemaining = Math.max(0, minTime - minutesElapsed);
               const maxRemaining = Math.max(0, maxTime - minutesElapsed);
               if (minutesElapsed < minTime) {
-                previsaoMsg = `\n⏱️ *Previsão para retirada:* ${minRemaining} a ${maxRemaining} min restantes`;
+                previsaoMsg = `\n⏱️ Previsão para retirada: ${minRemaining} a ${maxRemaining} min restantes`;
               } else if (minutesElapsed <= maxTime) {
-                previsaoMsg = `\n⏱️ *Previsão:* seu pedido já deve estar pronto!`;
+                previsaoMsg = `\n⏱️ Previsão: seu pedido já deve estar pronto!`;
               } else {
-                previsaoMsg = `\n⏱️ *Previsão:* já deve estar pronto — pode vir retirar!`;
+                previsaoMsg = `\n⏱️ Previsão: já deve estar pronto — pode vir retirar!`;
               }
             }
           }
