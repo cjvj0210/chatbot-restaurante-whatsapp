@@ -36,6 +36,7 @@ import { checkChatbotRateLimit } from "./chatbotRateLimit";
 import { checkFaqCache } from "./faqCache";
 import { logger } from "./utils/logger";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { CHATBOT } from "../shared/constants";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -135,10 +136,9 @@ async function _processIncomingMessageInternal(
     }
 
     // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
-    const MAX_MSG_LENGTH = 2000;
-    if (messageText.length > MAX_MSG_LENGTH) {
+    if (messageText.length > CHATBOT.MAX_MESSAGE_LENGTH) {
       console.warn(`[Chatbot] Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
-      messageText = messageText.slice(0, MAX_MSG_LENGTH) + "...";
+      messageText = messageText.slice(0, CHATBOT.MAX_MESSAGE_LENGTH) + "...";
     }
 
     // Guardrail: sanitizar tentativas de prompt injection
@@ -311,7 +311,7 @@ async function _processIncomingMessageInternal(
       try {
         // ATIVAR MODO HUMANO IMEDIATAMENTE (30 min)
         // O bot fica silencioso a partir de agora, sem esperar o operador responder
-        const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000);
+        const humanModeUntil = new Date(Date.now() + CHATBOT.HUMAN_MODE_DURATION_MS);
         await updateConversation(conversation.id, {
           humanMode: true,
           humanModeUntil,

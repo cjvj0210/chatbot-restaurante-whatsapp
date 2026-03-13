@@ -7,6 +7,7 @@ import { isBotSentMessage } from "./botMessageTracker";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromEvolution } from "./services/audioService";
 import { activateHumanModeForJid, deactivateHumanModeForJid, isHumanModeActiveForJid } from "./services/humanModeService";
+import { CHATBOT } from "../shared/constants";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -112,7 +113,7 @@ function isStatusBroadcast(jid: string): boolean {
  * A Evolution API pode enviar múltiplos eventos MESSAGES_UPSERT para a mesma mensagem.
  */
 const recentWebhookEvents = new Map<string, number>();
-const WEBHOOK_DEDUP_WINDOW_MS = 30_000; // 30 segundos
+const WEBHOOK_DEDUP_WINDOW_MS = CHATBOT.WEBHOOK_DEDUP_WINDOW_MS;
 const MAX_WEBHOOK_DEDUP = 500;
 
 function isWebhookDuplicate(messageId: string): boolean {

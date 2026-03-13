@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
-import { getDb } from "./db";
+import { getDb, getRestaurantSettings } from "./db";
 import { orders, orderItems, orderSessions, menuItems, menuAddonOptions, customers } from "../drizzle/schema";
 import { eq, desc, inArray, like } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { ORDER } from "../shared/constants";
 
 /**
  * Router para gerenciamento de pedidos
@@ -138,8 +139,16 @@ export const orderRouter = router({
         };
       });
 
-      // Taxa de entrega (buscar das configurações ou usar padrão)
-      const deliveryFee = input.deliveryType === "delivery" ? 850 : 0; // R$ 8,50
+      // Taxa de entrega (buscar das configurações do restaurante ou usar padrão)
+      let deliveryFee = 0;
+      if (input.deliveryType === "delivery") {
+        try {
+          const settings = await getRestaurantSettings();
+          deliveryFee = settings?.deliveryFee ?? ORDER.DEFAULT_DELIVERY_FEE_CENTS;
+        } catch {
+          deliveryFee = ORDER.DEFAULT_DELIVERY_FEE_CENTS;
+        }
+      }
 
       // Total calculado pelo servidor (não pelo cliente)
       const total = subtotal + deliveryFee;

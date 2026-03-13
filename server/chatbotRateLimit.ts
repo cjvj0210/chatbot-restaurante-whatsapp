@@ -10,9 +10,10 @@
 import { and, count, eq, gte } from "drizzle-orm";
 import { getDb } from "./db";
 import { messages, conversations, customers } from "../drizzle/schema";
+import { CHATBOT } from "../shared/constants";
 
-const WINDOW_MS = 60 * 60 * 1000; // 1 hora
-const MAX_MESSAGES = 30;           // máximo por janela
+const WINDOW_MS = CHATBOT.RATE_LIMIT_WINDOW_MS;
+const MAX_MESSAGES = CHATBOT.RATE_LIMIT_MAX_MESSAGES;
 
 // Fallback em memória para quando o banco não está disponível
 interface RateLimitEntry {
