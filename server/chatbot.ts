@@ -126,7 +126,7 @@ async function _processIncomingMessageInternal(
 ): Promise<void> {
   try {
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
-    if (!checkChatbotRateLimit(whatsappId)) {
+    if (!(await checkChatbotRateLimit(whatsappId))) {
       console.warn(`[Chatbot] Rate limit atingido para ${phone} (${whatsappId})`);
       const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
       await whatsappService.sendText(whatsappId, limitMsg);

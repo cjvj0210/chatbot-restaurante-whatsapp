@@ -88,28 +88,28 @@ describe("Sanitização de Objetos", () => {
 });
 
 describe("Rate Limiting do Chatbot", () => {
-  it("deve permitir mensagens dentro do limite", () => {
+  it("deve permitir mensagens dentro do limite", async () => {
     const testId = `test-rate-${Date.now()}`;
-    expect(checkChatbotRateLimit(testId)).toBe(true);
-    expect(checkChatbotRateLimit(testId)).toBe(true);
-    expect(checkChatbotRateLimit(testId)).toBe(true);
+    expect(await checkChatbotRateLimit(testId)).toBe(true);
+    expect(await checkChatbotRateLimit(testId)).toBe(true);
+    expect(await checkChatbotRateLimit(testId)).toBe(true);
   });
 
-  it("deve retornar mensagens restantes corretamente", () => {
+  it("deve retornar mensagens restantes corretamente", async () => {
     const testId = `test-remaining-${Date.now()}`;
     expect(getRemainingMessages(testId)).toBe(30);
-    checkChatbotRateLimit(testId);
+    await checkChatbotRateLimit(testId);
     expect(getRemainingMessages(testId)).toBe(29);
   });
 
-  it("deve bloquear após exceder o limite", () => {
+  it("deve bloquear após exceder o limite", async () => {
     const testId = `test-block-${Date.now()}`;
     // Enviar 30 mensagens (limite)
     for (let i = 0; i < 30; i++) {
-      checkChatbotRateLimit(testId);
+      await checkChatbotRateLimit(testId);
     }
     // A 31ª deve ser bloqueada
-    expect(checkChatbotRateLimit(testId)).toBe(false);
+    expect(await checkChatbotRateLimit(testId)).toBe(false);
     expect(getRemainingMessages(testId)).toBe(0);
   });
 
