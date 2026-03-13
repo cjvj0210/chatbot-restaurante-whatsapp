@@ -18,6 +18,43 @@
 
 export type OrderType = "delivery" | "pickup";
 
+/**
+ * Retorna a data/hora atual no fuso horário de São Paulo (America/Sao_Paulo).
+ * Essencial para o servidor que roda em UTC — sem isso, getHours()/getDay()
+ * retornam valores UTC e a lógica de horário de funcionamento fica errada.
+ *
+ * Funciona criando uma string formatada no fuso BRT e parseando de volta.
+ */
+export function getNowBRT(): Date {
+  const now = new Date();
+  // Formatar no fuso de São Paulo
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(now);
+
+  const get = (type: string) => parts.find(p => p.type === type)?.value || '0';
+  const year = parseInt(get('year'));
+  const month = parseInt(get('month')) - 1; // 0-indexed
+  const day = parseInt(get('day'));
+  let hour = parseInt(get('hour'));
+  // Intl pode retornar 24 em vez de 0 para meia-noite
+  if (hour === 24) hour = 0;
+  const minute = parseInt(get('minute'));
+  const second = parseInt(get('second'));
+
+  // Criar Date "fake" cujos getHours/getDay/etc retornam valores BRT
+  // Nota: este Date NÃO representa o instante UTC correto, mas seus métodos
+  // get* retornam os valores corretos para o fuso de São Paulo.
+  return new Date(year, month, day, hour, minute, second);
+}
+
 interface TimeRange {
   startH: number;
   startM: number;
@@ -125,7 +162,8 @@ export function checkBusinessHours(
   orderType: OrderType,
   now?: Date
 ): BusinessHoursStatus {
-  const date = now || new Date();
+  // Se nenhuma data for fornecida, usar horário de Brasília (não UTC)
+  const date = now || getNowBRT();
   const day = date.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
   const currentMinutes = toMinutes(date.getHours(), date.getMinutes());
 
@@ -198,6 +236,7 @@ export function checkBusinessHours(
 }
 
 function getNextOpenTime(orderType: OrderType, now: Date): string {
+  // now já deve estar em BRT (vindo de checkBusinessHours)
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   const schedule = orderType === "delivery" ? DELIVERY_HOURS : PICKUP_HOURS;
   const currentDay = now.getDay();
@@ -229,7 +268,7 @@ function getNextOpenTime(orderType: OrderType, now: Date): string {
  * Retorna os horários de hoje formatados para exibição
  */
 export function getTodayHours(orderType: OrderType, now?: Date): string {
-  const date = now || new Date();
+  const date = now || getNowBRT();
   const day = date.getDay();
   const schedule = orderType === "delivery" ? DELIVERY_HOURS[day] : PICKUP_HOURS[day];
 

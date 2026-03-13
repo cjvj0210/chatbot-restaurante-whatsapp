@@ -20,6 +20,7 @@ import {
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
 import { getChatbotPrompt } from "./chatbotPrompt";
+import { getNowBRT } from "../shared/businessHours";
 import { orderSessions, orders, reservations } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
@@ -504,9 +505,13 @@ async function generateResponse(
           let previsaoMsg = '';
           if ((order.status === 'confirmed' || order.status === 'preparing' || order.status === 'delivering') && (order as any).confirmedAt) {
             const confirmedAt = new Date((order as any).confirmedAt);
-            const now = new Date();
+            // Usar horário BRT para cálculo de tempo decorrido
+            // confirmedAt já está em UTC no banco, então a diferença é correta
+            const now = new Date(); // UTC é OK aqui pois confirmedAt também é UTC
             const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
-            const dayOfWeek = confirmedAt.getDay();
+            // Usar BRT para determinar dia da semana
+            const nowBRT = getNowBRT();
+            const dayOfWeek = nowBRT.getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
             if (order.orderType === 'delivery') {

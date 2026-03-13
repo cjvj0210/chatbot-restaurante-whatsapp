@@ -3,7 +3,7 @@ import { botMessages, orders, orderItems, menuItems, orderSessions } from "../dr
 import { eq } from "drizzle-orm";
 import { sendTextMessage } from "./whatsapp";
 import { sendTextMessageEvolution } from "./evolutionApi";
-import { checkBusinessHours } from "../shared/businessHours";
+import { checkBusinessHours, getNowBRT } from "../shared/businessHours";
 
 /**
  * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
@@ -45,8 +45,8 @@ function formatCurrency(cents: number): string {
  * Retirada: sempre 30-50 min
  */
 export function calcularTempoEstimado(orderType: string): { min: number; max: number } {
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+  const now = getNowBRT();
+  const dayOfWeek = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb (horário BRT)
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
   if (orderType === "delivery") {
@@ -137,8 +137,8 @@ export function formatConfirmationMessage(
   customerName: string
 ): string {
   const tempo = calcularTempoEstimado(orderType);
-  const now = new Date();
-  const dayOfWeek = now.getDay();
+  const now = getNowBRT();
+  const dayOfWeek = now.getDay(); // Horário BRT
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
   // Verificar horário de funcionamento para calcular base correta
@@ -174,8 +174,12 @@ export function formatConfirmationMessage(
   // Calcular horário estimado de chegada
   const chegadaMin = new Date(baseTime.getTime() + tempo.min * 60 * 1000);
   const chegadaMax = new Date(baseTime.getTime() + tempo.max * 60 * 1000);
-  const formatHora = (d: Date) =>
-    d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+  // Formatar hora diretamente (d já está em BRT, não precisa de timeZone)
+  const formatHora = (d: Date) => {
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
+  };
   const horarioEstimado = `${formatHora(chegadaMin)} – ${formatHora(chegadaMax)}`;
 
   let message = `✅ *Pedido #${orderNumber} Confirmado!*\n\n`;

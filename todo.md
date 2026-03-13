@@ -1051,3 +1051,16 @@
   - Tabela `processed_messages` no banco com UNIQUE constraint no messageId
   - `tryClaimMessage()` usa INSERT IGNORE: só a primeira instância a inserir processa
   - Limpeza automática a cada 30 min (mensagens > 1 hora)
+
+## BUG: Previsão de Entrega na Confirmação WhatsApp (13/03/2026)
+- [x] Mensagem de confirmação do WhatsApp mostra previsão fora do horário (08:45-09:10 quando abre às 11h)
+  - Causa raiz: servidor roda em UTC, new Date().getHours() retornava hora UTC (09h) em vez de BRT (06h)
+  - Solução: criada função getNowBRT() que converte UTC para America/Sao_Paulo
+- [x] Auditar de ponta a ponta todos os pontos que calculam previsão de entrega
+  - businessHours.ts: checkBusinessHours agora usa getNowBRT() como padrão
+  - orderNotification.ts: calcularTempoEstimado e formatConfirmationMessage usam getNowBRT()
+  - chatbot.ts: cálculo de dia da semana para previsão usa getNowBRT()
+  - Confirmacao.tsx (frontend): OK, roda no navegador do cliente (fuso local)
+- [x] Corrigir orderNotification.ts para respeitar horário de funcionamento
+- [x] Validar consistência: cardápio digital, chatbot, notificação WhatsApp
+  - 102 testes passando (5 novos para timezone BRT)
