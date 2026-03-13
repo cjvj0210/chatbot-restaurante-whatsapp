@@ -38,6 +38,7 @@ import {
   type InsertWhatsappSettings,
   type InsertMenuCategory,
   type InsertMenuItem,
+  processedMessages,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -654,4 +655,61 @@ export async function deleteAddonOption(id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(menuAddonOptions).where(eq(menuAddonOptions.id, id));
+}
+
+
+/**
+ * Deduplicação distribuída de mensagens via banco de dados.
+ * Garante que apenas UMA instância do servidor (dev, produção, webhook, polling)
+ * processe cada mensagem, mesmo com múltiplos servidores rodando simultaneamente.
+ * 
+ * Usa INSERT IGNORE: se o messageId já existe (unique constraint), retorna false.
+ * Se inseriu com sucesso, retorna true (esta instância deve processar).
+ * 
+ * @returns true se esta instância deve processar a mensagem (primeira a inserir)
+ */
+export async function tryClaimMessage(messageId: string, source: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    // Se o banco não está disponível, permitir processamento (fallback)
+    console.warn("[Dedup] Banco não disponível, permitindo processamento");
+    return true;
+  }
+
+  try {
+    const { sql } = await import("drizzle-orm");
+    // INSERT IGNORE: se o messageId já existe (unique constraint), não insere e retorna affectedRows=0
+    const res = await db.execute(sql`INSERT IGNORE INTO processed_messages (messageId, source) VALUES (${messageId}, ${source})`);
+    
+    // affectedRows > 0 = inseriu com sucesso = esta instância deve processar
+    const affectedRows = (res as any)?.[0]?.affectedRows ?? (res as any)?.affectedRows ?? 0;
+    if (affectedRows > 0) {
+      return true; // Primeira instância a reclamar
+    }
+    return false; // Outra instância já processou
+  } catch (error: any) {
+    // Se for erro de duplicate key, outra instância já processou
+    if (error?.cause?.code === "ER_DUP_ENTRY" || error?.code === "ER_DUP_ENTRY") {
+      return false;
+    }
+    // Outro erro: permitir processamento (fallback seguro)
+    console.error("[Dedup] Erro ao verificar mensagem:", error);
+    return true;
+  }
+}
+
+/**
+ * Limpa mensagens processadas antigas (mais de 1 hora).
+ * Deve ser chamada periodicamente para evitar crescimento infinito da tabela.
+ */
+export async function cleanupProcessedMessages(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    const { sql } = await import("drizzle-orm");
+    await db.execute(sql`DELETE FROM processed_messages WHERE processedAt < DATE_SUB(NOW(), INTERVAL 1 HOUR)`);
+  } catch (error) {
+    console.error("[Dedup] Erro ao limpar mensagens antigas:", error);
+  }
 }

@@ -1043,3 +1043,11 @@
   - Camada 2: Dedup no processIncomingMessage (isDuplicateMessage) — última barreira webhook+polling
   - Camada 3: Lock por cliente (withClientLock) — serializa processamento do mesmo cliente
 - [x] Testar e validar — 97 testes passando (9 novos para dedup)
+- [x] BUG PERSISTENTE: Respostas ainda triplicando após dedup por messageId
+  - Causa raiz: dedup em memória (Map/Set) não funciona entre múltiplas instâncias (dev + produção)
+- [x] Investigar se há múltiplas instâncias (dev + produção) ou polling com IDs diferentes
+  - Confirmado: 3 instâncias processando (sandbox dev + produção publicada + polling)
+- [x] Implementar correção definitiva
+  - Tabela `processed_messages` no banco com UNIQUE constraint no messageId
+  - `tryClaimMessage()` usa INSERT IGNORE: só a primeira instância a inserir processa
+  - Limpeza automática a cada 30 min (mensagens > 1 hora)

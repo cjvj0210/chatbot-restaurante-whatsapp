@@ -113,6 +113,13 @@
       "when": 1773349832029,
       "tag": "0015_freezing_gamma_corps",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1773393793231,
+      "tag": "0016_slim_spot",
+      "breakpoints": true
     }
   ]
 }

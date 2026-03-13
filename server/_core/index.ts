@@ -17,6 +17,7 @@ import { sendReservationReminders } from "../reservationReminder";
 import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages } from "../maintenance";
 import { cleanupRateLimits } from "../chatbotRateLimit";
 import { startMessagePolling, getPollingStats } from "../messagePolling";
+import { cleanupProcessedMessages } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -217,9 +218,18 @@ async function startServer() {
     // Polling de mensagens: ATIVO como sistema principal
     // O webhook da Evolution API no Render não dispara de forma confiável.
     // O polling busca mensagens a cada 3s. Webhook continua ativo como complemento.
-    // Deduplicacão por messageId garante que não há respostas duplicadas.
+    // Deduplicação por messageId via BANCO DE DADOS garante que não há respostas duplicadas
+    // mesmo com múltiplas instâncias do servidor (dev + produção).
     startMessagePolling();
     console.log('[Polling] Serviço de polling de mensagens ATIVO (sistema principal)');
+
+    // Limpeza de mensagens processadas no banco (a cada 30 minutos)
+    setInterval(() => {
+      cleanupProcessedMessages().catch(err =>
+        console.error('[Cron] Erro na limpeza de dedup:', err)
+      );
+    }, 30 * 60 * 1000);
+    console.log('[Cron] Limpeza de dedup distribuída iniciada (a cada 30 min)');
   });
 }
 

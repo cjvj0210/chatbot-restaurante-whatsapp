@@ -15,6 +15,7 @@ import {
   updateConversation,
   getMessagesByConversation,
   getDb,
+  tryClaimMessage,
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
@@ -39,34 +40,8 @@ interface ChatContext {
   awaitingInput?: string;
 }
 
-/**
- * Deduplicação robusta de mensagens no processIncomingMessage.
- * Última barreira para evitar respostas duplicadas quando webhook e polling
- * processam a mesma mensagem, ou quando a Evolution API envia múltiplos
- * eventos MESSAGES_UPSERT para a mesma mensagem.
- */
-const recentlyProcessedMessages = new Map<string, number>(); // messageId -> timestamp
-const DEDUP_WINDOW_MS = 60_000; // 60 segundos
-const MAX_DEDUP_ENTRIES = 1000;
-
-function isDuplicateMessage(messageId: string): boolean {
-  // Limpar entradas antigas periodicamente
-  if (recentlyProcessedMessages.size > MAX_DEDUP_ENTRIES) {
-    const now = Date.now();
-    Array.from(recentlyProcessedMessages.entries()).forEach(([id, ts]) => {
-      if (now - ts > DEDUP_WINDOW_MS) {
-        recentlyProcessedMessages.delete(id);
-      }
-    });
-  }
-
-  if (recentlyProcessedMessages.has(messageId)) {
-    return true; // Já processada
-  }
-
-  recentlyProcessedMessages.set(messageId, Date.now());
-  return false; // Primeira vez
-}
+// A deduplicação agora é feita via banco de dados (tryClaimMessage)
+// para funcionar entre múltiplas instâncias do servidor (dev + produção).
 
 /**
  * Lock por whatsappId para evitar processamento concorrente de múltiplas
@@ -111,11 +86,12 @@ export async function processIncomingMessage(
   pushName?: string,
   realPhone?: string
 ): Promise<void> {
-  // ===== DEDUPLICAÇÃO: Última barreira contra respostas duplicadas =====
-  // Evita que webhook + polling, ou múltiplos eventos MESSAGES_UPSERT,
-  // processem a mesma mensagem mais de uma vez.
-  if (isDuplicateMessage(messageId)) {
-    console.log(`[Chatbot] ⚠️ Mensagem duplicada ignorada: ${messageId} (de ${phone})`);
+  // ===== DEDUPLICAÇÃO DISTRIBUÍDA VIA BANCO DE DADOS =====
+  // Garante que apenas UMA instância (dev, produção, webhook, polling)
+  // processe cada mensagem, mesmo com múltiplos servidores rodando.
+  const claimed = await tryClaimMessage(messageId, "chatbot");
+  if (!claimed) {
+    console.log(`[Chatbot] ⚠️ Mensagem já processada por outra instância: ${messageId} (de ${phone})`);
     return;
   }
 

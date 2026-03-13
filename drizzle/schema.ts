@@ -407,3 +407,20 @@ export const auditLogs = mysqlTable("audit_logs", {
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+
+/**
+ * Mensagens processadas — deduplicação distribuída entre múltiplas instâncias do servidor.
+ * Quando webhook + polling + múltiplos servidores (dev/prod) processam a mesma mensagem,
+ * esta tabela garante que apenas a primeira instância a inserir o messageId irá processá-la.
+ * Usa INSERT IGNORE com chave única no messageId.
+ */
+export const processedMessages = mysqlTable("processed_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  messageId: varchar("messageId", { length: 128 }).notNull().unique(),
+  source: varchar("source", { length: 20 }).notNull(), // "webhook" | "polling"
+  processedAt: timestamp("processedAt").defaultNow().notNull(),
+}, (t) => [
+  index("idx_processed_at").on(t.processedAt),
+]);
+export type ProcessedMessage = typeof processedMessages.$inferSelect;
