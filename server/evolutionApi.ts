@@ -1,5 +1,6 @@
 import axios from "axios";
 import { registerBotSentMessage } from "./botMessageTracker";
+import { withRetry } from "./utils/retry";
 
 /**
  * Módulo de integração com a Evolution API v2.3.7
@@ -31,19 +32,17 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
     const isLid = to.endsWith("@lid");
     const normalizedTo = isLid ? to : to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
 
-    const response = await axios.post(
-      `${baseUrl}/message/sendText/${instanceName}`,
-      {
-        number: normalizedTo,
-        text: text,
-      },
-      {
-        headers: {
-          apikey: apiKey,
-          "Content-Type": "application/json",
-        },
-        timeout: 30000,
-      }
+    const response = await withRetry(
+      () =>
+        axios.post(
+          `${baseUrl}/message/sendText/${instanceName}`,
+          { number: normalizedTo, text },
+          {
+            headers: { apikey: apiKey, "Content-Type": "application/json" },
+            timeout: 30000,
+          }
+        ),
+      { maxRetries: 3, delayMs: 1000, label: "sendTextMessageEvolution" }
     );
 
     const sentMessageId = response.data?.key?.id;
@@ -123,22 +122,23 @@ export async function sendMediaMessageEvolution(
     const isLid = to.endsWith("@lid");
     const normalizedTo = isLid ? to : to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
 
-    const response = await axios.post(
-      `${baseUrl}/message/sendMedia/${instanceName}`,
-      {
-        number: normalizedTo,
-        mediatype: "image",
-        mimetype: "image/jpeg",
-        media: imageUrl,
-        caption: caption,
-      },
-      {
-        headers: {
-          apikey: apiKey,
-          "Content-Type": "application/json",
-        },
-        timeout: 30000,
-      }
+    const response = await withRetry(
+      () =>
+        axios.post(
+          `${baseUrl}/message/sendMedia/${instanceName}`,
+          {
+            number: normalizedTo,
+            mediatype: "image",
+            mimetype: "image/jpeg",
+            media: imageUrl,
+            caption,
+          },
+          {
+            headers: { apikey: apiKey, "Content-Type": "application/json" },
+            timeout: 30000,
+          }
+        ),
+      { maxRetries: 3, delayMs: 1000, label: "sendMediaMessageEvolution" }
     );
 
     const sentMediaId = response.data?.key?.id;
