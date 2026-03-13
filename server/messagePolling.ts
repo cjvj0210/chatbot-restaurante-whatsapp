@@ -178,7 +178,8 @@ async function pollMessages(): Promise<void> {
         continue; // Tipo não suportado
       }
 
-      if (!messageText.trim()) continue;
+      if (typeof messageText !== "string" || !messageText.trim()) continue;
+      messageText = messageText.slice(0, 2000);
 
       const phone = extractPhoneFromJid(remoteJid);
       const whatsappId = remoteJid;
