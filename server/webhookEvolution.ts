@@ -1,15 +1,14 @@
 import type { Request, Response } from "express";
 import { processIncomingMessage } from "./chatbot";
-import { sendTextMessageEvolution, downloadMediaEvolution, deleteMessageForEveryone } from "./evolutionApi";
+import { sendTextMessageEvolution, deleteMessageForEveryone } from "./evolutionApi";
 import { whatsappService } from "./services/whatsappService";
 import { markMessageAsProcessed } from "./messagePolling";
 import { isBotSentMessage } from "./botMessageTracker";
-import { transcribeAudio } from "./_core/voiceTranscription";
-import { storagePut } from "./storage";
 import { getDb, getCustomerByWhatsappId, getActiveConversation, updateConversation } from "./db";
 import { conversations, customers } from "../drizzle/schema";
 import { eq, like, or } from "drizzle-orm";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { transcribeFromEvolution } from "./services/audioService";
 
 /**
  * Estrutura do payload de webhook da Evolution API v2.3.7
@@ -278,7 +277,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     } else if (message?.audioMessage || messageType === "audioMessage" || messageType === "pttMessage") {
       // Processar áudio: baixar e transcrever
       console.log(`[EvolutionWebhook] Áudio recebido, transcrevendo... ID: ${messageId}`);
-      const transcription = await transcribeEvolutionAudio(messageId);
+      const transcription = await transcribeFromEvolution(messageId);
       if (transcription) {
         messageText = transcription;
         console.log(`[EvolutionWebhook] Áudio transcrito: "${messageText}"`);
@@ -311,57 +310,6 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     console.error("[EvolutionWebhook] Erro ao processar webhook:", error);
   }
 }
-
-/**
- * Transcreve um áudio recebido via Evolution API usando Whisper
- * Fluxo: Evolution API (base64) → S3 (URL pública) → Whisper (transcrição)
- */
-async function transcribeEvolutionAudio(messageId: string): Promise<string | null> {
-  try {
-    // 1. Baixar o áudio em base64 via Evolution API
-    const audioBuffer = await downloadMediaEvolution(messageId);
-
-    if (!audioBuffer) {
-      console.error("[EvolutionWebhook] Falha ao baixar áudio");
-      return null;
-    }
-
-    console.log(`[EvolutionWebhook] Áudio baixado: ${audioBuffer.length} bytes`);
-
-    // 2. Fazer upload para S3 para obter URL pública acessível pelo Whisper
-    // O Whisper precisa de URL HTTP, não aceita arquivo local
-    const s3Key = `audio-transcriptions/${messageId}-${Date.now()}.ogg`;
-    let audioUrl: string;
-    try {
-      const uploaded = await storagePut(s3Key, audioBuffer, "audio/ogg");
-      audioUrl = uploaded.url;
-      console.log(`[EvolutionWebhook] Áudio enviado para S3: ${audioUrl}`);
-    } catch (uploadErr) {
-      console.error("[EvolutionWebhook] Falha ao enviar áudio para S3:", uploadErr);
-      return null;
-    }
-
-    // 3. Transcrever com Whisper usando a URL do S3
-    const result = await transcribeAudio({
-      audioUrl,
-      language: "pt",
-      prompt: "Transcrição de mensagem de voz em português brasileiro para atendimento de restaurante",
-    });
-
-    if ("error" in result) {
-      console.error("[EvolutionWebhook] Erro na transcrição:", result.error, result.details);
-      return null;
-    }
-
-    const transcribed = result?.text?.trim() || null;
-    console.log(`[EvolutionWebhook] Transcrição concluída: "${transcribed}"`);
-    return transcribed;
-  } catch (error) {
-    console.error("[EvolutionWebhook] Erro ao transcrever áudio:", error);
-    return null;
-  }
-}
-
 
 /**
  * Ativa o modo humano para uma conversa baseada no JID do WhatsApp.

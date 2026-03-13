@@ -9,12 +9,11 @@
 
 import axios from "axios";
 import { processIncomingMessage } from "./chatbot";
-import { transcribeAudio } from "./_core/voiceTranscription";
-import { storagePut } from "./storage";
 import { getDb } from "./db";
 import { conversations, customers } from "../drizzle/schema";
 import { eq, like, or } from "drizzle-orm";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { transcribeFromPolling } from "./services/audioService";
 
 const POLL_INTERVAL_MS = 3000; // 3 segundos (respostas rápidas)
 const INITIAL_DELAY_MS = 15000; // 15 segundos após iniciar (dar tempo pro servidor subir)
@@ -160,7 +159,7 @@ async function pollMessages(): Promise<void> {
       } else if (message.audioMessage || messageType === "audioMessage" || messageType === "pttMessage") {
         // Transcrever áudio
         console.log(`[Polling] Áudio recebido, transcrevendo... ID: ${msgId}`);
-        const transcription = await transcribeEvolutionAudio(msgId, baseUrl, apiKey, instanceName);
+        const transcription = await transcribeFromPolling(msgId, baseUrl, apiKey, instanceName);
         if (transcription) {
           messageText = transcription;
         } else {
@@ -237,43 +236,6 @@ async function handleOperatorMessage(clientJid: string): Promise<void> {
     }
   } catch (err) {
     console.error("[Polling] Erro ao ativar modo humano:", err);
-  }
-}
-
-/**
- * Transcreve áudio via Evolution API + Whisper
- */
-async function transcribeEvolutionAudio(
-  messageId: string,
-  baseUrl: string,
-  apiKey: string,
-  instanceName: string
-): Promise<string | null> {
-  try {
-    const response = await axios.post(
-      `${baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`,
-      { message: { key: { id: messageId } }, convertToMp4: false },
-      { headers: { apikey: apiKey, "Content-Type": "application/json" }, timeout: 30000 }
-    );
-
-    if (!response.data?.base64) return null;
-
-    const base64Data = response.data.base64.replace(/^data:[^;]+;base64,/, "");
-    const audioBuffer = Buffer.from(base64Data, "base64");
-
-    const s3Key = `audio-transcriptions/${messageId}-${Date.now()}.ogg`;
-    const uploaded = await storagePut(s3Key, audioBuffer, "audio/ogg");
-
-    const result = await transcribeAudio({
-      audioUrl: uploaded.url,
-      language: "pt",
-      prompt: "Transcrição de mensagem de voz em português brasileiro para atendimento de restaurante",
-    });
-
-    if ("error" in result) return null;
-    return result?.text?.trim() || null;
-  } catch {
-    return null;
   }
 }
 
