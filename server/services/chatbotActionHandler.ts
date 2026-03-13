@@ -12,7 +12,7 @@ import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { orderSessions, orders, reservations } from "../../drizzle/schema";
-import { getNowBRT } from "../../shared/businessHours";
+import { getNowBRT, checkBusinessHours } from "../../shared/businessHours";
 import { notifyOwner } from "../_core/notification";
 import { logger } from "../utils/logger";
 
@@ -94,10 +94,9 @@ export async function handleOrderStatus(aiResponse: string): Promise<string> {
           const now = new Date();
           const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
           const nowBRT = getNowBRT();
-          const dayOfWeek = nowBRT.getDay();
-          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+          const { isOpen: isOpenNow } = checkBusinessHours("delivery", nowBRT);
+          const isWeekend = nowBRT.getDay() === 0 || nowBRT.getDay() === 6;
           const currentHour = nowBRT.getHours();
-          const isOpenNow = (currentHour >= 11 && currentHour < 15) || (currentHour >= 19 && currentHour < 23);
 
           if (order.orderType === "delivery") {
             const minTime = isWeekend ? 60 : 45;
