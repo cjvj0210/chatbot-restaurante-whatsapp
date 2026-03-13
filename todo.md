@@ -1033,3 +1033,13 @@
 - [x] Ajustar para respeitar horário de funcionamento do restaurante
 - [x] Aplicar regras corretas: Delivery seg-sex 45-70min, sáb-dom 60-110min, Retirada 30-50min
 - [x] Testar e validar — 88 testes passando (16 novos para previsão de entrega)
+
+## BUG: Respostas Duplicadas do Chatbot (13/03/2026)
+- [x] Bot responde 2-4 vezes para cada mensagem do cliente
+  - Causa raiz: webhook + polling processando a mesma mensagem, e Evolution API enviando múltiplos MESSAGES_UPSERT
+- [x] Investigar causa raiz: webhook duplo, polling ativo, dedup falhando
+- [x] Implementar deduplicação robusta por messageId
+  - Camada 1: Dedup no webhook (isWebhookDuplicate) — bloqueia eventos duplicados da Evolution API
+  - Camada 2: Dedup no processIncomingMessage (isDuplicateMessage) — última barreira webhook+polling
+  - Camada 3: Lock por cliente (withClientLock) — serializa processamento do mesmo cliente
+- [x] Testar e validar — 97 testes passando (9 novos para dedup)

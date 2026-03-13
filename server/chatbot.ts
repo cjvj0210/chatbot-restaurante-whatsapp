@@ -40,6 +40,61 @@ interface ChatContext {
 }
 
 /**
+ * Deduplicação robusta de mensagens no processIncomingMessage.
+ * Última barreira para evitar respostas duplicadas quando webhook e polling
+ * processam a mesma mensagem, ou quando a Evolution API envia múltiplos
+ * eventos MESSAGES_UPSERT para a mesma mensagem.
+ */
+const recentlyProcessedMessages = new Map<string, number>(); // messageId -> timestamp
+const DEDUP_WINDOW_MS = 60_000; // 60 segundos
+const MAX_DEDUP_ENTRIES = 1000;
+
+function isDuplicateMessage(messageId: string): boolean {
+  // Limpar entradas antigas periodicamente
+  if (recentlyProcessedMessages.size > MAX_DEDUP_ENTRIES) {
+    const now = Date.now();
+    Array.from(recentlyProcessedMessages.entries()).forEach(([id, ts]) => {
+      if (now - ts > DEDUP_WINDOW_MS) {
+        recentlyProcessedMessages.delete(id);
+      }
+    });
+  }
+
+  if (recentlyProcessedMessages.has(messageId)) {
+    return true; // Já processada
+  }
+
+  recentlyProcessedMessages.set(messageId, Date.now());
+  return false; // Primeira vez
+}
+
+/**
+ * Lock por whatsappId para evitar processamento concorrente de múltiplas
+ * mensagens do mesmo cliente (evita race conditions no LLM/DB).
+ */
+const processingLocks = new Map<string, Promise<void>>();
+
+async function withClientLock(whatsappId: string, fn: () => Promise<void>): Promise<void> {
+  // Esperar qualquer processamento anterior do mesmo cliente terminar
+  const existing = processingLocks.get(whatsappId);
+  if (existing) {
+    await existing;
+  }
+
+  const promise = fn();
+  processingLocks.set(whatsappId, promise);
+
+  try {
+    await promise;
+  } finally {
+    // Só limpar se ainda é a nossa promise
+    if (processingLocks.get(whatsappId) === promise) {
+      processingLocks.delete(whatsappId);
+    }
+  }
+}
+
+/**
  * Processa uma mensagem recebida do cliente via WhatsApp
  * @param whatsappId - JID completo (ex: 212454869074102@lid ou 5517988112791@s.whatsapp.net)
  * @param phone - Número extraído do JID (pode ser LID ou número real)
@@ -49,6 +104,35 @@ interface ChatContext {
  * @param realPhone - Número real do telefone quando JID é @lid (extraído de remoteJidAlt)
  */
 export async function processIncomingMessage(
+  whatsappId: string,
+  phone: string,
+  messageText: string,
+  messageId: string,
+  pushName?: string,
+  realPhone?: string
+): Promise<void> {
+  // ===== DEDUPLICAÇÃO: Última barreira contra respostas duplicadas =====
+  // Evita que webhook + polling, ou múltiplos eventos MESSAGES_UPSERT,
+  // processem a mesma mensagem mais de uma vez.
+  if (isDuplicateMessage(messageId)) {
+    console.log(`[Chatbot] ⚠️ Mensagem duplicada ignorada: ${messageId} (de ${phone})`);
+    return;
+  }
+
+  // ===== LOCK POR CLIENTE: Serializar processamento do mesmo cliente =====
+  // Evita race conditions quando múltiplas mensagens chegam simultaneamente
+  // para o mesmo cliente (ex: webhook e polling ao mesmo tempo).
+  const lockKey = realPhone || phone;
+  return withClientLock(lockKey, async () => {
+    await _processIncomingMessageInternal(whatsappId, phone, messageText, messageId, pushName, realPhone);
+  });
+}
+
+/**
+ * Implementação interna do processamento de mensagem.
+ * Chamada apenas via processIncomingMessage que garante dedup e lock.
+ */
+async function _processIncomingMessageInternal(
   whatsappId: string,
   phone: string,
   messageText: string,

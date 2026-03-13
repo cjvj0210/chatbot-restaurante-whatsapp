@@ -109,6 +109,31 @@ function isStatusBroadcast(jid: string): boolean {
 }
 
 /**
+ * Deduplicação de eventos no webhook.
+ * A Evolution API pode enviar múltiplos eventos MESSAGES_UPSERT para a mesma mensagem.
+ */
+const recentWebhookEvents = new Map<string, number>();
+const WEBHOOK_DEDUP_WINDOW_MS = 30_000; // 30 segundos
+const MAX_WEBHOOK_DEDUP = 500;
+
+function isWebhookDuplicate(messageId: string): boolean {
+  // Limpar entradas antigas
+  if (recentWebhookEvents.size > MAX_WEBHOOK_DEDUP) {
+    const now = Date.now();
+    Array.from(recentWebhookEvents.entries()).forEach(([id, ts]) => {
+      if (now - ts > WEBHOOK_DEDUP_WINDOW_MS) {
+        recentWebhookEvents.delete(id);
+      }
+    });
+  }
+  if (recentWebhookEvents.has(messageId)) {
+    return true;
+  }
+  recentWebhookEvents.set(messageId, Date.now());
+  return false;
+}
+
+/**
  * Endpoint POST - Recebe eventos da Evolution API
  */
 export async function handleEvolutionWebhook(req: Request, res: Response): Promise<void> {
@@ -147,6 +172,14 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
     }
 
     const { key, message, messageType, pushName } = payload.data;
+
+    // ===== DEDUPLICAÇÃO NO WEBHOOK =====
+    // A Evolution API pode enviar múltiplos eventos MESSAGES_UPSERT para a mesma mensagem
+    const webhookMsgId = key.id;
+    if (webhookMsgId && isWebhookDuplicate(webhookMsgId)) {
+      console.log(`[EvolutionWebhook] ⚠️ Evento duplicado ignorado: ${webhookMsgId}`);
+      return;
+    }
 
     // Mensagens fromMe=true: verificar se foi o BOT ou o OPERADOR
     if (key.fromMe) {
