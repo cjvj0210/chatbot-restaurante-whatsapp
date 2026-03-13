@@ -14,7 +14,7 @@ import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
 import { handleEvolutionWebhook } from "../webhookEvolution";
 import { startKeepAlive } from "../keepAlive";
 import { sendReservationReminders } from "../reservationReminder";
-import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages } from "../maintenance";
+import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages, expireHumanModes } from "../maintenance";
 import { cleanupRateLimits } from "../chatbotRateLimit";
 import { startMessagePolling, getPollingStats } from "../messagePolling";
 import { cleanupProcessedMessages } from "../db";
@@ -263,6 +263,12 @@ async function startServer() {
       );
     }, 5 * 60 * 1000);
     console.log('[Cron] Worker de retry de mensagens iniciado (a cada 5 min)');
+
+    // Expirar modo humano proativamente a cada 5 minutos
+    setInterval(() => {
+      expireHumanModes().catch(() => {});
+    }, 5 * 60 * 1000);
+    console.log('[Cron] Expiração proativa de modo humano iniciada (a cada 5 min)');
 
     // Limpeza de rate limits do chatbot (a cada 30 minutos)
     setInterval(() => {

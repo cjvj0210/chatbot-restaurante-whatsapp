@@ -160,3 +160,31 @@ export async function retryFailedMessages(): Promise<void> {
     console.error("[RetryWorker] Erro no worker de retry:", err);
   }
 }
+
+/**
+ * Expira conversas em modo humano cujo prazo já passou (rodar a cada 5 minutos)
+ * O modo humano expira automaticamente após 30 min, mas só era detectado na próxima mensagem do cliente.
+ * Esta função garante expiração proativa para manter relatórios precisos.
+ */
+export async function expireHumanModes(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    const result = await db
+      .update(conversations)
+      .set({ humanMode: false, humanModeUntil: null })
+      .where(
+        and(
+          eq(conversations.humanMode, true),
+          lt(conversations.humanModeUntil, new Date())
+        )
+      );
+
+    if ((result as any).rowsAffected > 0) {
+      logger.info("Maintenance", `${(result as any).rowsAffected} conversas em modo humano expiradas`);
+    }
+  } catch (err) {
+    logger.error("Maintenance", "Erro ao expirar modos humanos", err);
+  }
+}
