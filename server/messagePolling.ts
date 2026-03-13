@@ -112,12 +112,11 @@ async function pollMessages(): Promise<void> {
       const remoteJid = msg.key?.remoteJid || "";
       const fromMe = msg.key?.fromMe;
 
-      // Ignorar mensagens do próprio bot, grupos, status
+      // Ignorar todas as mensagens fromMe (enviadas pelo bot ou operador)
+      // NOTA: Não ativar modo humano aqui porque o polling não consegue
+      // distinguir mensagens do BOT de mensagens do OPERADOR — ambas são fromMe=true.
+      // O modo humano só é ativado via webhook (que recebe em tempo real).
       if (fromMe) {
-        // Detectar mensagens do operador para ativar modo humano
-        if (isIndividualChat(remoteJid) && !remoteJid.includes("status")) {
-          await handleOperatorMessage(remoteJid);
-        }
         continue;
       }
 
