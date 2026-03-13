@@ -64,15 +64,14 @@ async function pollMessages(): Promise<void> {
   }
 
   try {
-    // Buscar mensagens recentes (últimos 30 segundos para garantir que não perca nada)
+    // Buscar apenas mensagens recentes (janela de 15 segundos com 3s de overlap)
     const now = Math.floor(Date.now() / 1000);
-    const since = lastPollTimestamp > 0 ? lastPollTimestamp - 5 : now - 30; // 5s de overlap de segurança
+    const since = lastPollTimestamp > 0 ? lastPollTimestamp - 3 : now; // Na primeira vez, só mensagens a partir de agora
 
     const response = await axios.post(
       `${baseUrl}/chat/findMessages/${instanceName}`,
       {
         where: {
-          key: { fromMe: false },
           messageTimestamp: { gte: since },
         },
         limit: 20,
