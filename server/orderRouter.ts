@@ -415,6 +415,7 @@ export const orderRouter = router({
 
       const { and: andOp, gte, lte } = await import("drizzle-orm");
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const conditions: any[] = [];
       if (input?.status) {
         conditions.push(eq(orders.status, input.status));
@@ -430,6 +431,7 @@ export const orderRouter = router({
 
       let query = db.select().from(orders);
       if (conditions.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query = query.where(conditions.length === 1 ? conditions[0] : andOp(...conditions)) as any;
       }
 
@@ -841,7 +843,8 @@ export const orderRouter = router({
       }
 
       // Salvar horário de confirmação quando restaurante aceita o pedido
-      const updateData: Record<string, any> = { status: input.status };
+      type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "delivering" | "delivered" | "cancelled";
+      const updateData: { status: OrderStatus; confirmedAt?: Date } = { status: input.status as OrderStatus };
       if (input.status === "confirmed") {
         updateData.confirmedAt = new Date();
       }

@@ -162,7 +162,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       const state = (payload.data as any)?.state || (payload.data as any)?.status;
       logger.info("Webhook", `Conexão atualizada: ${JSON.stringify(payload.data)}`);
       if (state === "close" || state === "disconnected") {
-        logger.error("Webhook", "⚠️ DESCONEXÃO DETECTADA via webhook!");
+        logger.error("Webhook", "⚠️ DESCONEXÃO DETECTADA via webhook!", state);
       }
       return;
     }
@@ -350,7 +350,7 @@ async function sendTextAndGetId(remoteJid: string, text: string): Promise<string
     }
     return sentId || null;
   } catch (error: any) {
-    logger.error("Webhook", `Erro ao enviar mensagem silenciosa: ${error?.message}`);
+    logger.error("Webhook", "Erro ao enviar mensagem silenciosa", error?.message);
     return null;
   }
 }

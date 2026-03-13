@@ -196,7 +196,12 @@ async function _processIncomingMessageInternal(
       });
     } else {
       // Atualizar dados do cliente se estiverem faltando
-      const updates: Record<string, any> = {};
+      interface CustomerUpdates {
+        name?: string;
+        whatsappId?: string;
+        phone?: string;
+      }
+      const updates: CustomerUpdates = {};
       if (!customer.name && pushName) {
         updates.name = pushName;
       }
@@ -471,10 +476,11 @@ async function generateResponse(
   }
 
   const aiContent = response.choices[0]?.message?.content;
+  type LLMContentPart = { type: string; text?: string };
   let aiResponse = typeof aiContent === "string"
     ? aiContent
     : Array.isArray(aiContent)
-      ? (aiContent.find((c: any) => c.type === "text") as any)?.text || "Desculpe, não entendi. Pode reformular?"
+      ? (aiContent as LLMContentPart[]).find((c) => c.type === "text")?.text || "Desculpe, não entendi. Pode reformular?"
       : "Desculpe, não entendi. Pode reformular?";
 
   // Processar ações especiais do LLM usando o chatbotActionHandler

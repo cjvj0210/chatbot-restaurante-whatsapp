@@ -88,9 +88,9 @@ export async function handleOrderStatus(aiResponse: string): Promise<string> {
         let previsaoMsg = "";
         if (
           (order.status === "confirmed" || order.status === "preparing" || order.status === "delivering") &&
-          (order as any).confirmedAt
+          order.confirmedAt
         ) {
-          const confirmedAt = new Date((order as any).confirmedAt);
+          const confirmedAt = new Date(order.confirmedAt);
           const now = new Date();
           const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
           const nowBRT = getNowBRT();
