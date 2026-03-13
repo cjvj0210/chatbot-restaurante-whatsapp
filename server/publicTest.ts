@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
+import { logger } from "./utils/logger";
 import { getRestaurantSettings, getDb } from "./db";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { testSessions, testMessages, orderSessions } from "../drizzle/schema";
@@ -94,16 +95,25 @@ export const publicTestRouter = router({
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
       // Chamar LLM
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...history,
-        ],
-      });
+      let response: Awaited<ReturnType<typeof invokeLLM>>;
+      try {
+        response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history,
+          ],
+        });
+      } catch (llmError) {
+        logger.error("PublicTest", "Falha ao chamar invokeLLM (sendMessage)", llmError);
+        return {
+          message: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes. 🙏",
+          timestamp: new Date(),
+        };
+      }
 
       let botMessageContent = response.choices[0]?.message?.content;
-      let botMessage = typeof botMessageContent === 'string' 
-        ? botMessageContent 
+      let botMessage = typeof botMessageContent === 'string'
+        ? botMessageContent
         : "Desculpe, não consegui processar sua mensagem.";
 
       // Detectar se bot quer gerar link de pedido
@@ -238,16 +248,26 @@ export const publicTestRouter = router({
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
       // Chamar LLM
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...history,
-        ],
-      });
+      let response: Awaited<ReturnType<typeof invokeLLM>>;
+      try {
+        response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history,
+          ],
+        });
+      } catch (llmError) {
+        logger.error("PublicTest", "Falha ao chamar invokeLLM (sendAudio)", llmError);
+        return {
+          message: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes. 🙏",
+          transcription: transcribedText,
+          timestamp: new Date(),
+        };
+      }
 
       let botMessageContent = response.choices[0]?.message?.content;
-      let botMessage = typeof botMessageContent === 'string' 
-        ? botMessageContent 
+      let botMessage = typeof botMessageContent === 'string'
+        ? botMessageContent
         : "Desculpe, não consegui processar sua mensagem.";
 
       // Detectar se bot quer gerar link de pedido

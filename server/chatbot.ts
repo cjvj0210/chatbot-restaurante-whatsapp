@@ -460,7 +460,15 @@ async function generateResponse(
   });
 
   // Chamar IA
-  const response = await invokeLLM({ messages });
+  let response: Awaited<ReturnType<typeof invokeLLM>>;
+  try {
+    response = await invokeLLM({ messages });
+  } catch (llmError) {
+    logger.error("Chatbot", "Falha ao chamar invokeLLM", llmError);
+    return {
+      text: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes ou ligue para o restaurante. 🙏",
+    };
+  }
 
   const aiContent = response.choices[0]?.message?.content;
   let aiResponse = typeof aiContent === "string"

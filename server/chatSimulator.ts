@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
+import { logger } from "./utils/logger";
 import { getRestaurantSettings, getDb } from "./db";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { orderSessions } from "../drizzle/schema";
@@ -119,7 +120,17 @@ export const chatSimulatorRouter = router({
       ];
 
       // Chamar IA
-      const response = await invokeLLM({ messages: aiMessages });
+      let response: Awaited<ReturnType<typeof invokeLLM>>;
+      try {
+        response = await invokeLLM({ messages: aiMessages });
+      } catch (llmError) {
+        logger.error("ChatSimulator", "Falha ao chamar invokeLLM (sendMessage)", llmError);
+        return {
+          message: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes. 🙏",
+          orderSessionId: null,
+          timestamp: new Date(),
+        };
+      }
 
       let assistantMessage =
         typeof response.choices[0]?.message?.content === "string"
@@ -247,7 +258,18 @@ export const chatSimulatorRouter = router({
         })),
       ];
 
-      const response = await invokeLLM({ messages: aiMessages });
+      let response: Awaited<ReturnType<typeof invokeLLM>>;
+      try {
+        response = await invokeLLM({ messages: aiMessages });
+      } catch (llmError) {
+        logger.error("ChatSimulator", "Falha ao chamar invokeLLM (sendAudio)", llmError);
+        return {
+          message: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes. 🙏",
+          transcription: transcribedText,
+          orderSessionId: null,
+          timestamp: new Date(),
+        };
+      }
 
       let assistantMessage =
         typeof response.choices[0]?.message?.content === "string"
