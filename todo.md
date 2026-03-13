@@ -992,3 +992,11 @@
 - [x] Ativar modo humano automaticamente quando operador responde (30 min)
 - [x] Desativar modo humano após 30min ou quando operador envia comando "bot"
 - [x] Reativar verificação de modo humano no chatbot.ts com lógica correta
+
+
+## Modo Humano Elegante — Controle via WhatsApp (13/03/2026)
+- [x] Implementar função deleteMessage na Evolution API (apagar mensagem)
+- [x] Comando #bot: operador envia, sistema apaga antes do cliente ver, reativa bot
+- [x] Confirmação silenciosa: quando modo humano ativa, enviar aviso ao operador
+- [x] Expiração automática após 30 min sem interação do operador
+- [ ] Testar fluxo completo: operador responde → bot silencia → #bot → bot retoma (aguardando teste do Clóvis)

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { processIncomingMessage } from "./chatbot";
-import { sendTextMessageEvolution, downloadMediaEvolution } from "./evolutionApi";
+import { sendTextMessageEvolution, downloadMediaEvolution, deleteMessageForEveryone } from "./evolutionApi";
 import { markMessageAsProcessed } from "./messagePolling";
 import { isBotSentMessage } from "./botMessageTracker";
 import { transcribeAudio } from "./_core/voiceTranscription";
@@ -156,19 +156,51 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
         return;
       }
       
-      // Se o ID NÃO está registrado, foi o OPERADOR que digitou manualmente → ativar modo humano
+      // Se o ID NÃO está registrado, foi o OPERADOR que digitou manualmente
       console.log(`[EvolutionWebhook] Mensagem do OPERADOR detectada (ID não registrado): ${messageId}`);
       
-      // Verificar se o operador enviou o comando "bot" para desativar modo humano
-      const msgText = payload.data.message?.conversation || payload.data.message?.extendedTextMessage?.text || "";
-      if (msgText.trim().toLowerCase() === "bot") {
-        console.log(`[EvolutionWebhook] Comando 'bot' recebido — desativando modo humano`);
+      // Extrair texto da mensagem do operador
+      const operatorMsg = payload.data.message?.conversation || payload.data.message?.extendedTextMessage?.text || "";
+      
+      // Verificar se é o comando #bot (devolver ao bot)
+      if (operatorMsg.trim().toLowerCase() === "#bot") {
+        console.log(`[EvolutionWebhook] Comando #bot recebido — apagando mensagem e reativando bot`);
+        
+        // 1. Apagar a mensagem #bot antes do cliente ver
+        await deleteMessageForEveryone(key.remoteJid, messageId, true);
+        
+        // 2. Desativar modo humano
         await deactivateHumanModeForJid(key.remoteJid);
+        
+        // 3. Enviar confirmação silenciosa ao operador (mensagem que se auto-apaga)
+        // Enviamos uma confirmação e apagamos em 3 segundos
+        const confirmMsg = await sendTextAndGetId(key.remoteJid, "✅ Bot reativado para esta conversa!");
+        if (confirmMsg) {
+          setTimeout(async () => {
+            await deleteMessageForEveryone(key.remoteJid, confirmMsg, true);
+          }, 3000);
+        }
         return;
       }
       
-      // Ativar modo humano para esta conversa (30 minutos)
+      // Qualquer outra mensagem do operador → ativar modo humano (30 min)
+      // Verificar se já está em modo humano para não enviar notificação repetida
+      const isAlreadyHuman = await isHumanModeActiveForJid(key.remoteJid);
       await activateHumanModeForJid(key.remoteJid);
+      
+      if (!isAlreadyHuman) {
+        // Primeira mensagem do operador: enviar notificação silenciosa
+        const notifMsg = await sendTextAndGetId(
+          key.remoteJid,
+          "👤 Modo humano ativado (30 min). O bot está pausado.\nEnvie #bot para devolver ao atendimento automático."
+        );
+        // Apagar a notificação após 5 segundos (operador vê, cliente não)
+        if (notifMsg) {
+          setTimeout(async () => {
+            await deleteMessageForEveryone(key.remoteJid, notifMsg, true);
+          }, 5000);
+        }
+      }
       return;
     }
 
@@ -317,7 +349,7 @@ async function activateHumanModeForJid(remoteJid: string): Promise<void> {
     });
     
     console.log(`[EvolutionWebhook] ✅ Modo humano ATIVADO para ${phone} até ${humanModeUntil.toISOString()}`);
-    console.log(`[EvolutionWebhook] Bot ficará silencioso. Operador pode enviar "bot" para reativar.`);
+    console.log(`[EvolutionWebhook] Bot ficará silencioso. Operador pode enviar #bot para reativar.`);
   } catch (err) {
     console.error("[EvolutionWebhook] Erro ao ativar modo humano:", err);
   }
@@ -325,7 +357,7 @@ async function activateHumanModeForJid(remoteJid: string): Promise<void> {
 
 /**
  * Desativa o modo humano para uma conversa baseada no JID do WhatsApp.
- * Chamada quando o operador envia o comando "bot".
+ * Chamada quando o operador envia o comando #bot.
  */
 async function deactivateHumanModeForJid(remoteJid: string): Promise<void> {
   try {
@@ -351,5 +383,72 @@ async function deactivateHumanModeForJid(remoteJid: string): Promise<void> {
     console.log(`[EvolutionWebhook] ✅ Modo humano DESATIVADO para ${phone} — bot retomando atendimento`);
   } catch (err) {
     console.error("[EvolutionWebhook] Erro ao desativar modo humano:", err);
+  }
+}
+
+/**
+ * Envia uma mensagem de texto e retorna o ID da mensagem enviada.
+ * Usado para enviar notificações que serão apagadas depois.
+ */
+async function sendTextAndGetId(remoteJid: string, text: string): Promise<string | null> {
+  try {
+    const axios = (await import("axios")).default;
+    const baseUrl = process.env.EVOLUTION_API_URL || "";
+    const apiKey = process.env.EVOLUTION_API_KEY || "";
+    const instanceName = process.env.EVOLUTION_INSTANCE_NAME || "teste";
+
+    if (!baseUrl || !apiKey) return null;
+
+    const isLid = remoteJid.endsWith("@lid");
+    const normalizedTo = isLid ? remoteJid : remoteJid.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+
+    const response = await axios.post(
+      `${baseUrl}/message/sendText/${instanceName}`,
+      { number: normalizedTo, text },
+      {
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        timeout: 15000,
+      }
+    );
+
+    const sentId = response.data?.key?.id;
+    if (sentId) {
+      // Registrar no tracker para que o webhook não trate como mensagem do operador
+      const { registerBotSentMessage } = await import("./botMessageTracker");
+      registerBotSentMessage(sentId);
+    }
+    return sentId || null;
+  } catch (error: any) {
+    console.error("[EvolutionWebhook] Erro ao enviar mensagem silenciosa:", error?.message);
+    return null;
+  }
+}
+
+/**
+ * Verifica se o modo humano está ativo para uma conversa baseada no JID.
+ * Retorna true se o modo humano está ativo e ainda não expirou.
+ */
+async function isHumanModeActiveForJid(remoteJid: string): Promise<boolean> {
+  try {
+    const customer = await getCustomerByWhatsappId(remoteJid);
+    if (!customer) return false;
+
+    const conversation = await getActiveConversation(customer.id);
+    if (!conversation) return false;
+
+    if (!conversation.humanMode) return false;
+
+    // Verificar se ainda não expirou
+    if (conversation.humanModeUntil) {
+      const until = new Date(conversation.humanModeUntil);
+      if (until > new Date()) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch (err) {
+    console.error("[EvolutionWebhook] Erro ao verificar modo humano:", err);
+    return false;
   }
 }

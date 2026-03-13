@@ -155,6 +155,47 @@ export async function sendMediaMessageEvolution(
 }
 
 /**
+ * Apaga uma mensagem para todos na conversa via Evolution API
+ * Usado para apagar o comando #bot antes do cliente ver
+ */
+export async function deleteMessageForEveryone(
+  remoteJid: string,
+  messageId: string,
+  fromMe: boolean = true
+): Promise<boolean> {
+  try {
+    const { baseUrl, apiKey, instanceName } = getEvolutionConfig();
+
+    if (!baseUrl || !apiKey) {
+      console.error("[EvolutionAPI] URL ou API Key não configurados");
+      return false;
+    }
+
+    const response = await axios.delete(
+      `${baseUrl}/chat/deleteMessageForEveryone/${instanceName}`,
+      {
+        headers: {
+          apikey: apiKey,
+          "Content-Type": "application/json",
+        },
+        data: {
+          id: messageId,
+          fromMe: fromMe,
+          remoteJid: remoteJid,
+        },
+        timeout: 10000,
+      }
+    );
+
+    console.log(`[EvolutionAPI] Mensagem ${messageId} apagada com sucesso`);
+    return true;
+  } catch (error: any) {
+    console.error("[EvolutionAPI] Erro ao apagar mensagem:", error?.response?.data || error?.message);
+    return false;
+  }
+}
+
+/**
  * Verifica o status da instância na Evolution API
  */
 export async function checkInstanceStatus(): Promise<"open" | "close" | "connecting" | "unknown"> {
