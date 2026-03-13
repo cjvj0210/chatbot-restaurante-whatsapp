@@ -12,6 +12,7 @@
 
 import axios from "axios";
 import { notifyOwner } from "./_core/notification";
+import { logger } from "./utils/logger";
 
 const PING_INTERVAL_MS = 4 * 60 * 1000; // 4 minutos (mais agressivo para evitar hibernação)
 const INITIAL_DELAY_MS = 10000; // 10 segundos após iniciar
@@ -48,7 +49,7 @@ async function checkAndReconnect(): Promise<void> {
 
   try {
     // Ping 1: GET na raiz para "aquecer" o Render
-    await axios.get(baseUrl, { timeout: 10000 }).catch(() => {});
+    await axios.get(baseUrl, { timeout: 10000 }).catch((err: unknown) => { logger.warn("KeepAlive", "Ping inicial falhou", err); });
 
     // Ping 2: Verificar estado da instância
     const response = await axios.get(
@@ -107,7 +108,7 @@ async function checkAndReconnect(): Promise<void> {
           await notifyOwner({
             title: "⚠️ Bot WhatsApp Desconectado",
             content: `O bot do WhatsApp desconectou.\n\nMotivo: ${reason}\nHorário: ${disconnectAt}\n\nTentando reconectar automaticamente. Se não funcionar, acesse o painel da Evolution API e reconecte manualmente.`,
-          }).catch(() => {});
+          }).catch((err: unknown) => { logger.warn("KeepAlive", "Falha ao notificar dono sobre desconexão bot", err); });
         }
       }
     } catch {
@@ -154,7 +155,7 @@ async function checkAndReconnect(): Promise<void> {
         await notifyOwner({
           title: "🔴 Evolution API Indisponível",
           content: `A Evolution API no Render não está respondendo há ${consecutiveFailures} tentativas (${Math.round(consecutiveFailures * 4)} minutos).\n\nO bot WhatsApp está FORA DO AR.\n\nVerifique o painel do Render: https://dashboard.render.com`,
-        }).catch(() => {});
+        }).catch((err: unknown) => { logger.warn("KeepAlive", "Falha ao notificar dono sobre Evolution API indisponível", err); });
       }
     } else {
       console.error(`[KeepAlive] Erro inesperado:`, error?.message);

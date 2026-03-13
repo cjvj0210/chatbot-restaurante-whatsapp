@@ -3,6 +3,7 @@ import { orderSessions, testSessions, testMessages, conversations, messages, bot
 import { lt, and, eq, lte, or, desc } from "drizzle-orm";
 import { checkInstanceStatus, sendTextMessageEvolution } from "./evolutionApi";
 import { notifyOwner } from "./_core/notification";
+import { logger } from "./utils/logger";
 
 /**
  * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
@@ -71,7 +72,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
         await notifyOwner({
           title: "⚠️ WhatsApp Desconectado",
           content: `A instância WhatsApp está com status "${status}". Acesse o painel de configurações e reconecte o QR Code para restaurar o atendimento automático.`,
-        }).catch(() => {});
+        }).catch((err: unknown) => { logger.warn("Monitor", "Falha ao notificar dono sobre desconexão WhatsApp", err); });
       }
     } else {
       // Reconectou — resetar flag para permitir próximo alerta
@@ -81,7 +82,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
         await notifyOwner({
           title: "✅ WhatsApp Reconectado",
           content: "A instância WhatsApp voltou ao status 'open'. O atendimento automático foi restaurado.",
-        }).catch(() => {});
+        }).catch((err: unknown) => { logger.warn("Monitor", "Falha ao notificar dono sobre reconexão WhatsApp", err); });
       }
     }
   } catch (err) {

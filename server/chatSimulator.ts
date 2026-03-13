@@ -64,7 +64,7 @@ async function processReservationMarker(message: string): Promise<string> {
       await notifyOwner({
         title: `📝 Nova reserva via Chat de Teste`,
         content: `Nome: ${params.nome || '-'}\nTelefone: ${params.telefone || '-'}\nData/Hora: ${params.data || '-'}\nPessoas: ${params.pessoas || '-'}\nObs: ${params.obs && params.obs !== 'OBSERVACOES' ? params.obs : '-'}`,
-      }).catch(() => {});
+      }).catch((err: unknown) => { logger.warn("Simulator", "Falha ao notificar dono sobre reserva de teste", err); });
     }
   } catch (err) {
     console.error('[Simulator] Erro ao salvar reserva:', err);
