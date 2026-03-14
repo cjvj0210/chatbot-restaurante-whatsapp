@@ -38,7 +38,13 @@ async function buildDownloadUrl(
     method: "GET",
     headers: buildAuthHeaders(apiKey),
   });
-  return (await response.json()).url;
+  if (!response.ok) {
+    const msg = await response.text().catch(() => response.statusText);
+    throw new Error(`Storage download URL failed (${response.status}): ${msg}`);
+  }
+  const data = await response.json();
+  if (!data?.url) throw new Error("Storage download URL response missing 'url' field");
+  return data.url;
 }
 
 function ensureTrailingSlash(value: string): string {
@@ -67,6 +73,8 @@ function buildAuthHeaders(apiKey: string): HeadersInit {
   return { Authorization: `Bearer ${apiKey}` };
 }
 
+const STORAGE_UPLOAD_TIMEOUT_MS = 30_000;
+
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
@@ -75,21 +83,43 @@ export async function storagePut(
   const { baseUrl, apiKey } = getStorageConfig();
   const key = normalizeKey(relKey);
   const uploadUrl = buildUploadUrl(baseUrl, key);
-  const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    headers: buildAuthHeaders(apiKey),
-    body: formData,
-  });
 
-  if (!response.ok) {
-    const message = await response.text().catch(() => response.statusText);
-    throw new Error(
-      `Storage upload failed (${response.status} ${response.statusText}): ${message}`
-    );
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), STORAGE_UPLOAD_TIMEOUT_MS);
+
+    try {
+      const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        headers: buildAuthHeaders(apiKey),
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const message = await response.text().catch(() => response.statusText);
+        throw new Error(
+          `Storage upload failed (${response.status} ${response.statusText}): ${message}`
+        );
+      }
+      const url = (await response.json()).url;
+      return { key, url };
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        throw new Error(`S3 upload timeout após ${STORAGE_UPLOAD_TIMEOUT_MS / 1000}s`);
+      }
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+      }
+    }
   }
-  const url = (await response.json()).url;
-  return { key, url };
+  throw lastError ?? new Error("Storage upload failed after 3 attempts");
 }
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string; }> {

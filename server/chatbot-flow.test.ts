@@ -39,7 +39,7 @@ vi.mock("./db", () => ({
   updateConversation: vi.fn().mockResolvedValue({}),
   getConversationMessages: vi.fn().mockResolvedValue([]),
   getRestaurantSettings: vi.fn().mockResolvedValue({ phone: "5517988112791", name: "Churrascaria Estrela do Sul" }),
-  getDb: vi.fn().mockResolvedValue(null),
+  getDb: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("./_core/llm", () => ({
@@ -166,7 +166,9 @@ describe("processIncomingMessage — modo humano", () => {
     } as any);
 
     // getDb retorna objeto que simula modo humano ainda ativo
-    vi.mocked(dbMock.getDb).mockResolvedValueOnce({
+    // Primeira chamada: verificação de dbAvailable (retorna truthy simples)
+    // Segunda chamada: checkAndExpireHumanMode (retorna mock com update/select)
+    const humanModeDb = {
       update: vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue([{ affectedRows: 0 }]), // não expirou
@@ -179,7 +181,9 @@ describe("processIncomingMessage — modo humano", () => {
           }),
         }),
       }),
-    } as any);
+    };
+    vi.mocked(dbMock.getDb).mockResolvedValueOnce({} as any); // dbAvailable check
+    vi.mocked(dbMock.getDb).mockResolvedValueOnce(humanModeDb as any); // checkAndExpireHumanMode
 
     const { processIncomingMessage } = await import("./chatbot");
     await processIncomingMessage(WHATSAPP_ID, PHONE, MSG_TEXT, MSG_ID + "-human");
@@ -226,7 +230,8 @@ describe("processIncomingMessage — fallback LLM", () => {
     const { whatsappService } = await import("./services/whatsappService");
 
     vi.mocked(dbMock.tryClaimMessage).mockResolvedValueOnce(true);
-    vi.mocked(invokeLLM).mockRejectedValueOnce(new Error("LLM timeout"));
+    // Rejeitar todas as tentativas (incluindo retries) para garantir o fallback
+    vi.mocked(invokeLLM).mockRejectedValue(new Error("LLM timeout"));
 
     const { processIncomingMessage } = await import("./chatbot");
     await processIncomingMessage(WHATSAPP_ID, PHONE, MSG_TEXT, MSG_ID + "-llm-fail");

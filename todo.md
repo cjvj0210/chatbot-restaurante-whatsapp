@@ -1235,3 +1235,27 @@
 - [x] PublicTest.tsx — labels e roles acessíveis
 - [x] Settings.tsx — aria-labels em formulários de configuração
 - [x] Simulator.tsx — melhorias de acessibilidade no simulador
+
+## Rodada 6 - Auditoria de Resiliência (Claude Code)
+
+### Commit 1 - 16 correções
+- [x] LLM-1: Timeout 60s via AbortController no invokeLLM (_core/llm.ts)
+- [x] LLM-2: Retry 2x com backoff em chamadas ao LLM (chatbot.ts)
+- [x] LLM-3: max_tokens 32768→1024, budget_tokens 128→64 (_core/llm.ts)
+- [x] DB-1: Pool MySQL explícito (connectionLimit:5) + circuit breaker (db.ts)
+- [x] DB-3: Loop serial → batch query em getAddonGroupsWithOptions (db.ts)
+- [x] S3-1: Timeout 30s + retry 2x em storagePut (storage.ts)
+- [x] S3-2: Verificar response.ok em buildDownloadUrl (storage.ts)
+- [x] EVO-1: Retry 2x em downloadMediaEvolution (evolutionApi.ts)
+- [x] EVO-2: Retry 2x em deleteMessageForEveryone (evolutionApi.ts)
+- [x] EVO-3: Novo sendTextMessageEvolutionWithId, removeu duplicação (evolutionApi.ts + webhookEvolution.ts)
+- [x] WP-1: Timeout 90s no withClientLock anti-vazamento de memória (chatbot.ts)
+- [x] GD-1: Safety window 120s→300s (shared/constants.ts)
+- [x] GD-2: FAQ antes do banco + modo degradado com banco fora (chatbot.ts)
+- [x] LOG-1: Timestamps ISO + serialização correta de Error (utils/logger.ts)
+- [x] LOG-2: Logs de sucesso movidos para debug silenciosos em prod (messagePolling.ts)
+- [x] TO-M5: Timeout 15s nos fetches da Meta API (audioTranscription.ts)
+
+### Commit 2 - 2 correções extras
+- [x] DB-2: Transação atômica em criação de cliente + conversa sem registros órfãos (db.ts)
+- [x] WP-3: Janela de busca do polling adaptativa ao backoff recupera mensagens durante downtime (messagePolling.ts)

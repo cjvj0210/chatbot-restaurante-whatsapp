@@ -85,10 +85,15 @@ async function pollMessages(): Promise<void> {
   }
 
   try {
-    // Sempre buscar mensagens dos últimos 60 segundos
-    // Confiamos no set de IDs processados para evitar duplicatas
+    // WP-3: Estender janela de busca proporcionalmente ao backoff.
+    // Em operação normal: 60s. Após erros consecutivos, a janela cresce para
+    // cobrir mensagens que chegaram durante a indisponibilidade.
+    // O tryClaimMessage (INSERT IGNORE) garante que não haverá reprocessamento.
     const now = Math.floor(Date.now() / 1000);
-    const since = now - 60; // Janela fixa de 60 segundos
+    const backoffWindow = consecutiveErrors > 0
+      ? Math.min(60 * Math.pow(2, consecutiveErrors), 600) // máx 10 min
+      : 60;
+    const since = now - backoffWindow;
 
     const response = await axios.post(
       `${baseUrl}/chat/findMessages/${instanceName}`,
@@ -195,12 +200,12 @@ async function pollMessages(): Promise<void> {
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
       const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
-      logger.info("Polling", `Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
+      logger.debug("Polling", `Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
 
       // Processar mensagem pelo chatbot (mesmo fluxo do webhook, com pushName e realPhone)
       try {
         await processIncomingMessage(whatsappId, phone, messageText, msgId, pushName || undefined, realPhone);
-        logger.info("Polling", `Mensagem processada com sucesso: ${msgId}`);
+        logger.debug("Polling", `Mensagem processada com sucesso: ${msgId}`);
       } catch (err) {
         logger.error("Polling", `Erro ao processar mensagem ${msgId}`, err);
       }

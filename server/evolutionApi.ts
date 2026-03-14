@@ -60,6 +60,41 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
 }
 
 /**
+ * Envia mensagem de texto e retorna o ID da mensagem enviada.
+ * Usado para mensagens que precisam ser rastreadas (ex: confirmação #bot).
+ */
+export async function sendTextMessageEvolutionWithId(to: string, text: string): Promise<string | null> {
+  try {
+    const { baseUrl, apiKey, instanceName } = getEvolutionConfig();
+    if (!baseUrl || !apiKey) return null;
+
+    const isLid = to.endsWith("@lid");
+    const normalizedTo = isLid ? to : to.replace("@s.whatsapp.net", "").replace(/\D/g, "");
+
+    const response = await withRetry(
+      () => axios.post(
+        `${baseUrl}/message/sendText/${instanceName}`,
+        { number: normalizedTo, text },
+        {
+          headers: { apikey: apiKey, "Content-Type": "application/json" },
+          timeout: 15000,
+        }
+      ),
+      { maxRetries: 2, delayMs: 500, label: "sendTextMessageEvolutionWithId" }
+    );
+
+    const sentId = response.data?.key?.id;
+    if (sentId) {
+      await registerBotSentMessage(sentId);
+    }
+    return sentId || null;
+  } catch (error: any) {
+    logger.error("EvolutionAPI", "Erro ao enviar mensagem com ID", error?.response?.data || error?.message);
+    return null;
+  }
+}
+
+/**
  * Baixa o conteúdo de um arquivo de mídia via Evolution API
  * Retorna o buffer do arquivo para transcrição
  */
@@ -74,19 +109,22 @@ export async function downloadMediaEvolution(messageId: string, instanceName?: s
 
     const instance = instanceName || defaultInstance;
 
-    const response = await axios.post(
-      `${baseUrl}/chat/getBase64FromMediaMessage/${instance}`,
-      {
-        message: { key: { id: messageId } },
-        convertToMp4: false,
-      },
-      {
-        headers: {
-          apikey: apiKey,
-          "Content-Type": "application/json",
+    const response = await withRetry(
+      () => axios.post(
+        `${baseUrl}/chat/getBase64FromMediaMessage/${instance}`,
+        {
+          message: { key: { id: messageId } },
+          convertToMp4: false,
         },
-        timeout: 30000,
-      }
+        {
+          headers: {
+            apikey: apiKey,
+            "Content-Type": "application/json",
+          },
+          timeout: 30000,
+        }
+      ),
+      { maxRetries: 2, delayMs: 500, label: "downloadMediaEvolution" }
     );
 
     if (response.data?.base64) {
@@ -172,20 +210,23 @@ export async function deleteMessageForEveryone(
       return false;
     }
 
-    const response = await axios.delete(
-      `${baseUrl}/chat/deleteMessageForEveryone/${instanceName}`,
-      {
-        headers: {
-          apikey: apiKey,
-          "Content-Type": "application/json",
-        },
-        data: {
-          id: messageId,
-          fromMe: fromMe,
-          remoteJid: remoteJid,
-        },
-        timeout: 10000,
-      }
+    await withRetry(
+      () => axios.delete(
+        `${baseUrl}/chat/deleteMessageForEveryone/${instanceName}`,
+        {
+          headers: {
+            apikey: apiKey,
+            "Content-Type": "application/json",
+          },
+          data: {
+            id: messageId,
+            fromMe: fromMe,
+            remoteJid: remoteJid,
+          },
+          timeout: 10000,
+        }
+      ),
+      { maxRetries: 2, delayMs: 500, label: "deleteMessageForEveryone" }
     );
 
     logger.info("EvolutionAPI", `Mensagem ${messageId} apagada com sucesso`);
