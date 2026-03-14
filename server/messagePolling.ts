@@ -54,6 +54,9 @@ let isPolling = false;
 let pollErrors = 0;
 // Timestamp de quando o polling iniciou (para ignorar mensagens anteriores)
 let pollingStartTimestamp = 0;
+// Backoff exponencial para erros consecutivos
+let consecutiveErrors = 0;
+const MAX_BACKOFF_MS = 60_000;
 
 function getEvolutionConfig() {
   return {
@@ -114,6 +117,10 @@ async function pollMessages(): Promise<void> {
     const allRecords = response.data?.messages?.records || [];
     lastPollTimestamp = now;
     pollErrors = 0;
+    if (consecutiveErrors > 0) {
+      logger.info("Polling", `Polling recuperado após ${consecutiveErrors} erro(s) consecutivo(s)`);
+      consecutiveErrors = 0;
+    }
 
     // Filtrar por timestamp NO CÓDIGO (a API ignora o filtro de timestamp)
     // Só processar mensagens posteriores ao início do polling
@@ -211,8 +218,10 @@ async function pollMessages(): Promise<void> {
     }
   } catch (error: any) {
     pollErrors++;
+    consecutiveErrors++;
+    const backoffMs = Math.min(POLL_INTERVAL_MS * Math.pow(2, consecutiveErrors - 1), MAX_BACKOFF_MS);
     if (pollErrors <= 3 || pollErrors % 10 === 0) {
-      logger.error("Polling", `Erro ao buscar mensagens (tentativa #${pollErrors})`, error?.message);
+      logger.warn("Polling", `Erro consecutivo #${consecutiveErrors}, próximo poll em ${backoffMs}ms`, error?.message);
     }
   } finally {
     isPolling = false;
@@ -280,6 +289,20 @@ export function getPollingStats() {
 }
 
 /**
+ * Loop recursivo de polling com backoff exponencial em caso de erros.
+ * Cada iteração agenda a próxima após a conclusão, usando o intervalo
+ * base em caso de sucesso ou backoff exponencial em caso de falha.
+ */
+function pollingLoop(): void {
+  pollMessages().finally(() => {
+    const nextInterval = consecutiveErrors > 0
+      ? Math.min(POLL_INTERVAL_MS * Math.pow(2, consecutiveErrors - 1), MAX_BACKOFF_MS)
+      : POLL_INTERVAL_MS;
+    setTimeout(pollingLoop, nextInterval);
+  });
+}
+
+/**
  * Inicia o serviço de polling
  */
 export function startMessagePolling(): void {
@@ -294,13 +317,6 @@ export function startMessagePolling(): void {
   pollingStartTimestamp = Math.floor(Date.now() / 1000);
   logger.info("Polling", `Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
 
-  // Primeira busca após delay inicial
-  setTimeout(() => {
-    pollMessages();
-  }, INITIAL_DELAY_MS);
-
-  // Polling periódico
-  setInterval(() => {
-    pollMessages();
-  }, POLL_INTERVAL_MS);
+  // Primeira busca após delay inicial, depois loop recursivo com backoff
+  setTimeout(pollingLoop, INITIAL_DELAY_MS);
 }
