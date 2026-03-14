@@ -4,6 +4,7 @@ import {
   getRestaurantSettings,
   getCustomerByWhatsappId,
   createCustomer,
+  updateCustomer,
   getActiveConversation,
   createConversation,
   createMessage,
@@ -12,7 +13,7 @@ import {
   tryClaimMessage,
   getConversationMessages,
 } from "./db";
-import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
+import { sendTextMessage } from "./whatsapp";
 import { whatsappService } from "./services/whatsappService";
 import { buildCustomerContextBlock } from "./services/customerContextBuilder";
 import { handleOrderLink, handleOrderStatus, handleSaveReservation } from "./services/chatbotActionHandler";
@@ -26,6 +27,7 @@ import { checkChatbotRateLimit } from "./chatbotRateLimit";
 import { checkFaqCache } from "./faqCache";
 import { logger } from "./utils/logger";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { getAffectedRows } from "./utils/dbHelpers";
 import { CHATBOT } from "../shared/constants";
 
 interface ChatContext {
@@ -66,8 +68,7 @@ async function checkAndExpireHumanMode(conversationId: number): Promise<boolean>
     ));
 
   // Se atualizou alguma linha, acabou de expirar agora → bot pode responder
-  const rowsAffected = (result as any)?.[0]?.affectedRows ?? (result as any)?.rowsAffected ?? 0;
-  if (rowsAffected > 0) return false;
+  if (getAffectedRows(result) > 0) return false;
 
   // Caso contrário, verificar o estado atual
   const [conv] = await db
@@ -141,6 +142,129 @@ export async function processIncomingMessage(
 }
 
 /**
+ * Sanitiza e valida o texto da mensagem recebida.
+ * Aplica dois guardrails: truncamento de mensagens longas e filtragem de prompt injection.
+ *
+ * @param messageText - Texto original da mensagem
+ * @param phone - Número do remetente (para log)
+ * @returns Texto sanitizado (pode ser modificado ou truncado)
+ */
+function sanitizeAndValidateMessage(messageText: string, phone: string): string {
+  // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
+  if (messageText.length > CHATBOT.MAX_MESSAGE_LENGTH) {
+    logger.warn("Chatbot", `Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
+    messageText = messageText.slice(0, CHATBOT.MAX_MESSAGE_LENGTH) + "...";
+  }
+
+  // Guardrail: sanitizar tentativas de prompt injection
+  // Cobre inglês, português e variantes comuns de obfuscação
+  const injectionPatterns = [
+    // Inglês
+    /ignore (all )?(previous|prior|above) instructions?/gi,
+    /you are now/gi,
+    /act as (a |an )?/gi,
+    /forget (everything|your instructions|all previous)/gi,
+    /disregard (all |any )?(previous|prior|above|your) instructions?/gi,
+    /new (system )?prompt/gi,
+    /override (your )?(instructions?|rules?|guidelines?)/gi,
+    // Português
+    /ignore (todas as |as )?(instru[çc][õo]es|regras) (anteriores?|acima)/gi,
+    /esqueça (tudo|suas instru[çc][õo]es|as regras)/gi,
+    /voc[êe] (agora |é |nao |não )?(um|uma|é)/gi,
+    /aja como (um|uma)?/gi,
+    /finja (ser|que é)/gi,
+    /novas instru[çc][õo]es/gi,
+    // Marcadores de controle do sistema (evitar que usuário injete ações)
+    /\[system\]/gi,
+    /\[assistant\]/gi,
+    /\[SALVAR_RESERVA:/gi,
+    /\[GERAR_LINK_PEDIDO\]/gi,
+    /\[CHAMAR_ATENDENTE\]/gi,
+    /\[VERIFICAR_STATUS_PEDIDO:/gi,
+  ];
+  for (const pattern of injectionPatterns) {
+    if (pattern.test(messageText)) {
+      logger.warn("Chatbot", `Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
+      messageText = messageText.replace(pattern, "[mensagem filtrada]");
+    }
+  }
+
+  return messageText;
+}
+
+/**
+ * Busca ou cria o registro de cliente e conversa ativa para o JID recebido.
+ * Atualiza dados cadastrais (name, whatsappId canônico, phone) se estiverem desatualizados.
+ *
+ * @param whatsappId - JID completo (pode ser @lid ou @s.whatsapp.net)
+ * @param normalizedPhone - Número real normalizado (apenas dígitos)
+ * @param messageId - ID da mensagem (usado ao criar nova conversa)
+ * @param pushName - Nome do contato no WhatsApp (opcional)
+ * @param realPhone - Número real quando JID é @lid (extraído de remoteJidAlt)
+ * @returns `{ customer, conversation }` — ambos garantidos (nunca null)
+ */
+async function findOrCreateCustomerAndConversation(
+  whatsappId: string,
+  normalizedPhone: string,
+  messageId: string,
+  pushName?: string,
+  realPhone?: string
+) {
+  // Buscar ou criar cliente
+  let customer = await getCustomerByWhatsappId(whatsappId, realPhone);
+  if (!customer) {
+    // Se temos o número real (via remoteJidAlt), usar ele como whatsappId canônico
+    const canonicalWhatsappId = realPhone
+      ? phoneNormalizer.toJid(realPhone)
+      : whatsappId;
+    customer = await createCustomer({
+      whatsappId: canonicalWhatsappId,
+      phone: normalizedPhone,
+      name: pushName || null,
+      address: null,
+    });
+  } else {
+    // Atualizar dados do cliente se estiverem faltando ou desatualizados
+    const updates: CustomerUpdates = {};
+    if (!customer.name && pushName) {
+      updates.name = pushName;
+    }
+    // Se o whatsappId atual é @lid mas temos o número real, migrar para o formato canônico
+    if (realPhone && customer.whatsappId.endsWith("@lid")) {
+      updates.whatsappId = phoneNormalizer.toJid(realPhone);
+      updates.phone = normalizedPhone;
+    }
+    // Se o phone está com o LID (muito longo), substituir pelo número real
+    if (realPhone && customer.phone && customer.phone.length > 13) {
+      updates.phone = normalizedPhone;
+    }
+    if (Object.keys(updates).length > 0) {
+      try {
+        await updateCustomer(customer.id, updates);
+        Object.assign(customer, updates);
+        logger.info("Chatbot", `Cliente ${customer.id} atualizado: ${Object.keys(updates).join(", ")}`);
+      } catch (err) {
+        logger.error("Chatbot", "Erro ao atualizar cliente", err);
+      }
+    }
+  }
+
+  // Buscar ou criar conversa ativa
+  let conversation = await getActiveConversation(customer.id);
+  if (!conversation) {
+    conversation = await createConversation({
+      customerId: customer.id,
+      whatsappMessageId: messageId,
+      intent: null,
+      context: JSON.stringify({}),
+      isActive: true,
+    });
+  }
+
+  return { customer, conversation };
+}
+
+/**
  * Implementação interna do processamento de mensagem.
  * Chamada apenas via processIncomingMessage que garante dedup e lock.
  */
@@ -161,44 +285,8 @@ async function _processIncomingMessageInternal(
       return;
     }
 
-    // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
-    if (messageText.length > CHATBOT.MAX_MESSAGE_LENGTH) {
-      logger.warn("Chatbot", `Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
-      messageText = messageText.slice(0, CHATBOT.MAX_MESSAGE_LENGTH) + "...";
-    }
-
-    // Guardrail: sanitizar tentativas de prompt injection
-    // Cobre inglês, português e variantes comuns de obfuscação
-    const injectionPatterns = [
-      // Inglês
-      /ignore (all )?(previous|prior|above) instructions?/gi,
-      /you are now/gi,
-      /act as (a |an )?/gi,
-      /forget (everything|your instructions|all previous)/gi,
-      /disregard (all |any )?(previous|prior|above|your) instructions?/gi,
-      /new (system )?prompt/gi,
-      /override (your )?(instructions?|rules?|guidelines?)/gi,
-      // Português
-      /ignore (todas as |as )?(instru[çc][õo]es|regras) (anteriores?|acima)/gi,
-      /esqueça (tudo|suas instru[çc][õo]es|as regras)/gi,
-      /voc[êe] (agora |é |nao |não )?(um|uma|é)/gi,
-      /aja como (um|uma)?/gi,
-      /finja (ser|que é)/gi,
-      /novas instru[çc][õo]es/gi,
-      // Marcadores de controle do sistema (evitar que usuário injete ações)
-      /\[system\]/gi,
-      /\[assistant\]/gi,
-      /\[SALVAR_RESERVA:/gi,
-      /\[GERAR_LINK_PEDIDO\]/gi,
-      /\[CHAMAR_ATENDENTE\]/gi,
-      /\[VERIFICAR_STATUS_PEDIDO:/gi,
-    ];
-    for (const pattern of injectionPatterns) {
-      if (pattern.test(messageText)) {
-        logger.warn("Chatbot", `Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
-        messageText = messageText.replace(pattern, "[mensagem filtrada]");
-      }
-    }
+    // Sanitizar mensagem: truncar se muito longa e filtrar prompt injection
+    messageText = sanitizeAndValidateMessage(messageText, phone);
 
     // Determinar o número real do telefone:
     // Se temos realPhone (via remoteJidAlt), usar ele. Caso contrário, usar phone.
@@ -206,60 +294,14 @@ async function _processIncomingMessageInternal(
     // Normalizar: se o effectivePhone contém @s.whatsapp.net, extrair só os dígitos
     const normalizedPhone = phoneNormalizer.normalize(effectivePhone);
 
-    // 1. Buscar ou criar cliente
-    // Passar realPhone para permitir busca inteligente quando JID é @lid
-    let customer = await getCustomerByWhatsappId(whatsappId, realPhone);
-    if (!customer) {
-      // Se temos o número real (via remoteJidAlt), usar ele como whatsappId canônico
-      const canonicalWhatsappId = realPhone
-        ? phoneNormalizer.toJid(realPhone)
-        : whatsappId;
-      customer = await createCustomer({
-        whatsappId: canonicalWhatsappId,
-        phone: normalizedPhone,
-        name: pushName || null,
-        address: null,
-      });
-    } else {
-      // Atualizar dados do cliente se estiverem faltando
-      const updates: CustomerUpdates = {};
-      if (!customer.name && pushName) {
-        updates.name = pushName;
-      }
-      // Se o whatsappId atual é @lid mas temos o número real, atualizar para o formato canônico
-      if (realPhone && customer.whatsappId.endsWith("@lid")) {
-        const canonicalId = phoneNormalizer.toJid(realPhone);
-        updates.whatsappId = canonicalId;
-        updates.phone = normalizedPhone;
-      }
-      // Se o phone está com o LID, atualizar para o número real
-      if (realPhone && customer.phone && customer.phone.length > 13) {
-        updates.phone = normalizedPhone;
-      }
-      if (Object.keys(updates).length > 0) {
-        try {
-          const { updateCustomer } = await import("./db");
-          await updateCustomer(customer.id, updates);
-          // Atualizar o objeto local
-          Object.assign(customer, updates);
-          logger.info("Chatbot", `Cliente ${customer.id} atualizado: ${Object.keys(updates).join(", ")}`);
-        } catch (err) {
-          logger.error("Chatbot", "Erro ao atualizar cliente", err);
-        }
-      }
-    }
-
-    // 2. Buscar ou criar conversa ativa
-    let conversation = await getActiveConversation(customer.id);
-    if (!conversation) {
-      conversation = await createConversation({
-        customerId: customer.id,
-        whatsappMessageId: messageId,
-        intent: null,
-        context: JSON.stringify({}),
-        isActive: true,
-      });
-    }
+    // 1+2. Buscar/criar cliente e conversa ativa
+    const { customer, conversation } = await findOrCreateCustomerAndConversation(
+      whatsappId,
+      normalizedPhone,
+      messageId,
+      pushName,
+      realPhone
+    );
 
     // 3. Salvar mensagem do usuário
     await createMessage({
@@ -372,30 +414,21 @@ async function _processIncomingMessageInternal(
     // 8. Enviar resposta ao cliente
     // IMPORTANTE: usar o whatsappId original (pode ser @lid) para enviar mensagens,
     // pois a Evolution API precisa do JID correto para rotear a mensagem
-    const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
 
-    if (useEvolution) {
-      // Se a resposta contiver um link de pedido, enviar como imagem com banner visual
-      const orderLinkMatch = response.text.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
-      if (orderLinkMatch) {
-        const orderLink = orderLinkMatch[0];
-        const textBeforeLink = response.text.split(orderLink)[0].trim();
-        const textAfterLink = response.text.split(orderLink)[1]?.trim() || "";
-        const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
+    // Se a resposta contiver um link de pedido, enviar como imagem com banner visual
+    const orderLinkMatch = response.text.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
+    if (orderLinkMatch) {
+      const orderLink = orderLinkMatch[0];
+      const textBeforeLink = response.text.split(orderLink)[0].trim();
+      const textAfterLink = response.text.split(orderLink)[1]?.trim() || "";
+      const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
 
-        const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
-        const sent = await whatsappService.sendMedia(whatsappId, bannerUrl, caption);
-        if (!sent) {
-          // Fallback: enviar como texto simples se a imagem falhar
-          await whatsappService.sendText(whatsappId, response.text);
-        }
-      } else {
+      const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
+      const sent = await whatsappService.sendMedia(whatsappId, bannerUrl, caption);
+      if (!sent) {
+        // Fallback: enviar como texto simples se a imagem falhar
         await whatsappService.sendText(whatsappId, response.text);
       }
-    } else if (response.buttons) {
-      await sendButtonMessage(phone, response.text, response.buttons);
-    } else if (response.list) {
-      await sendListMessage(phone, response.text, response.list.buttonText, response.list.sections);
     } else {
       await whatsappService.sendText(whatsappId, response.text);
     }
@@ -410,14 +443,6 @@ async function _processIncomingMessageInternal(
 interface BotResponse {
   text: string;
   updatedContext?: ChatContext;
-  buttons?: Array<{ id: string; title: string }>;
-  list?: {
-    buttonText: string;
-    sections: Array<{
-      title: string;
-      rows: Array<{ id: string; title: string; description?: string }>;
-    }>;
-  };
   metadata?: Record<string, unknown>;
 }
 

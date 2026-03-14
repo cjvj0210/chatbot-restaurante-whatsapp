@@ -5,6 +5,7 @@ import { sendTextMessage } from "./whatsapp";
 import { sendTextMessageEvolution } from "./evolutionApi";
 import { checkBusinessHours, getNowBRT } from "../shared/businessHours";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { logger } from "./utils/logger";
 
 /**
  * Envia mensagem de texto via Evolution API (principal) com fallback para WhatsApp Cloud API
@@ -116,8 +117,60 @@ export async function formatOrderForWhatsApp(orderId: number): Promise<string> {
 }
 
 /**
- * Formata mensagem de confirmação do pedido (enviada ao cliente quando operador aceita)
- * Mostra horário estimado de chegada em vez de minutos
+ * Calcula o instante base (em BRT) a partir do qual contar a previsão de entrega/retirada.
+ *
+ * Três cenários possíveis:
+ *  - Restaurante aberto agora → baseTime = agora
+ *  - Pedido antecipado (antes da abertura) → baseTime = horário de abertura do turno
+ *  - Restaurante fechado → baseTime = próximo horário de abertura (19h ou amanhã 11h)
+ *
+ * @param orderType - "delivery" | "pickup"
+ * @param now - data/hora atual em BRT (getNowBRT())
+ * @returns `{ baseTime, isOutsideHours }` onde `isOutsideHours` indica previsão fora do horário
+ */
+export function calcularBaseTime(
+  orderType: string,
+  now: Date
+): { baseTime: Date; isOutsideHours: boolean } {
+  const businessStatus = checkBusinessHours(orderType === 'delivery' ? 'delivery' : 'pickup', now);
+
+  if (!businessStatus.isOpen && !businessStatus.isEarlyOrder) {
+    // Restaurante fechado — usar próximo horário de abertura
+    const currentHour = now.getHours();
+    const baseTime = new Date(now);
+    if (currentHour >= 22 || currentHour < 11) {
+      // Após jantar ou antes do almoço — usar amanhã 11h
+      if (currentHour >= 22) baseTime.setDate(baseTime.getDate() + 1);
+      baseTime.setHours(11, 0, 0, 0);
+    } else {
+      // Entre almoço e jantar — usar 19h
+      baseTime.setHours(19, 0, 0, 0);
+    }
+    return { baseTime, isOutsideHours: true };
+  }
+
+  if (businessStatus.isEarlyOrder && businessStatus.currentShift) {
+    // Pedido antecipado — usar horário de abertura do turno
+    const baseTime = new Date(now);
+    if (businessStatus.currentShift === 'lunch') {
+      baseTime.setHours(11, 0, 0, 0);
+    } else {
+      baseTime.setHours(19, 0, 0, 0);
+    }
+    return { baseTime, isOutsideHours: false };
+  }
+
+  return { baseTime: now, isOutsideHours: false };
+}
+
+/**
+ * Formata mensagem de confirmação do pedido (enviada ao cliente quando operador aceita).
+ * Mostra horário estimado de chegada em vez de minutos.
+ *
+ * @param orderNumber - Número do pedido (ex: "PED12345678")
+ * @param orderType - "delivery" | "pickup"
+ * @param customerName - Nome do cliente para personalizar a mensagem
+ * @returns Mensagem formatada pronta para envio via WhatsApp
  */
 export function formatConfirmationMessage(
   orderNumber: string,
@@ -129,35 +182,7 @@ export function formatConfirmationMessage(
   const dayOfWeek = now.getDay(); // Horário BRT
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-  // Verificar horário de funcionamento para calcular base correta
-  const businessStatus = checkBusinessHours(orderType === 'delivery' ? 'delivery' : 'pickup', now);
-
-  let baseTime = now;
-  let isOutsideHours = false;
-
-  if (!businessStatus.isOpen && !businessStatus.isEarlyOrder) {
-    // Restaurante fechado — usar próximo horário de abertura
-    isOutsideHours = true;
-    const currentHour = now.getHours();
-    if (currentHour >= 22 || currentHour < 11) {
-      // Após jantar ou antes do almoço — usar amanhã 11h
-      baseTime = new Date(now);
-      if (currentHour >= 22) baseTime.setDate(baseTime.getDate() + 1);
-      baseTime.setHours(11, 0, 0, 0);
-    } else {
-      // Entre almoço e jantar — usar 19h
-      baseTime = new Date(now);
-      baseTime.setHours(19, 0, 0, 0);
-    }
-  } else if (businessStatus.isEarlyOrder && businessStatus.currentShift) {
-    // Pedido antecipado — usar horário de abertura do turno
-    baseTime = new Date(now);
-    if (businessStatus.currentShift === 'lunch') {
-      baseTime.setHours(11, 0, 0, 0);
-    } else {
-      baseTime.setHours(19, 0, 0, 0);
-    }
-  }
+  const { baseTime, isOutsideHours } = calcularBaseTime(orderType, now);
 
   // Calcular horário estimado de chegada
   const chegadaMin = new Date(baseTime.getTime() + deliveryTimeRange.min * 60 * 1000);
@@ -213,7 +238,7 @@ export async function notifyWhatsAppBot(
   if (phone) {
     const sent = await sendWhatsAppMessage(phone, message);
     if (sent) {
-      console.log(`[Notification] Mensagem de recebimento enviada diretamente para ${phone}`);
+      logger.info("Notification", `Mensagem de recebimento enviada diretamente para ${phone}`);
       return;
     }
   }
@@ -303,7 +328,7 @@ export async function notifyStatusUpdate(
   if (phone) {
     const sent = await sendWhatsAppMessage(phone, message);
     if (sent) {
-      console.log(`[Notification] Status '${newStatus}' enviado diretamente para ${phone}`);
+      logger.info("Notification", `Status '${newStatus}' enviado diretamente para ${phone}`);
       return;
     }
   }

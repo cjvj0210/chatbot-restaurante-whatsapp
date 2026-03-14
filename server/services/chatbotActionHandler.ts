@@ -20,6 +20,10 @@ import { getSiteUrl } from "../_core/siteUrl";
 /**
  * Processa [GERAR_LINK_PEDIDO] — cria uma order session e substitui o placeholder
  * pelo link real do cardápio digital.
+ *
+ * @param aiResponse - Texto completo retornado pelo LLM (pode conter o marcador)
+ * @param phone - Número do cliente (normalizado, sem DDI) para associar à sessão
+ * @returns Texto com o marcador substituído pelo link real, ou mensagem de fallback em caso de erro
  */
 export async function handleOrderLink(aiResponse: string, phone: string): Promise<string> {
   if (!aiResponse.includes("[GERAR_LINK_PEDIDO]")) return aiResponse;
@@ -134,6 +138,9 @@ function calcularPrevisaoStatus(
 /**
  * Processa [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX] — busca o status real do pedido no banco
  * e substitui o placeholder pelas informações reais.
+ *
+ * @param aiResponse - Texto completo retornado pelo LLM (pode conter o marcador)
+ * @returns Texto com o marcador substituído pelo status real do pedido, ou mensagem de erro
  */
 export async function handleOrderStatus(aiResponse: string): Promise<string> {
   const statusMatch = aiResponse.match(/\[VERIFICAR_STATUS_PEDIDO:([A-Z0-9]+)\]/);
@@ -196,6 +203,10 @@ export async function handleOrderStatus(aiResponse: string): Promise<string> {
 /**
  * Processa [SALVAR_RESERVA:nome=X;data=Y;pessoas=N;obs=Z] — salva a reserva no banco
  * e remove o marcador da mensagem enviada ao cliente.
+ *
+ * @param aiResponse - Texto completo retornado pelo LLM (pode conter o marcador)
+ * @param phone - Número do cliente para associar à reserva quando não informado no marcador
+ * @returns Texto com o marcador removido (o cliente não deve ver o marcador interno)
  */
 export async function handleSaveReservation(aiResponse: string, phone: string): Promise<string> {
   const reservaRegex = /\[SALVAR_RESERVA:([^\]]+)\]/;

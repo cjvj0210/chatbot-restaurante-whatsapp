@@ -6,6 +6,7 @@ import { eq, desc, inArray, like, and, gte, lte, or } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { ORDER } from "../shared/constants";
+import { logger } from "./utils/logger";
 
 /**
  * Router para gerenciamento de pedidos
@@ -233,7 +234,7 @@ export const orderRouter = router({
             await db.update(customers).set(customerUpdate).where(eq(customers.id, session.customerId));
           }
         } catch (err) {
-          console.error("Erro ao atualizar dados do cliente:", err);
+          logger.warn("OrderRouter", "Erro ao atualizar dados do cliente", err);
           // Não falhar o pedido se atualização do cliente falhar
         }
       }
@@ -246,7 +247,7 @@ export const orderRouter = router({
           session.whatsappNumber || input.customerPhone
         );
       } catch (error) {
-        console.error("Erro ao enviar notificação WhatsApp:", error);
+        logger.warn("OrderRouter", "Erro ao enviar notificação WhatsApp", error);
         // Não falhar o pedido se notificação falhar
       }
 
@@ -627,7 +628,6 @@ export const orderRouter = router({
 
       // Buscar últimos 8 pedidos do cliente para filtrar cancelados e mostrar 5 válidos
       // Busca por OR: telefone normalizado (11 dígitos) OU últimos 8 dígitos
-      const { or } = await import("drizzle-orm");
       const pastOrders = await db
         .select()
         .from(orders)
@@ -888,7 +888,7 @@ export const orderRouter = router({
       try {
         await notifyStatusUpdate(input.orderId, input.status);
       } catch (error) {
-        console.error("Erro ao enviar notificação de status:", error);
+        logger.warn("OrderRouter", "Erro ao enviar notificação de status", error);
         // Não falhar a atualização se notificação falhar
       }
 

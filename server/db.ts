@@ -656,8 +656,8 @@ export async function createAddonGroup(data: InsertMenuAddonGroup): Promise<Menu
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const res = await db.insert(menuAddonGroups).values(data);
-  const inserted = await db.select().from(menuAddonGroups).where(eq(menuAddonGroups.id, Number(res[0].insertId))).limit(1);
+  const insertResult = await db.insert(menuAddonGroups).values(data);
+  const inserted = await db.select().from(menuAddonGroups).where(eq(menuAddonGroups.id, Number(insertResult[0].insertId))).limit(1);
   return inserted[0]!;
 }
 
@@ -679,8 +679,8 @@ export async function createAddonOption(data: InsertMenuAddonOption): Promise<Me
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const res = await db.insert(menuAddonOptions).values(data);
-  const inserted = await db.select().from(menuAddonOptions).where(eq(menuAddonOptions.id, Number(res[0].insertId))).limit(1);
+  const insertResult = await db.insert(menuAddonOptions).values(data);
+  const inserted = await db.select().from(menuAddonOptions).where(eq(menuAddonOptions.id, Number(insertResult[0].insertId))).limit(1);
   return inserted[0]!;
 }
 
