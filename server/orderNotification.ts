@@ -4,25 +4,14 @@ import { eq } from "drizzle-orm";
 import { sendTextMessage } from "./whatsapp";
 import { sendTextMessageEvolution } from "./evolutionApi";
 import { checkBusinessHours, getNowBRT } from "../shared/businessHours";
-
-/**
- * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
- * Aceita: (17) 98811-2791, 17988112791, 5517988112791, 5517988112791@s.whatsapp.net
- */
-function normalizePhoneForEvolution(phone: string): string {
-  // Remover @s.whatsapp.net se presente
-  let digits = phone.replace("@s.whatsapp.net", "").replace(/\D/g, "");
-  // Se já tem DDI 55 (13 dígitos), retornar como está
-  if (digits.startsWith("55") && digits.length >= 12) return digits;
-  // Adicionar DDI 55 se não tiver
-  return "55" + digits;
-}
+import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { logger } from "./utils/logger";
 
 /**
  * Envia mensagem de texto via Evolution API (principal) com fallback para WhatsApp Cloud API
  */
 async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
-  const normalizedPhone = normalizePhoneForEvolution(phone);
+  const normalizedPhone = phoneNormalizer.withCountryCode(phone);
   // Tentar primeiro via Evolution API (número de teste configurado)
   const sentEvolution = await sendTextMessageEvolution(normalizedPhone, message);
   if (sentEvolution) return true;
@@ -128,52 +117,76 @@ export async function formatOrderForWhatsApp(orderId: number): Promise<string> {
 }
 
 /**
- * Formata mensagem de confirmação do pedido (enviada ao cliente quando operador aceita)
- * Mostra horário estimado de chegada em vez de minutos
+ * Calcula o instante base (em BRT) a partir do qual contar a previsão de entrega/retirada.
+ *
+ * Três cenários possíveis:
+ *  - Restaurante aberto agora → baseTime = agora
+ *  - Pedido antecipado (antes da abertura) → baseTime = horário de abertura do turno
+ *  - Restaurante fechado → baseTime = próximo horário de abertura (19h ou amanhã 11h)
+ *
+ * @param orderType - "delivery" | "pickup"
+ * @param now - data/hora atual em BRT (getNowBRT())
+ * @returns `{ baseTime, isOutsideHours }` onde `isOutsideHours` indica previsão fora do horário
+ */
+export function calcularBaseTime(
+  orderType: string,
+  now: Date
+): { baseTime: Date; isOutsideHours: boolean } {
+  const businessStatus = checkBusinessHours(orderType === 'delivery' ? 'delivery' : 'pickup', now);
+
+  if (!businessStatus.isOpen && !businessStatus.isEarlyOrder) {
+    // Restaurante fechado — usar próximo horário de abertura
+    const currentHour = now.getHours();
+    const baseTime = new Date(now);
+    if (currentHour >= 22 || currentHour < 11) {
+      // Após jantar ou antes do almoço — usar amanhã 11h
+      if (currentHour >= 22) baseTime.setDate(baseTime.getDate() + 1);
+      baseTime.setHours(11, 0, 0, 0);
+    } else {
+      // Entre almoço e jantar — usar 19h
+      baseTime.setHours(19, 0, 0, 0);
+    }
+    return { baseTime, isOutsideHours: true };
+  }
+
+  if (businessStatus.isEarlyOrder && businessStatus.currentShift) {
+    // Pedido antecipado — usar horário de abertura do turno
+    const baseTime = new Date(now);
+    if (businessStatus.currentShift === 'lunch') {
+      baseTime.setHours(11, 0, 0, 0);
+    } else {
+      baseTime.setHours(19, 0, 0, 0);
+    }
+    return { baseTime, isOutsideHours: false };
+  }
+
+  return { baseTime: now, isOutsideHours: false };
+}
+
+/**
+ * Formata mensagem de confirmação do pedido (enviada ao cliente quando operador aceita).
+ * Mostra horário estimado de chegada em vez de minutos.
+ *
+ * @param orderNumber - Número do pedido (ex: "PED12345678")
+ * @param orderType - "delivery" | "pickup"
+ * @param customerName - Nome do cliente para personalizar a mensagem
+ * @returns Mensagem formatada pronta para envio via WhatsApp
  */
 export function formatConfirmationMessage(
   orderNumber: string,
   orderType: string,
   customerName: string
 ): string {
-  const tempo = calcularTempoEstimado(orderType);
+  const deliveryTimeRange = calcularTempoEstimado(orderType);
   const now = getNowBRT();
   const dayOfWeek = now.getDay(); // Horário BRT
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-  // Verificar horário de funcionamento para calcular base correta
-  const businessStatus = checkBusinessHours(orderType === 'delivery' ? 'delivery' : 'pickup', now);
-
-  let baseTime = now;
-  let isOutsideHours = false;
-
-  if (!businessStatus.isOpen && !businessStatus.isEarlyOrder) {
-    // Restaurante fechado — usar próximo horário de abertura
-    isOutsideHours = true;
-    const currentHour = now.getHours();
-    if (currentHour >= 22 || currentHour < 11) {
-      // Após jantar ou antes do almoço — usar amanhã 11h
-      baseTime = new Date(now);
-      if (currentHour >= 22) baseTime.setDate(baseTime.getDate() + 1);
-      baseTime.setHours(11, 0, 0, 0);
-    } else {
-      // Entre almoço e jantar — usar 19h
-      baseTime = new Date(now);
-      baseTime.setHours(19, 0, 0, 0);
-    }
-  } else if (businessStatus.isEarlyOrder && businessStatus.currentShift) {
-    // Pedido antecipado — usar horário de abertura do turno
-    baseTime = new Date(now);
-    if (businessStatus.currentShift === 'lunch') {
-      baseTime.setHours(11, 0, 0, 0);
-    } else {
-      baseTime.setHours(19, 0, 0, 0);
-    }
-  }
+  const { baseTime, isOutsideHours } = calcularBaseTime(orderType, now);
 
   // Calcular horário estimado de chegada
-  const chegadaMin = new Date(baseTime.getTime() + tempo.min * 60 * 1000);
-  const chegadaMax = new Date(baseTime.getTime() + tempo.max * 60 * 1000);
+  const chegadaMin = new Date(baseTime.getTime() + deliveryTimeRange.min * 60 * 1000);
+  const chegadaMax = new Date(baseTime.getTime() + deliveryTimeRange.max * 60 * 1000);
   // Formatar hora diretamente (d já está em BRT, não precisa de timeZone)
   const formatHora = (d: Date) => {
     const h = d.getHours().toString().padStart(2, '0');
@@ -225,7 +238,7 @@ export async function notifyWhatsAppBot(
   if (phone) {
     const sent = await sendWhatsAppMessage(phone, message);
     if (sent) {
-      console.log(`[Notification] Mensagem de recebimento enviada diretamente para ${phone}`);
+      logger.info("Notification", `Mensagem de recebimento enviada diretamente para ${phone}`);
       return;
     }
   }
@@ -233,7 +246,7 @@ export async function notifyWhatsAppBot(
   // Fallback: salvar na fila (normalizar telefone para formato 55XXXXXXXXXXX)
   await db.insert(botMessages).values({
     sessionId,
-    whatsappNumber: phone ? normalizePhoneForEvolution(phone) : phone,
+    whatsappNumber: phone ? phoneNormalizer.withCountryCode(phone) : phone,
     message,
     messageType: "order_confirmation",
     status: "pending",
@@ -315,7 +328,7 @@ export async function notifyStatusUpdate(
   if (phone) {
     const sent = await sendWhatsAppMessage(phone, message);
     if (sent) {
-      console.log(`[Notification] Status '${newStatus}' enviado diretamente para ${phone}`);
+      logger.info("Notification", `Status '${newStatus}' enviado diretamente para ${phone}`);
       return;
     }
   }
@@ -323,7 +336,7 @@ export async function notifyStatusUpdate(
   // Fallback: salvar na fila (normalizar telefone para formato 55XXXXXXXXXXX)
   await db.insert(botMessages).values({
     sessionId: order.sessionId || `order_${order.id}`,
-    whatsappNumber: phone ? normalizePhoneForEvolution(phone) : phone,
+    whatsappNumber: phone ? phoneNormalizer.withCountryCode(phone) : phone,
     message,
     messageType: "order_status_update",
     status: "pending",

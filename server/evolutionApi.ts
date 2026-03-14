@@ -1,6 +1,7 @@
 import axios from "axios";
 import { registerBotSentMessage } from "./botMessageTracker";
 import { withRetry } from "./utils/retry";
+import { logger } from "./utils/logger";
 
 /**
  * Módulo de integração com a Evolution API v2.3.7
@@ -23,7 +24,7 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
     const { baseUrl, apiKey, instanceName } = getEvolutionConfig();
 
     if (!baseUrl || !apiKey) {
-      console.error("[EvolutionAPI] URL ou API Key não configurados");
+      logger.error("EvolutionAPI", "URL ou API Key não configurados", null);
       return false;
     }
 
@@ -46,14 +47,14 @@ export async function sendTextMessageEvolution(to: string, text: string): Promis
     );
 
     const sentMessageId = response.data?.key?.id;
-    console.log("[EvolutionAPI] Mensagem enviada:", sentMessageId || "ok");
+    logger.info("EvolutionAPI", `Mensagem enviada: ${sentMessageId || "ok"}`);
     // Registrar ID para distinguir mensagens do bot vs operador
     if (sentMessageId) {
       await registerBotSentMessage(sentMessageId);
     }
     return true;
   } catch (error: any) {
-    console.error("[EvolutionAPI] Erro ao enviar mensagem:", error?.response?.data || error?.message);
+    logger.error("EvolutionAPI", "Erro ao enviar mensagem", error?.response?.data || error?.message);
     return false;
   }
 }
@@ -67,7 +68,7 @@ export async function downloadMediaEvolution(messageId: string, instanceName?: s
     const { baseUrl, apiKey, instanceName: defaultInstance } = getEvolutionConfig();
 
     if (!baseUrl || !apiKey) {
-      console.error("[EvolutionAPI] URL ou API Key não configurados");
+      logger.error("EvolutionAPI", "URL ou API Key não configurados", null);
       return null;
     }
 
@@ -93,10 +94,10 @@ export async function downloadMediaEvolution(messageId: string, instanceName?: s
       return Buffer.from(base64Data, "base64");
     }
 
-    console.error("[EvolutionAPI] Sem base64 na resposta:", response.data);
+    logger.error("EvolutionAPI", "Sem base64 na resposta ao baixar mídia", response.data);
     return null;
   } catch (error: any) {
-    console.error("[EvolutionAPI] Erro ao baixar mídia:", error?.response?.data || error?.message);
+    logger.error("EvolutionAPI", "Erro ao baixar mídia", error?.response?.data || error?.message);
     return null;
   }
 }
@@ -114,7 +115,7 @@ export async function sendMediaMessageEvolution(
     const { baseUrl, apiKey, instanceName } = getEvolutionConfig();
 
     if (!baseUrl || !apiKey) {
-      console.error("[EvolutionAPI] URL ou API Key não configurados");
+      logger.error("EvolutionAPI", "URL ou API Key não configurados", null);
       return false;
     }
 
@@ -142,14 +143,14 @@ export async function sendMediaMessageEvolution(
     );
 
     const sentMediaId = response.data?.key?.id;
-    console.log("[EvolutionAPI] Mídia enviada:", sentMediaId || "ok");
+    logger.info("EvolutionAPI", `Mídia enviada: ${sentMediaId || "ok"}`);
     // Registrar ID para distinguir mensagens do bot vs operador
     if (sentMediaId) {
       await registerBotSentMessage(sentMediaId);
     }
     return true;
   } catch (error: any) {
-    console.error("[EvolutionAPI] Erro ao enviar mídia:", error?.response?.data || error?.message);
+    logger.error("EvolutionAPI", "Erro ao enviar mídia", error?.response?.data || error?.message);
     return false;
   }
 }
@@ -167,7 +168,7 @@ export async function deleteMessageForEveryone(
     const { baseUrl, apiKey, instanceName } = getEvolutionConfig();
 
     if (!baseUrl || !apiKey) {
-      console.error("[EvolutionAPI] URL ou API Key não configurados");
+      logger.error("EvolutionAPI", "URL ou API Key não configurados", null);
       return false;
     }
 
@@ -187,10 +188,10 @@ export async function deleteMessageForEveryone(
       }
     );
 
-    console.log(`[EvolutionAPI] Mensagem ${messageId} apagada com sucesso`);
+    logger.info("EvolutionAPI", `Mensagem ${messageId} apagada com sucesso`);
     return true;
   } catch (error: any) {
-    console.error("[EvolutionAPI] Erro ao apagar mensagem:", error?.response?.data || error?.message);
+    logger.error("EvolutionAPI", "Erro ao apagar mensagem", error?.response?.data || error?.message);
     return false;
   }
 }
@@ -214,7 +215,7 @@ export async function checkInstanceStatus(): Promise<"open" | "close" | "connect
 
     return response.data?.instance?.state || "unknown";
   } catch (error) {
-    console.error("[EvolutionAPI] Erro ao verificar status:", error);
+    logger.error("EvolutionAPI", "Erro ao verificar status da instância", error);
     return "unknown";
   }
 }

@@ -12,10 +12,13 @@
 
 import axios from "axios";
 import { notifyOwner } from "./_core/notification";
+import { logger } from "./utils/logger";
+import { getSiteUrl } from "./_core/siteUrl";
+import { INFRA } from "../shared/constants";
 
-const PING_INTERVAL_MS = 4 * 60 * 1000; // 4 minutos (mais agressivo para evitar hibernação)
+const PING_INTERVAL_MS = INFRA.KEEP_ALIVE_PING_INTERVAL_MS;
 const INITIAL_DELAY_MS = 10000; // 10 segundos após iniciar
-const WEBHOOK_CHECK_INTERVAL_MS = 15 * 60 * 1000; // Verificar webhook a cada 15 min
+const WEBHOOK_CHECK_INTERVAL_MS = INFRA.WEBHOOK_CHECK_INTERVAL_MS;
 
 let lastSuccessfulPing = Date.now();
 let consecutiveFailures = 0;
@@ -30,10 +33,7 @@ function getEvolutionConfig() {
 }
 
 function getWebhookUrl(): string {
-  // IMPORTANTE: usar VITE_SITE_URL (URL publicada permanente, manus.space)
-  // NÃO usar SITE_DEV_URL pois é a URL temporária de desenvolvimento do sandbox
-  const siteUrl = process.env.VITE_SITE_URL || "https://chatbotwa-hesngyeo.manus.space";
-  return `${siteUrl}/api/webhook/evolution`;
+  return `${getSiteUrl()}/api/webhook/evolution`;
 }
 
 /**
@@ -48,7 +48,7 @@ async function checkAndReconnect(): Promise<void> {
 
   try {
     // Ping 1: GET na raiz para "aquecer" o Render
-    await axios.get(baseUrl, { timeout: 10000 }).catch(() => {});
+    await axios.get(baseUrl, { timeout: 10000 }).catch((err: unknown) => { logger.warn("KeepAlive", "Ping inicial falhou", err); });
 
     // Ping 2: Verificar estado da instância
     const response = await axios.get(
@@ -60,7 +60,7 @@ async function checkAndReconnect(): Promise<void> {
     );
 
     const state = response.data?.instance?.state;
-    console.log(`[KeepAlive] Estado: ${state} | Falhas consecutivas: ${consecutiveFailures}`);
+    logger.info("KeepAlive", `Estado: ${state} | Falhas consecutivas: ${consecutiveFailures}`);
 
     lastSuccessfulPing = Date.now();
     consecutiveFailures = 0;
@@ -70,7 +70,7 @@ async function checkAndReconnect(): Promise<void> {
     }
 
     // Instância desconectada — tentar reconectar
-    console.warn(`[KeepAlive] Instância desconectada (${state}), tentando reconectar...`);
+    logger.warn("KeepAlive", `Instância desconectada (${state}), tentando reconectar...`);
 
     // Verificar detalhes da desconexão
     try {
@@ -101,17 +101,17 @@ async function checkAndReconnect(): Promise<void> {
               ? "Timeout de conexão. O servidor pode ter ficado sem internet temporariamente."
               : `Código de desconexão: ${disconnectCode}`;
 
-          console.error(`[KeepAlive] Desconexão detectada: ${reason} | Em: ${disconnectAt}`);
+          logger.error("KeepAlive", `Desconexão detectada: ${reason} | Em: ${disconnectAt}`, null);
 
           // Notificar o dono
           await notifyOwner({
             title: "⚠️ Bot WhatsApp Desconectado",
             content: `O bot do WhatsApp desconectou.\n\nMotivo: ${reason}\nHorário: ${disconnectAt}\n\nTentando reconectar automaticamente. Se não funcionar, acesse o painel da Evolution API e reconecte manualmente.`,
-          }).catch(() => {});
+          }).catch((err: unknown) => { logger.warn("KeepAlive", "Falha ao notificar dono sobre desconexão bot", err); });
         }
       }
-    } catch {
-      // Ignorar erro ao buscar detalhes
+    } catch (detailsErr) {
+      logger.warn("KeepAlive", "Falha ao buscar detalhes da desconexão", detailsErr);
     }
 
     // Tentar reconectar
@@ -120,15 +120,15 @@ async function checkAndReconnect(): Promise<void> {
         headers: { apikey: apiKey },
         timeout: 15000,
       });
-      console.log(`[KeepAlive] Reconexão solicitada com sucesso`);
+      logger.info("KeepAlive", "Reconexão solicitada com sucesso");
     } catch (reconnectErr: any) {
-      console.error(`[KeepAlive] Falha na reconexão:`, reconnectErr?.message);
+      logger.error("KeepAlive", "Falha na reconexão", reconnectErr?.message);
     }
   } catch (error: any) {
     consecutiveFailures++;
 
     if (error.code === "ECONNREFUSED" || error.code === "ETIMEDOUT" || error.response?.status === 502) {
-      console.log(`[KeepAlive] Render.com em cold start (falha #${consecutiveFailures}), aguardando...`);
+      logger.info("KeepAlive", `Render.com em cold start (falha #${consecutiveFailures}), aguardando...`);
 
       // Retry com backoff: 15s, 30s, 60s
       const retryDelay = Math.min(15000 * consecutiveFailures, 60000);
@@ -142,10 +142,10 @@ async function checkAndReconnect(): Promise<void> {
               timeout: 15000,
             }
           );
-          console.log(`[KeepAlive] Render acordou após retry: ${resp.data?.instance?.state}`);
+          logger.info("KeepAlive", `Render acordou após retry: ${resp.data?.instance?.state}`);
           consecutiveFailures = 0;
-        } catch {
-          console.warn(`[KeepAlive] Render ainda não respondeu no retry #${consecutiveFailures}`);
+        } catch (retryErr) {
+          logger.warn("KeepAlive", `Render ainda não respondeu no retry #${consecutiveFailures}`, retryErr);
         }
       }, retryDelay);
 
@@ -154,10 +154,10 @@ async function checkAndReconnect(): Promise<void> {
         await notifyOwner({
           title: "🔴 Evolution API Indisponível",
           content: `A Evolution API no Render não está respondendo há ${consecutiveFailures} tentativas (${Math.round(consecutiveFailures * 4)} minutos).\n\nO bot WhatsApp está FORA DO AR.\n\nVerifique o painel do Render: https://dashboard.render.com`,
-        }).catch(() => {});
+        }).catch((err: unknown) => { logger.warn("KeepAlive", "Falha ao notificar dono sobre Evolution API indisponível", err); });
       }
     } else {
-      console.error(`[KeepAlive] Erro inesperado:`, error?.message);
+      logger.error("KeepAlive", "Erro inesperado", error?.message);
     }
   }
 }
@@ -184,8 +184,7 @@ async function checkWebhook(): Promise<void> {
     const expectedUrl = getWebhookUrl();
 
     if (!webhook || !webhook.enabled || webhook.url !== expectedUrl) {
-      console.warn(`[KeepAlive] Webhook desconfigurado, reconfigurando...`);
-      console.warn(`[KeepAlive] Atual: ${webhook?.url} | Esperado: ${expectedUrl}`);
+      logger.warn("KeepAlive", `Webhook desconfigurado, reconfigurando... Atual: ${webhook?.url} | Esperado: ${expectedUrl}`);
 
       await axios.post(
         `${baseUrl}/webhook/set/${instanceName}`,
@@ -203,12 +202,12 @@ async function checkWebhook(): Promise<void> {
           timeout: 15000,
         }
       );
-      console.log(`[KeepAlive] Webhook reconfigurado com sucesso`);
+      logger.info("KeepAlive", "Webhook reconfigurado com sucesso");
     } else {
-      console.log(`[KeepAlive] Webhook OK: ${webhook.url} (enabled: ${webhook.enabled})`);
+      logger.info("KeepAlive", `Webhook OK: ${webhook.url} (enabled: ${webhook.enabled})`);
     }
   } catch (error: any) {
-    console.error(`[KeepAlive] Erro ao verificar webhook:`, error?.message);
+    logger.error("KeepAlive", "Erro ao verificar webhook", error?.message);
   }
 }
 
@@ -216,11 +215,11 @@ export function startKeepAlive(): void {
   const { baseUrl } = getEvolutionConfig();
 
   if (!baseUrl) {
-    console.log("[KeepAlive] EVOLUTION_API_URL não configurado, keep-alive desativado");
+    logger.info("KeepAlive", "EVOLUTION_API_URL não configurado, keep-alive desativado");
     return;
   }
 
-  console.log(`[KeepAlive] Iniciado — ping a cada ${PING_INTERVAL_MS / 60000} min | webhook check a cada ${WEBHOOK_CHECK_INTERVAL_MS / 60000} min`);
+  logger.info("KeepAlive", `Iniciado — ping a cada ${PING_INTERVAL_MS / 60000} min | webhook check a cada ${WEBHOOK_CHECK_INTERVAL_MS / 60000} min`);
 
   // Primeiro ping após 10 segundos
   setTimeout(() => {

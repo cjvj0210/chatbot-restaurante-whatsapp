@@ -1,0 +1,49 @@
+{
+  "query": "SELECT * FROM conversations ORDER BY updatedAt DESC LIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT * FROM conversations ORDER BY updatedAt DESC LIMIT 3;",
+  "rows": [
+    {
+      "id": "180001",
+      "customerId": "30001",
+      "whatsappMessageId": "LID_TEST_1773361837",
+      "intent": "order",
+      "context": "{\"intent\":\"order\"}",
+      "isActive": "1",
+      "createdAt": "2026-03-13 00:30:37",
+      "updatedAt": "2026-03-14 11:27:50",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "210001",
+      "customerId": "180001",
+      "whatsappMessageId": "3EB05A61DABB7AB104D9A2",
+      "intent": "order",
+      "context": "{\"intent\":\"order\"}",
+      "isActive": "1",
+      "createdAt": "2026-03-13 21:01:02",
+      "updatedAt": "2026-03-13 21:01:11",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "deletedAt": "NULL"
+    },
+    {
+      "id": "150002",
+      "customerId": "30001",
+      "whatsappMessageId": "ACC6B39B2F6150453F9CE3D78B5F9B01",
+      "intent": "order",
+      "context": "{\"intent\":\"order\"}",
+      "isActive": "1",
+      "createdAt": "2026-03-12 16:58:00",
+      "updatedAt": "2026-03-13 02:54:02",
+      "humanMode": "0",
+      "humanModeUntil": "NULL",
+      "deletedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\twhatsappMessageId\tintent\tcontext\tisActive\tcreatedAt\tupdatedAt\thumanMode\thumanModeUntil\tdeletedAt\n180001\t30001\tLID_TEST_1773361837\torder\t{\"intent\":\"order\"}\t1\t2026-03-13 00:30:37\t2026-03-14 11:27:50\t0\tNULL\tNULL\n210001\t180001\t3EB05A61DABB7AB104D9A2\torder\t{\"intent\":\"order\"}\t1\t2026-03-13 21:01:02\t2026-03-13 21:01:11\t0\tNULL\tNULL\n150002\t30001\tACC6B39B2F6150453F9CE3D78B5F9B01\torder\t{\"intent\":\"order\"}\t1\t2026-03-12 16:58:00\t2026-03-13 02:54:02\t0\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

@@ -74,15 +74,8 @@ interface EvolutionWebhookPayload {
   apikey?: string;
 }
 
-/**
- * Extrai o número de telefone do JID do WhatsApp
- * Suporta formatos:
- *   - "5517999999999@s.whatsapp.net" → "5517999999999"
- *   - "212454869074102@lid" → "212454869074102" (Linked ID)
- */
-function extractPhoneFromJid(jid: string): string {
-  return phoneNormalizer.normalize(jid);
-}
+/** Comandos que o operador pode enviar para reativar o bot (verificados em fromMe=true) */
+const BOT_COMMANDS = new Set(["#bot", "#ativar", "#reativar"]);
 
 /**
  * Verifica se o JID é de uma conversa individual (não grupo/status)
@@ -119,9 +112,9 @@ const WEBHOOK_DEDUP_WINDOW_MS = CHATBOT.WEBHOOK_DEDUP_WINDOW_MS;
 // Limpeza periódica de entradas expiradas a cada 60 segundos
 setInterval(() => {
   const now = Date.now();
-  Array.from(recentWebhookEvents.entries()).forEach(([id, ts]) => {
+  for (const [id, ts] of Array.from(recentWebhookEvents.entries())) {
     if (now - ts > WEBHOOK_DEDUP_WINDOW_MS) recentWebhookEvents.delete(id);
-  });
+  }
 }, 60_000);
 
 function isWebhookDuplicate(messageId: string): boolean {
@@ -198,7 +191,6 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       const operatorMsg = payload.data.message?.conversation || payload.data.message?.extendedTextMessage?.text || "";
 
       // Aceitar variações do comando para reativar o bot
-      const BOT_COMMANDS = new Set(["#bot", "#ativar", "#reativar"]);
       const normalizedCmd = operatorMsg.trim().toLowerCase();
       if (BOT_COMMANDS.has(normalizedCmd)) {
         logger.info("Webhook", `Comando ${normalizedCmd} recebido — apagando mensagem e reativando bot`);
@@ -252,7 +244,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       logger.info("Webhook", `JID não reconhecido, tentando processar mesmo assim: ${key.remoteJid}`);
     }
 
-    const phone = extractPhoneFromJid(key.remoteJid);
+    const phone = phoneNormalizer.normalize(key.remoteJid);
     const whatsappId = key.remoteJid; // Usar JID completo como ID único
     const messageId = key.id;
     // Extrair número real do telefone quando JID é @lid (via remoteJidAlt)

@@ -4,15 +4,7 @@ import { lt, and, eq, lte, or, desc } from "drizzle-orm";
 import { checkInstanceStatus, sendTextMessageEvolution } from "./evolutionApi";
 import { notifyOwner } from "./_core/notification";
 import { logger } from "./utils/logger";
-
-/**
- * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
- */
-function normalizePhone(phone: string): string {
-  let digits = phone.replace("@s.whatsapp.net", "").replace(/\D/g, "");
-  if (digits.startsWith("55") && digits.length >= 12) return digits;
-  return "55" + digits;
-}
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 let lastInstanceStatus: string = "unknown";
 let instanceAlertSent = false;
@@ -126,7 +118,7 @@ export async function retryFailedMessages(): Promise<void> {
       if (!msg.whatsappNumber) continue;
 
       // Normalizar telefone para formato 55XXXXXXXXXXX
-      const normalizedPhone = normalizePhone(msg.whatsappNumber);
+      const normalizedPhone = phoneNormalizer.withCountryCode(msg.whatsappNumber);
       const sent = await sendTextMessageEvolution(normalizedPhone, msg.message);
 
       if (sent) {
@@ -181,8 +173,9 @@ export async function expireHumanModes(): Promise<void> {
         )
       );
 
-    if ((result as any).rowsAffected > 0) {
-      logger.info("Maintenance", `${(result as any).rowsAffected} conversas em modo humano expiradas`);
+    const affectedRows = (result as any)?.[0]?.affectedRows ?? 0;
+    if (affectedRows > 0) {
+      logger.info("Maintenance", `${affectedRows} conversas em modo humano expiradas`);
     }
   } catch (err) {
     logger.error("Maintenance", "Erro ao expirar modos humanos", err);

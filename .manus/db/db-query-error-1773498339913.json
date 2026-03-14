@@ -1,0 +1,8 @@
+{
+  "query": "SELECT c.id, c.human_mode, c.human_mode_until, cu.phone, cu.name \nFROM conversations c \nJOIN customers cu ON c.customer_id = cu.id \nWHERE c.human_mode = 1 \nORDER BY c.updated_at DESC \nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT c.id, c.human_mode, c.human_mode_until, cu.phone, cu.name \nFROM conversations c \nJOIN customers cu ON c.customer_id = cu.id \nWHERE c.human_mode = 1 \nORDER BY c.updated_at DESC \nLIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'c.customer_id' in 'on clause'"
+  ]
+}

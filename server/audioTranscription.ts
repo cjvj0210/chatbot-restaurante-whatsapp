@@ -1,5 +1,6 @@
 import { getWhatsappSettings } from "./db";
 import { transcribeAudio } from "./_core/voiceTranscription";
+import { logger } from "./utils/logger";
 
 /**
  * Baixa e transcreve áudio do WhatsApp
@@ -9,7 +10,7 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     const settings = await getWhatsappSettings();
     
     if (!settings || !settings.accessToken) {
-      console.error("[AudioTranscription] WhatsApp settings not configured");
+      logger.warn("AudioTranscription", "WhatsApp settings not configured");
       return null;
     }
 
@@ -24,7 +25,7 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     );
 
     if (!mediaUrlResponse.ok) {
-      console.error("[AudioTranscription] Failed to get media URL:", await mediaUrlResponse.text());
+      logger.warn("AudioTranscription", `Failed to get media URL: ${await mediaUrlResponse.text()}`);
       return null;
     }
 
@@ -44,7 +45,7 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     });
 
     if (!audioResponse.ok) {
-      console.error("[AudioTranscription] Failed to download audio:", await audioResponse.text());
+      logger.warn("AudioTranscription", `Failed to download audio: ${await audioResponse.text()}`);
       return null;
     }
 
@@ -59,7 +60,7 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     const tempFilePath = path.join(tempDir, `whatsapp-audio-${audioId}.ogg`);
     
     fs.writeFileSync(tempFilePath, Buffer.from(audioBuffer));
-    console.log(`[AudioTranscription] Audio saved to ${tempFilePath}`);
+    logger.info("AudioTranscription", `Audio saved to ${tempFilePath}`);
 
     // 4. Transcrever usando Whisper API
     const result = await transcribeAudio({
@@ -70,13 +71,13 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     // 5. Limpar arquivo temporário
     try {
       fs.unlinkSync(tempFilePath);
-    } catch (e) {
-      console.warn("[AudioTranscription] Failed to delete temp file:", e);
+    } catch (cleanupError) {
+      logger.warn("AudioTranscription", "Failed to delete temp file", cleanupError);
     }
 
     // Verificar se a transcrição foi bem-sucedida
     if ('error' in result) {
-      console.error("[AudioTranscription] Transcription error:", result.error);
+      logger.error("AudioTranscription", `Transcription error: ${result.error}`, null);
       return null;
     }
 
@@ -86,7 +87,7 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
 
     return null;
   } catch (error) {
-    console.error("[AudioTranscription] Error transcribing audio:", error);
+    logger.error("AudioTranscription", `Error transcribing audio ${audioId}`, error);
     return null;
   }
 }

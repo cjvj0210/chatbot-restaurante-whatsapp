@@ -37,7 +37,7 @@ export const chatbotReservationsRouter = router({
 
       // Criar reserva no banco
       const [newReservation] = await db.insert(reservations).values({
-        customerId: 0, // Temporário - será associado depois quando cliente for identificado
+        customerId: null, // Cliente não identificado via este fluxo público
         reservationNumber,
         customerName: input.customerName,
         customerPhone: input.customerPhone,

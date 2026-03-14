@@ -2,10 +2,11 @@ import { z } from "zod";
 import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
 import { getDb, getRestaurantSettings } from "./db";
 import { orders, orderItems, orderSessions, menuItems, menuAddonOptions, customers } from "../drizzle/schema";
-import { eq, desc, inArray, like } from "drizzle-orm";
+import { eq, desc, inArray, like, and, gte, lte, or } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { ORDER } from "../shared/constants";
+import { logger } from "./utils/logger";
 
 /**
  * Router para gerenciamento de pedidos
@@ -181,7 +182,7 @@ export const orderRouter = router({
           customerNotes: input.additionalNotes || null,
           paymentMethod: input.paymentMethod,
           changeFor: input.changeFor || null,
-          estimatedTime: 40, // 40 minutos padrão
+          estimatedTime: ORDER.DEFAULT_ESTIMATED_TIME_MINUTES,
           printToken, // token para acesso à comanda de impressão
         });
 
@@ -233,7 +234,7 @@ export const orderRouter = router({
             await db.update(customers).set(customerUpdate).where(eq(customers.id, session.customerId));
           }
         } catch (err) {
-          console.error("Erro ao atualizar dados do cliente:", err);
+          logger.warn("OrderRouter", "Erro ao atualizar dados do cliente", err);
           // Não falhar o pedido se atualização do cliente falhar
         }
       }
@@ -246,7 +247,7 @@ export const orderRouter = router({
           session.whatsappNumber || input.customerPhone
         );
       } catch (error) {
-        console.error("Erro ao enviar notificação WhatsApp:", error);
+        logger.warn("OrderRouter", "Erro ao enviar notificação WhatsApp", error);
         // Não falhar o pedido se notificação falhar
       }
 
@@ -413,8 +414,6 @@ export const orderRouter = router({
       const limit = input?.limit || 20;
       const offset = input?.offset || 0;
 
-      const { and: andOp, gte, lte } = await import("drizzle-orm");
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const conditions: any[] = [];
       if (input?.status) {
@@ -432,7 +431,7 @@ export const orderRouter = router({
       let query = db.select().from(orders);
       if (conditions.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        query = query.where(conditions.length === 1 ? conditions[0] : andOp(...conditions)) as any;
+        query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions)) as any;
       }
 
       const ordersList = await query
@@ -540,11 +539,10 @@ export const orderRouter = router({
       const escapeLike = (s: string) => s.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
       const phoneDigits = escapeLike(phone.slice(-11)); // ex: "17988112791"
       const phoneLast8 = escapeLike(phone.slice(-8));   // ex: "88112791"
-      const { or: orOp } = await import("drizzle-orm");
       const customersList = await db
         .select()
         .from(customers)
-        .where(orOp(
+        .where(or(
           eq(customers.whatsappId, session.whatsappNumber),
           eq(customers.whatsappId, `${phone}@s.whatsapp.net`),
           eq(customers.whatsappId, phone),
@@ -563,7 +561,7 @@ export const orderRouter = router({
       const lastOrders = await db
         .select()
         .from(orders)
-        .where(orOp(
+        .where(or(
           like(orders.customerPhone, `%${phoneDigits}%`),
           like(orders.customerPhone, `%${phoneLast8}%`)
         ))
@@ -630,7 +628,6 @@ export const orderRouter = router({
 
       // Buscar últimos 8 pedidos do cliente para filtrar cancelados e mostrar 5 válidos
       // Busca por OR: telefone normalizado (11 dígitos) OU últimos 8 dígitos
-      const { or } = await import("drizzle-orm");
       const pastOrders = await db
         .select()
         .from(orders)
@@ -829,11 +826,10 @@ export const orderRouter = router({
       // Fallback: buscar cliente pelo whatsappNumber da sessão
       const phone = session.whatsappNumber.replace(/\D/g, "");
       const phoneDigits = phone.slice(-11);
-      const { or: orOp } = await import("drizzle-orm");
       const customersList = await db
         .select({ id: customers.id })
         .from(customers)
-        .where(orOp(
+        .where(or(
           eq(customers.whatsappId, session.whatsappNumber),
           eq(customers.whatsappId, `${phone}@s.whatsapp.net`),
           eq(customers.whatsappId, phone),
@@ -892,7 +888,7 @@ export const orderRouter = router({
       try {
         await notifyStatusUpdate(input.orderId, input.status);
       } catch (error) {
-        console.error("Erro ao enviar notificação de status:", error);
+        logger.warn("OrderRouter", "Erro ao enviar notificação de status", error);
         // Não falhar a atualização se notificação falhar
       }
 

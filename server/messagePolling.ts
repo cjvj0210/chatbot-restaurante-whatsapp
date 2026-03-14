@@ -9,27 +9,50 @@
 
 import axios from "axios";
 import { processIncomingMessage } from "./chatbot";
-import { getDb } from "./db";
-import { conversations, customers } from "../drizzle/schema";
-import { eq, like, or } from "drizzle-orm";
-import { logger } from "./utils/logger";
-import { transcribeFromPolling } from "./services/audioService";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { transcribeFromPolling } from "./services/audioService";
+import { logger } from "./utils/logger";
 
-const POLL_INTERVAL_MS = 3000; // 3 segundos (respostas rápidas)
+// Em produção usa 10s (webhook é confiável); em dev usa 3s (webhook pode não funcionar localmente)
+// Pode ser sobrescrito via POLL_INTERVAL_MS env var
+const POLL_INTERVAL_MS = process.env.POLL_INTERVAL_MS
+  ? parseInt(process.env.POLL_INTERVAL_MS, 10)
+  : process.env.NODE_ENV === "production"
+    ? 10_000
+    : 3_000;
 const INITIAL_DELAY_MS = 15000; // 15 segundos após iniciar (dar tempo pro servidor subir)
-const MAX_BACKOFF_MS = 60_000; // Máximo de 60 segundos entre tentativas em caso de erro
+const MAX_PROCESSED_IDS = 500; // Máximo de IDs armazenados em memória
+const MESSAGE_ID_TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 
-// Map de IDs de mensagens já processadas COM TTL (evita memory leak)
-const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
-const processedMessageIds = new Map<string, number>(); // messageId → timestamp
+// Map de IDs de mensagens já processadas: id → timestamp de inserção
+const processedMessageIds = new Map<string, number>();
+
+function markMessageAsProcessedLocal(messageId: string): void {
+  const now = Date.now();
+  processedMessageIds.set(messageId, now);
+
+  // Limpeza por TTL
+  for (const [id, ts] of Array.from(processedMessageIds.entries())) {
+    if (now - ts > MESSAGE_ID_TTL_MS) processedMessageIds.delete(id);
+  }
+
+  // Fallback: remover os mais antigos se ainda exceder o limite
+  if (processedMessageIds.size > MAX_PROCESSED_IDS) {
+    const sorted = Array.from(processedMessageIds.entries()).sort((a, b) => a[1] - b[1]);
+    for (let i = 0; i < sorted.length - MAX_PROCESSED_IDS; i++) {
+      processedMessageIds.delete(sorted[i]![0]);
+    }
+  }
+}
 
 // Timestamp da última busca bem-sucedida (em segundos Unix)
 let lastPollTimestamp = 0;
 let isPolling = false;
-let consecutiveErrors = 0;
 // Timestamp de quando o polling iniciou (para ignorar mensagens anteriores)
 let pollingStartTimestamp = 0;
+// Contador de erros consecutivos (resetado no sucesso, usado para backoff e logging)
+let consecutiveErrors = 0;
+const MAX_BACKOFF_MS = 60_000;
 
 function getEvolutionConfig() {
   return {
@@ -40,31 +63,10 @@ function getEvolutionConfig() {
 }
 
 /**
- * Extrai o número de telefone do JID do WhatsApp
- */
-function extractPhoneFromJid(jid: string): string {
-  return jid.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
-}
-
-/**
  * Verifica se o JID é de uma conversa individual
  */
 function isIndividualChat(jid: string): boolean {
   return jid.endsWith("@s.whatsapp.net") || jid.endsWith("@lid");
-}
-
-/**
- * Marca uma mensagem como processada localmente (Map com TTL)
- */
-function markMessageAsProcessedLocal(messageId: string): void {
-  processedMessageIds.set(messageId, Date.now());
-  // Limpeza lazy: remover entradas expiradas quando o mapa cresce
-  if (processedMessageIds.size > 1000) {
-    const now = Date.now();
-    Array.from(processedMessageIds.entries()).forEach(([id, ts]) => {
-      if (now - ts > TTL_MS) processedMessageIds.delete(id);
-    });
-  }
 }
 
 /**
@@ -103,7 +105,10 @@ async function pollMessages(): Promise<void> {
 
     const allRecords = response.data?.messages?.records || [];
     lastPollTimestamp = now;
-    consecutiveErrors = 0; // Reset em caso de sucesso
+    if (consecutiveErrors > 0) {
+      logger.info("Polling", `Polling recuperado após ${consecutiveErrors} erro(s) consecutivo(s)`);
+      consecutiveErrors = 0;
+    }
 
     // Filtrar por timestamp NO CÓDIGO (a API ignora o filtro de timestamp)
     // Só processar mensagens posteriores ao início do polling
@@ -122,7 +127,7 @@ async function pollMessages(): Promise<void> {
       const msgId = msg.key?.id;
       if (!msgId) continue;
 
-      // Pular se já processada (Map com TTL)
+      // Pular se já processada
       if (processedMessageIds.has(msgId)) continue;
 
       // Marcar como processada ANTES de processar (evitar duplicatas)
@@ -132,6 +137,9 @@ async function pollMessages(): Promise<void> {
       const fromMe = msg.key?.fromMe;
 
       // Ignorar todas as mensagens fromMe (enviadas pelo bot ou operador)
+      // NOTA: Não ativar modo humano aqui porque o polling não consegue
+      // distinguir mensagens do BOT de mensagens do OPERADOR — ambas são fromMe=true.
+      // O modo humano só é ativado via webhook (que recebe em tempo real).
       if (fromMe) {
         continue;
       }
@@ -163,7 +171,7 @@ async function pollMessages(): Promise<void> {
       } else if (message.imageMessage?.caption) {
         messageText = message.imageMessage.caption || "[Imagem enviada]";
       } else if (message.audioMessage || messageType === "audioMessage" || messageType === "pttMessage") {
-        // Transcrever áudio via audioService centralizado
+        // Transcrever áudio
         logger.info("Polling", `Áudio recebido, transcrevendo... ID: ${msgId}`);
         const transcription = await transcribeFromPolling(msgId, baseUrl, apiKey, instanceName);
         if (transcription) {
@@ -180,7 +188,7 @@ async function pollMessages(): Promise<void> {
       if (typeof messageText !== "string" || !messageText.trim()) continue;
       messageText = messageText.slice(0, 2000);
 
-      const phone = extractPhoneFromJid(remoteJid);
+      const phone = phoneNormalizer.normalize(remoteJid);
       const whatsappId = remoteJid;
       // Extrair número real do telefone quando JID é @lid (via key.remoteJidAlt)
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
@@ -204,46 +212,6 @@ async function pollMessages(): Promise<void> {
     }
   } finally {
     isPolling = false;
-  }
-}
-
-/**
- * Ativa modo humano quando o operador responde manualmente
- */
-async function handleOperatorMessage(clientJid: string): Promise<void> {
-  try {
-    const db = await getDb();
-    if (!db) return;
-
-    const clientPhone = extractPhoneFromJid(clientJid);
-    const phoneDigits = clientPhone.slice(-11);
-    const phoneLast8 = clientPhone.slice(-8);
-
-    const [customer] = await db
-      .select()
-      .from(customers)
-      .where(or(like(customers.phone, `%${phoneDigits}%`), like(customers.phone, `%${phoneLast8}%`)))
-      .limit(1);
-
-    if (customer) {
-      const [conv] = await db
-        .select()
-        .from(conversations)
-        .where(eq(conversations.customerId, customer.id))
-        .orderBy(conversations.createdAt)
-        .limit(1);
-
-      if (conv) {
-        const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000);
-        await db
-          .update(conversations)
-          .set({ humanMode: true, humanModeUntil })
-          .where(eq(conversations.id, conv.id));
-        logger.info("Polling", `Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
-      }
-    }
-  } catch (err) {
-    logger.error("Polling", "Erro ao ativar modo humano", err);
   }
 }
 

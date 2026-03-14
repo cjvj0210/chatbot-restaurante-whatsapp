@@ -41,6 +41,8 @@ import {
   processedMessages,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { cached, invalidateCache } from "./cache";
+import { logger } from "./utils/logger";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -49,7 +51,7 @@ export async function getDb() {
     try {
       _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      logger.warn("Database", "Failed to connect", error);
       _db = null;
     }
   }
@@ -63,7 +65,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
+    logger.warn("Database", "Cannot upsert user: database not available");
     return;
   }
 
@@ -110,7 +112,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       set: updateSet,
     });
   } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
+    logger.error("Database", "Failed to upsert user", error);
     throw error;
   }
 }
@@ -118,7 +120,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
+    logger.warn("Database", "Cannot get user: database not available");
     return undefined;
   }
 
@@ -129,15 +131,19 @@ export async function getUserByOpenId(openId: string) {
 
 // ===== Restaurant Settings =====
 
-import { cached, invalidateCache } from "./cache";
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
 
 export async function getRestaurantSettings(): Promise<RestaurantSettings | undefined> {
-  return cached("restaurant_settings", async () => {
-    const db = await getDb();
-    if (!db) return undefined;
-    const result = await db.select().from(restaurantSettings).limit(1);
-    return result[0];
-  }, 30_000); // Cache de 30s — settings mudam raramente
+  return cached(
+    "restaurant_settings",
+    async () => {
+      const db = await getDb();
+      if (!db) return undefined;
+      const result = await db.select().from(restaurantSettings).limit(1);
+      return result[0];
+    },
+    SETTINGS_CACHE_TTL_MS
+  );
 }
 
 export async function upsertRestaurantSettings(settings: InsertRestaurantSettings): Promise<void> {
@@ -145,13 +151,14 @@ export async function upsertRestaurantSettings(settings: InsertRestaurantSetting
   if (!db) throw new Error("Database not available");
 
   const existing = await getRestaurantSettings();
-  
+
   if (existing) {
     await db.update(restaurantSettings).set(settings).where(eq(restaurantSettings.id, existing.id));
   } else {
     await db.insert(restaurantSettings).values(settings);
   }
-  invalidateCache("restaurant_settings"); // Limpar cache após atualização
+  // Invalidar cache após atualização
+  invalidateCache("restaurant_settings");
 }
 
 // ===== WhatsApp Settings =====
@@ -264,17 +271,6 @@ export async function deleteMenuItem(id: number): Promise<void> {
 }
 
 // ===== Customers =====
-
-/**
- * Extrai o número de telefone real de um JID do WhatsApp.
- * Exemplos:
- *   "5517988112791@s.whatsapp.net" → "5517988112791"
- *   "5517988112791" → "5517988112791"
- *   "212454869074102@lid" → "212454869074102" (LID - não é o número real)
- */
-export function extractPhoneFromWhatsappId(whatsappId: string): string {
-  return whatsappId.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
-}
 
 /**
  * Busca um cliente pelo whatsappId, com fallback inteligente.
@@ -610,10 +606,49 @@ export async function getAddonGroupsWithOptions(menuItemId: number): Promise<Add
 
 export async function getAddonGroupsForItems(menuItemIds: number[]): Promise<Record<number, AddonGroupWithOptions[]>> {
   if (menuItemIds.length === 0) return {};
+
+  const db = await getDb();
+  if (!db) return {};
+
+  // Busca batch: todos os grupos ativos para os itens solicitados de uma vez
+  const groups = await db
+    .select()
+    .from(menuAddonGroups)
+    .where(and(inArray(menuAddonGroups.menuItemId, menuItemIds), eq(menuAddonGroups.isActive, true)))
+    .orderBy(menuAddonGroups.displayOrder);
+
+  if (groups.length === 0) {
+    return menuItemIds.reduce<Record<number, AddonGroupWithOptions[]>>((acc, id) => {
+      acc[id] = [];
+      return acc;
+    }, {});
+  }
+
+  const groupIds = groups.map((g) => g.id);
+
+  // Busca batch: todas as opções ativas para os grupos encontrados
+  const options = await db
+    .select()
+    .from(menuAddonOptions)
+    .where(and(inArray(menuAddonOptions.groupId, groupIds), eq(menuAddonOptions.isActive, true)))
+    .orderBy(menuAddonOptions.displayOrder);
+
+  // Agrupar opções por groupId em memória
+  const optionsByGroup = options.reduce<Record<number, MenuAddonOption[]>>((acc, opt) => {
+    if (!acc[opt.groupId]) acc[opt.groupId] = [];
+    acc[opt.groupId]!.push(opt);
+    return acc;
+  }, {});
+
+  // Agrupar grupos por menuItemId em memória
   const result: Record<number, AddonGroupWithOptions[]> = {};
   for (const id of menuItemIds) {
-    result[id] = await getAddonGroupsWithOptions(id);
+    result[id] = [];
   }
+  for (const group of groups) {
+    result[group.menuItemId]!.push({ ...group, options: optionsByGroup[group.id] ?? [] });
+  }
+
   return result;
 }
 
@@ -621,8 +656,8 @@ export async function createAddonGroup(data: InsertMenuAddonGroup): Promise<Menu
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const res = await db.insert(menuAddonGroups).values(data);
-  const inserted = await db.select().from(menuAddonGroups).where(eq(menuAddonGroups.id, Number(res[0].insertId))).limit(1);
+  const insertResult = await db.insert(menuAddonGroups).values(data);
+  const inserted = await db.select().from(menuAddonGroups).where(eq(menuAddonGroups.id, Number(insertResult[0].insertId))).limit(1);
   return inserted[0]!;
 }
 
@@ -644,8 +679,8 @@ export async function createAddonOption(data: InsertMenuAddonOption): Promise<Me
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const res = await db.insert(menuAddonOptions).values(data);
-  const inserted = await db.select().from(menuAddonOptions).where(eq(menuAddonOptions.id, Number(res[0].insertId))).limit(1);
+  const insertResult = await db.insert(menuAddonOptions).values(data);
+  const inserted = await db.select().from(menuAddonOptions).where(eq(menuAddonOptions.id, Number(insertResult[0].insertId))).limit(1);
   return inserted[0]!;
 }
 
@@ -676,7 +711,7 @@ export async function tryClaimMessage(messageId: string, source: string): Promis
   const db = await getDb();
   if (!db) {
     // Se o banco não está disponível, permitir processamento (fallback)
-    console.warn("[Dedup] Banco não disponível, permitindo processamento");
+    logger.warn("Dedup", "Banco não disponível, permitindo processamento");
     return true;
   }
 
@@ -696,8 +731,8 @@ export async function tryClaimMessage(messageId: string, source: string): Promis
     if (error?.cause?.code === "ER_DUP_ENTRY" || error?.code === "ER_DUP_ENTRY") {
       return false;
     }
-    // Outro erro: permitir processamento (fallback seguro)
-    console.error("[Dedup] Erro ao verificar mensagem:", error);
+    // Outro erro: logar para alertar sobre instabilidade, mas permitir processamento (fail-open)
+    logger.error("Dedup", `Erro inesperado ao verificar messageId ${messageId}`, error);
     return true;
   }
 }
@@ -714,7 +749,7 @@ export async function cleanupProcessedMessages(): Promise<void> {
     const { sql } = await import("drizzle-orm");
     await db.execute(sql`DELETE FROM processed_messages WHERE processedAt < DATE_SUB(NOW(), INTERVAL 1 HOUR)`);
   } catch (error) {
-    console.error("[Dedup] Erro ao limpar mensagens antigas:", error);
+    logger.error("Dedup", "Erro ao limpar mensagens antigas", error);
   }
 }
 

@@ -1182,3 +1182,36 @@
 - [x] Cache BRT DateTime 500ms (3 chamadas Intl → 1 cached)
 - [x] Scheduler centralizado (7 setInterval → 1 ScheduledTask[])
 - [x] Jitter nos retries da Evolution API (evita thundering herd)
+
+## Bug - Bot parou de responder após patch de performance (14/03/2026)
+- [ ] Investigar logs do servidor para identificar erro
+- [ ] Identificar causa raiz (possível regressão no patch de performance)
+- [ ] Corrigir e testar
+
+## Rodada 4 - Auditoria de Qualidade (Claude Code - 46 correções)
+
+### P1 Críticos
+- [x] handleOrderStatus refatorado CC~12→~3 (extraídas 3 funções auxiliares)
+- [x] catch {} silencioso em parse de data de reserva → logger.warn
+- [x] URL hardcoded manus.space consolidada para getSiteUrl() em todos os arquivos
+- [x] Novo arquivo server/chatbot-flow.test.ts com 7 testes para processIncomingMessage
+
+### P2 Código Morto
+- [x] Remover extractPhoneFromJid (webhookEvolution.ts) — substituído por phoneNormalizer.normalize
+- [x] Remover extractPhoneFromWhatsappId (db.ts) — substituído por phoneNormalizer
+- [x] BOT_COMMANDS movido para escopo do módulo (webhookEvolution.ts)
+
+### P2 Tratamento de Erros
+- [x] 100% de console.* substituídos por logger.* em db.ts e keepAlive.ts
+- [x] (result as any).rowsAffected → getAffectedRows (novo helper dbHelpers.ts)
+- [x] Telefone hardcoded 5517982123269 → variável RESTAURANT_PHONE com fallback
+
+### P2 Testes
+- [x] Novos testes: chatbotActions.test.ts, webhookEvolution.test.ts
+- [x] 5 testes de boundary para sábado em estimativa.test.ts
+
+### P3 Melhorias
+- [x] Renomeações de variáveis genéricas (tempo→deliveryTimeRange, fn→operation, res→insertResult)
+- [x] JSDoc adicionado às funções principais do chatbotActionHandler
+- [x] Dead code removido: sendButtonMessage, sendListMessage
+- [x] Constantes INFRA em shared/constants.ts (KEEP_ALIVE_PING_INTERVAL_MS, etc.)
