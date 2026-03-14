@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sanitizeInput, sanitizeLLMOutput, sanitizeObject } from "./sanitize";
 import { checkChatbotRateLimit, getRemainingMessages, cleanupRateLimits } from "./chatbotRateLimit";
+import { vi } from "vitest";
 import { cached, invalidateCache, invalidateCachePrefix, clearCache, getCacheStats } from "./cache";
 
 describe("Sanitização de Input (XSS)", () => {
@@ -87,29 +88,44 @@ describe("Sanitização de Objetos", () => {
   });
 });
 
+// Mock getDb para forçar fallback em memória nos testes de rate limiting
+vi.mock("./db", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    getDb: vi.fn().mockResolvedValue(null),
+  };
+});
+
 describe("Rate Limiting do Chatbot", () => {
-  it("deve permitir mensagens dentro do limite", () => {
+  it("deve permitir mensagens dentro do limite", async () => {
     const testId = `test-rate-${Date.now()}`;
-    expect(checkChatbotRateLimit(testId)).toBe(true);
-    expect(checkChatbotRateLimit(testId)).toBe(true);
-    expect(checkChatbotRateLimit(testId)).toBe(true);
+    // Com banco mockado como null, usa fallback em memória
+    const result1 = await checkChatbotRateLimit(testId);
+    expect(result1).toBe(true);
+    const result2 = await checkChatbotRateLimit(testId);
+    expect(result2).toBe(true);
+    const result3 = await checkChatbotRateLimit(testId);
+    expect(result3).toBe(true);
   });
 
-  it("deve retornar mensagens restantes corretamente", () => {
+  it("deve retornar mensagens restantes corretamente", async () => {
     const testId = `test-remaining-${Date.now()}`;
     expect(getRemainingMessages(testId)).toBe(30);
-    checkChatbotRateLimit(testId);
+    await checkChatbotRateLimit(testId);
     expect(getRemainingMessages(testId)).toBe(29);
   });
 
-  it("deve bloquear após exceder o limite", () => {
+  it("deve bloquear após exceder o limite", async () => {
     const testId = `test-block-${Date.now()}`;
     // Enviar 30 mensagens (limite)
     for (let i = 0; i < 30; i++) {
-      checkChatbotRateLimit(testId);
+      const r = await checkChatbotRateLimit(testId);
+      expect(r).toBe(true);
     }
     // A 31ª deve ser bloqueada
-    expect(checkChatbotRateLimit(testId)).toBe(false);
+    const blocked = await checkChatbotRateLimit(testId);
+    expect(blocked).toBe(false);
     expect(getRemainingMessages(testId)).toBe(0);
   });
 

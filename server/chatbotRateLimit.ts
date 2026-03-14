@@ -2,41 +2,75 @@
  * Rate limiter por whatsappId para o chatbot
  * Previne abuso: máximo de 30 mensagens por hora por número
  *
- * LIMITAÇÃO CONHECIDA: usa memória local (Map em processo).
- * Em deployments multi-instância (dev + produção simultâneos), cada instância
- * tem seu próprio contador — o limite efetivo pode ser multiplicado pelo número
- * de instâncias. Para correção completa, migrar contador para o banco de dados
- * usando a tabela processed_messages como referência (COUNT por whatsappId + janela).
- * A deduplicação de mensagens já é feita no banco — o rate limit é uma camada adicional.
+ * Implementação: conta mensagens role='user' na tabela `messages`
+ * nas últimas 1h para o whatsappId dado, via JOIN conversations → customers.
+ * Se o banco não estiver disponível, usa fallback em memória (fail-open dentro do limite).
  */
 
+import { and, count, eq, gte } from "drizzle-orm";
+import { getDb } from "./db";
+import { messages, conversations, customers } from "../drizzle/schema";
+import { CHATBOT } from "../shared/constants";
+import { logger } from "./utils/logger";
+
+const WINDOW_MS = CHATBOT.RATE_LIMIT_WINDOW_MS;
+const MAX_MESSAGES = CHATBOT.RATE_LIMIT_MAX_MESSAGES;
+
+// Fallback em memória para quando o banco não está disponível
 interface RateLimitEntry {
   count: number;
   windowStart: number;
 }
-
-const WINDOW_MS = 60 * 60 * 1000; // 1 hora
-const MAX_MESSAGES = 30;           // máximo por janela
-
-// Map em memória — limpo periodicamente
-const rateLimits = new Map<string, RateLimitEntry>();
+const rateLimitsMemory = new Map<string, RateLimitEntry>();
 
 /**
- * Verifica se o whatsappId pode enviar mais mensagens
+ * Verifica se o whatsappId pode enviar mais mensagens (async — usa banco de dados)
  * @returns true se permitido, false se bloqueado
  */
-export function checkChatbotRateLimit(whatsappId: string): boolean {
-  const now = Date.now();
-  const entry = rateLimits.get(whatsappId);
+export async function checkChatbotRateLimit(whatsappId: string): Promise<boolean> {
+  try {
+    const db = await getDb();
+    if (!db) {
+      // Fallback em memória se banco indisponível
+      return checkMemoryRateLimit(whatsappId);
+    }
 
-  if (!entry || (now - entry.windowStart) > WINDOW_MS) {
-    // Nova janela
-    rateLimits.set(whatsappId, { count: 1, windowStart: now });
+    const windowStart = new Date(Date.now() - WINDOW_MS);
+
+    const result = await db
+      .select({ total: count() })
+      .from(messages)
+      .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+      .innerJoin(customers, eq(conversations.customerId, customers.id))
+      .where(
+        and(
+          eq(customers.whatsappId, whatsappId),
+          eq(messages.role, "user"),
+          gte(messages.createdAt, windowStart)
+        )
+      );
+
+    return (result[0]?.total ?? 0) < MAX_MESSAGES;
+  } catch {
+    // Fallback em memória em caso de erro
+    return checkMemoryRateLimit(whatsappId);
+  }
+}
+
+/**
+ * Fallback em memória — usado quando o banco não está disponível
+ */
+function checkMemoryRateLimit(whatsappId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitsMemory.get(whatsappId);
+
+  if (!entry || now - entry.windowStart > WINDOW_MS) {
+    rateLimitsMemory.set(whatsappId, { count: 1, windowStart: now });
     return true;
   }
 
   if (entry.count >= MAX_MESSAGES) {
-    return false; // Bloqueado
+    return false;
   }
 
   entry.count++;
@@ -44,13 +78,13 @@ export function checkChatbotRateLimit(whatsappId: string): boolean {
 }
 
 /**
- * Retorna quantas mensagens restam na janela
+ * Retorna quantas mensagens restam na janela (usa fallback em memória para compatibilidade de testes)
  */
 export function getRemainingMessages(whatsappId: string): number {
   const now = Date.now();
-  const entry = rateLimits.get(whatsappId);
+  const entry = rateLimitsMemory.get(whatsappId);
 
-  if (!entry || (now - entry.windowStart) > WINDOW_MS) {
+  if (!entry || now - entry.windowStart > WINDOW_MS) {
     return MAX_MESSAGES;
   }
 
@@ -58,20 +92,20 @@ export function getRemainingMessages(whatsappId: string): number {
 }
 
 /**
- * Limpa entradas expiradas (chamar periodicamente)
+ * Limpa entradas expiradas do fallback em memória (chamar periodicamente)
  */
 export function cleanupRateLimits(): void {
   const now = Date.now();
   let cleaned = 0;
-  const keys = Array.from(rateLimits.keys());
+  const keys = Array.from(rateLimitsMemory.keys());
   for (const key of keys) {
-    const entry = rateLimits.get(key);
-    if (entry && (now - entry.windowStart) > WINDOW_MS) {
-      rateLimits.delete(key);
+    const entry = rateLimitsMemory.get(key);
+    if (entry && now - entry.windowStart > WINDOW_MS) {
+      rateLimitsMemory.delete(key);
       cleaned++;
     }
   }
   if (cleaned > 0) {
-    console.log(`[RateLimit] Limpou ${cleaned} entradas expiradas`);
+    logger.info("RateLimit", `Limpou ${cleaned} entradas expiradas`);
   }
 }

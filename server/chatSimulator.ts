@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
+import { logger } from "./utils/logger";
 import { getRestaurantSettings, getDb } from "./db";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { orderSessions } from "../drizzle/schema";
@@ -63,7 +64,7 @@ async function processReservationMarker(message: string): Promise<string> {
       await notifyOwner({
         title: `📝 Nova reserva via Chat de Teste`,
         content: `Nome: ${params.nome || '-'}\nTelefone: ${params.telefone || '-'}\nData/Hora: ${params.data || '-'}\nPessoas: ${params.pessoas || '-'}\nObs: ${params.obs && params.obs !== 'OBSERVACOES' ? params.obs : '-'}`,
-      }).catch(() => {});
+      }).catch((err: unknown) => { logger.warn("Simulator", "Falha ao notificar dono sobre reserva de teste", err); });
     }
   } catch (err) {
     console.error('[Simulator] Erro ao salvar reserva:', err);
@@ -119,7 +120,17 @@ export const chatSimulatorRouter = router({
       ];
 
       // Chamar IA
-      const response = await invokeLLM({ messages: aiMessages });
+      let response: Awaited<ReturnType<typeof invokeLLM>>;
+      try {
+        response = await invokeLLM({ messages: aiMessages });
+      } catch (llmError) {
+        logger.error("ChatSimulator", "Falha ao chamar invokeLLM (sendMessage)", llmError);
+        return {
+          message: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes. 🙏",
+          orderSessionId: null,
+          timestamp: new Date(),
+        };
+      }
 
       let assistantMessage =
         typeof response.choices[0]?.message?.content === "string"
@@ -247,7 +258,18 @@ export const chatSimulatorRouter = router({
         })),
       ];
 
-      const response = await invokeLLM({ messages: aiMessages });
+      let response: Awaited<ReturnType<typeof invokeLLM>>;
+      try {
+        response = await invokeLLM({ messages: aiMessages });
+      } catch (llmError) {
+        logger.error("ChatSimulator", "Falha ao chamar invokeLLM (sendAudio)", llmError);
+        return {
+          message: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes. 🙏",
+          transcription: transcribedText,
+          orderSessionId: null,
+          timestamp: new Date(),
+        };
+      }
 
       let assistantMessage =
         typeof response.choices[0]?.message?.content === "string"

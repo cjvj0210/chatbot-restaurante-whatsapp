@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure, adminProcedure } from "./_core/trpc";
-import { getDb } from "./db";
+import { getDb, getRestaurantSettings } from "./db";
 import { orders, orderItems, orderSessions, menuItems, menuAddonOptions, customers } from "../drizzle/schema";
 import { eq, desc, inArray, like } from "drizzle-orm";
 import { notifyWhatsAppBot, notifyStatusUpdate } from "./orderNotification";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { ORDER } from "../shared/constants";
 
 /**
  * Router para gerenciamento de pedidos
@@ -137,8 +139,16 @@ export const orderRouter = router({
         };
       });
 
-      // Taxa de entrega (buscar das configurações ou usar padrão)
-      const deliveryFee = input.deliveryType === "delivery" ? 850 : 0; // R$ 8,50
+      // Taxa de entrega (buscar das configurações do restaurante ou usar padrão)
+      let deliveryFee = 0;
+      if (input.deliveryType === "delivery") {
+        try {
+          const settings = await getRestaurantSettings();
+          deliveryFee = settings?.deliveryFee ?? ORDER.DEFAULT_DELIVERY_FEE_CENTS;
+        } catch {
+          deliveryFee = ORDER.DEFAULT_DELIVERY_FEE_CENTS;
+        }
+      }
 
       // Total calculado pelo servidor (não pelo cliente)
       const total = subtotal + deliveryFee;
@@ -151,7 +161,7 @@ export const orderRouter = router({
 
       // Criar pedido
       // Normalizar telefone: remover tudo que não é dígito para garantir consistência nas buscas
-      const normalizedPhone = input.customerPhone.replace(/\D/g, "");
+      const normalizedPhone = phoneNormalizer.normalize(input.customerPhone);
 
       const result = await db
         .insert(orders)
@@ -405,6 +415,7 @@ export const orderRouter = router({
 
       const { and: andOp, gte, lte } = await import("drizzle-orm");
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const conditions: any[] = [];
       if (input?.status) {
         conditions.push(eq(orders.status, input.status));
@@ -420,6 +431,7 @@ export const orderRouter = router({
 
       let query = db.select().from(orders);
       if (conditions.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query = query.where(conditions.length === 1 ? conditions[0] : andOp(...conditions)) as any;
       }
 
@@ -831,7 +843,8 @@ export const orderRouter = router({
       }
 
       // Salvar horário de confirmação quando restaurante aceita o pedido
-      const updateData: Record<string, any> = { status: input.status };
+      type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "delivering" | "delivered" | "cancelled";
+      const updateData: { status: OrderStatus; confirmedAt?: Date } = { status: input.status as OrderStatus };
       if (input.status === "confirmed") {
         updateData.confirmedAt = new Date();
       }

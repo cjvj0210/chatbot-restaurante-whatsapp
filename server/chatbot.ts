@@ -22,6 +22,9 @@ import {
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
 import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
+import { buildCustomerContextBlock } from "./services/customerContextBuilder";
+import { handleOrderLink, handleOrderStatus, handleSaveReservation } from "./services/chatbotActionHandler";
 import { getChatbotPrompt } from "./chatbotPrompt";
 import { getNowBRT } from "../shared/businessHours";
 import { orderSessions, orders, reservations } from "../drizzle/schema";
@@ -31,6 +34,9 @@ import { notifyOwner } from "./_core/notification";
 import { sanitizeLLMOutput } from "./sanitize";
 import { checkChatbotRateLimit } from "./chatbotRateLimit";
 import { checkFaqCache } from "./faqCache";
+import { logger } from "./utils/logger";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
+import { CHATBOT } from "../shared/constants";
 // URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
 // Domínio publicado correto: chatbotwa-hesngyeo.manus.space
 const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
@@ -95,7 +101,7 @@ export async function processIncomingMessage(
   // processe cada mensagem, mesmo com múltiplos servidores rodando.
   const claimed = await tryClaimMessage(messageId, "chatbot");
   if (!claimed) {
-    console.log(`[Chatbot] ⚠️ Mensagem já processada por outra instância: ${messageId} (de ${phone})`);
+    logger.info("Chatbot", `⚠️ Mensagem já processada por outra instância: ${messageId} (de ${phone})`);
     return;
   }
 
@@ -122,23 +128,17 @@ async function _processIncomingMessageInternal(
 ): Promise<void> {
   try {
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
-    if (!checkChatbotRateLimit(whatsappId)) {
-      console.warn(`[Chatbot] Rate limit atingido para ${phone} (${whatsappId})`);
-      const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
+    if (!(await checkChatbotRateLimit(whatsappId))) {
+      logger.warn("Chatbot", `Rate limit atingido para ${phone} (${whatsappId})`);
       const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
-      if (useEvo) {
-        await sendTextMessageEvolution(whatsappId, limitMsg);
-      } else {
-        await sendTextMessage(phone, limitMsg);
-      }
+      await whatsappService.sendText(whatsappId, limitMsg);
       return;
     }
 
     // Guardrail: limitar tamanho da mensagem para evitar abuso de LLM e prompt injection
-    const MAX_MSG_LENGTH = 2000;
-    if (messageText.length > MAX_MSG_LENGTH) {
-      console.warn(`[Chatbot] Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
-      messageText = messageText.slice(0, MAX_MSG_LENGTH) + "...";
+    if (messageText.length > CHATBOT.MAX_MESSAGE_LENGTH) {
+      logger.warn("Chatbot", `Mensagem muito longa (${messageText.length} chars) de ${phone} — truncando`);
+      messageText = messageText.slice(0, CHATBOT.MAX_MESSAGE_LENGTH) + "...";
     }
 
     // Guardrail: sanitizar tentativas de prompt injection
@@ -169,7 +169,7 @@ async function _processIncomingMessageInternal(
     ];
     for (const pattern of injectionPatterns) {
       if (pattern.test(messageText)) {
-        console.warn(`[Chatbot] Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
+        logger.warn("Chatbot", `Possível prompt injection detectado de ${phone}: ${messageText.slice(0, 100)}`);
         messageText = messageText.replace(pattern, "[mensagem filtrada]");
       }
     }
@@ -178,7 +178,7 @@ async function _processIncomingMessageInternal(
     // Se temos realPhone (via remoteJidAlt), usar ele. Caso contrário, usar phone.
     const effectivePhone = realPhone || phone;
     // Normalizar: se o effectivePhone contém @s.whatsapp.net, extrair só os dígitos
-    const normalizedPhone = effectivePhone.replace("@s.whatsapp.net", "").replace("@lid", "").replace(/\D/g, "");
+    const normalizedPhone = phoneNormalizer.normalize(effectivePhone);
 
     // 1. Buscar ou criar cliente
     // Passar realPhone para permitir busca inteligente quando JID é @lid
@@ -186,7 +186,7 @@ async function _processIncomingMessageInternal(
     if (!customer) {
       // Se temos o número real (via remoteJidAlt), usar ele como whatsappId canônico
       const canonicalWhatsappId = realPhone
-        ? realPhone.replace(/\D/g, "") + "@s.whatsapp.net"
+        ? phoneNormalizer.toJid(realPhone)
         : whatsappId;
       customer = await createCustomer({
         whatsappId: canonicalWhatsappId,
@@ -196,13 +196,18 @@ async function _processIncomingMessageInternal(
       });
     } else {
       // Atualizar dados do cliente se estiverem faltando
-      const updates: Record<string, any> = {};
+      interface CustomerUpdates {
+        name?: string;
+        whatsappId?: string;
+        phone?: string;
+      }
+      const updates: CustomerUpdates = {};
       if (!customer.name && pushName) {
         updates.name = pushName;
       }
       // Se o whatsappId atual é @lid mas temos o número real, atualizar para o formato canônico
       if (realPhone && customer.whatsappId.endsWith("@lid")) {
-        const canonicalId = realPhone.replace(/\D/g, "") + "@s.whatsapp.net";
+        const canonicalId = phoneNormalizer.toJid(realPhone);
         updates.whatsappId = canonicalId;
         updates.phone = normalizedPhone;
       }
@@ -216,9 +221,9 @@ async function _processIncomingMessageInternal(
           await updateCustomer(customer.id, updates);
           // Atualizar o objeto local
           Object.assign(customer, updates);
-          console.log(`[Chatbot] Cliente ${customer.id} atualizado:`, Object.keys(updates).join(", "));
+          logger.info("Chatbot", `Cliente ${customer.id} atualizado: ${Object.keys(updates).join(", ")}`);
         } catch (err) {
-          console.error("[Chatbot] Erro ao atualizar cliente:", err);
+          logger.error("Chatbot", "Erro ao atualizar cliente", err);
         }
       }
     }
@@ -254,20 +259,19 @@ async function _processIncomingMessageInternal(
     if (conversation.humanMode && conversation.humanModeUntil) {
       const now = new Date();
       if (now < new Date(conversation.humanModeUntil)) {
-        console.log(`[Chatbot] Modo humano ativo até ${new Date(conversation.humanModeUntil).toLocaleString('pt-BR')} — bot silencioso para ${phone}`);
-        console.log(`[Chatbot] Operador pode enviar "bot" para reativar o atendimento automático.`);
+        logger.info("Chatbot", `Modo humano ativo até ${new Date(conversation.humanModeUntil).toLocaleString('pt-BR')} — bot silencioso para ${phone}`);
         return; // Bot não responde enquanto o operador está no controle
       } else {
         // Expirou: desativar modo humano automaticamente
         await updateConversation(conversation.id, { humanMode: false, humanModeUntil: null });
-        console.log(`[Chatbot] Modo humano expirado para ${phone} — bot retomando atendimento`);
+        logger.info("Chatbot", `Modo humano expirado para ${phone} — bot retomando atendimento`);
       }
     }
 
     // 5. Verificar cache de FAQ antes de chamar o LLM (economia de tokens e latência)
     const faqResponse = checkFaqCache(messageText);
     if (faqResponse) {
-      console.log(`[Chatbot] FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
+      logger.info("Chatbot", `FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
       // Salvar resposta do FAQ como mensagem do assistente
       await createMessage({
         conversationId: conversation.id,
@@ -277,12 +281,7 @@ async function _processIncomingMessageInternal(
         metadata: JSON.stringify({ source: "faq_cache" }),
       });
       // Enviar resposta via WhatsApp
-      const useEvo = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
-      if (useEvo) {
-        await sendTextMessageEvolution(whatsappId, faqResponse);
-      } else {
-        await sendTextMessage(phone, faqResponse);
-      }
+      await whatsappService.sendText(whatsappId, faqResponse);
       return;
     }
 
@@ -316,12 +315,12 @@ async function _processIncomingMessageInternal(
       try {
         // ATIVAR MODO HUMANO IMEDIATAMENTE (30 min)
         // O bot fica silencioso a partir de agora, sem esperar o operador responder
-        const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000);
+        const humanModeUntil = new Date(Date.now() + CHATBOT.HUMAN_MODE_DURATION_MS);
         await updateConversation(conversation.id, {
           humanMode: true,
           humanModeUntil,
         });
-        console.log(`[Chatbot] ✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
+        logger.info("Chatbot", `✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
 
         // Enviar alerta ao restaurante
         const settings = await getRestaurantSettings();
@@ -340,54 +339,50 @@ async function _processIncomingMessageInternal(
           `Responda diretamente para este contato no WhatsApp.\n` +
           `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
-        await sendTextMessageEvolution(restaurantPhoneNorm, alertMsg).catch(() => {});
-        console.log(`[Chatbot] Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
+        await whatsappService.sendText(restaurantPhoneNorm, alertMsg).catch((err: unknown) => {
+          logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
+        });
+        logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
       } catch (err) {
-        console.error("[Chatbot] Erro ao ativar modo humano preventivo:", err);
+        logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);
       }
     }
 
     // 8. Enviar resposta ao cliente
-    // Usar Evolution API se configurada, caso contrário usar Meta Cloud API
     // IMPORTANTE: usar o whatsappId original (pode ser @lid) para enviar mensagens,
     // pois a Evolution API precisa do JID correto para rotear a mensagem
     const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
-    
+
     if (useEvolution) {
       // Se a resposta contiver um link de pedido, enviar como imagem com banner visual
       const orderLinkMatch = response.text.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
       if (orderLinkMatch) {
         const orderLink = orderLinkMatch[0];
-        // Extrair texto antes e depois do link para a legenda
         const textBeforeLink = response.text.split(orderLink)[0].trim();
         const textAfterLink = response.text.split(orderLink)[1]?.trim() || "";
         const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
-        
-        // Enviar banner visual com o link embutido na legenda
+
         const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
-        const sent = await sendMediaMessageEvolution(whatsappId, bannerUrl, caption);
+        const sent = await whatsappService.sendMedia(whatsappId, bannerUrl, caption);
         if (!sent) {
           // Fallback: enviar como texto simples se a imagem falhar
-          await sendTextMessageEvolution(whatsappId, response.text);
+          await whatsappService.sendText(whatsappId, response.text);
         }
       } else {
-        await sendTextMessageEvolution(whatsappId, response.text);
+        await whatsappService.sendText(whatsappId, response.text);
       }
     } else if (response.buttons) {
       await sendButtonMessage(phone, response.text, response.buttons);
     } else if (response.list) {
       await sendListMessage(phone, response.text, response.list.buttonText, response.list.sections);
     } else {
-      await sendTextMessage(phone, response.text);
+      await whatsappService.sendText(whatsappId, response.text);
     }
   } catch (error) {
-    console.error("[Chatbot] Error processing message:", error);
-    const useEvolution = !!(process.env.EVOLUTION_API_URL && process.env.EVOLUTION_API_KEY);
-    if (useEvolution) {
-      await sendTextMessageEvolution(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
-    } else {
-      await sendTextMessage(phone, "Desculpe, ocorreu um erro. Por favor, tente novamente.");
-    }
+    logger.error("Chatbot", "Error processing message", error);
+    await whatsappService.sendText(whatsappId, "Desculpe, ocorreu um erro. Por favor, tente novamente.").catch((sendErr: unknown) => {
+      logger.warn("Chatbot", "Falha ao enviar mensagem de erro ao cliente", sendErr);
+    });
   }
 }
 
@@ -435,53 +430,8 @@ async function generateResponse(
   // Usar o prompt COMPLETO do restaurante
   const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
 
-  // Buscar contexto enriquecido: pedidos recentes e reservas ativas do cliente
-  const [recentOrders, activeReservations] = await Promise.all([
-    getRecentOrdersByCustomer(customerId),
-    getActiveReservationsByCustomer(customerId),
-  ]);
-
-  // Construir bloco de contexto do cliente para injetar no prompt
-  let customerContextBlock = '';
-  if (recentOrders.length > 0) {
-    customerContextBlock += '\n\n📦 PEDIDOS RECENTES DESTE CLIENTE (\u00faltimas 24h):\n';
-    for (const o of recentOrders) {
-      const statusMap: Record<string, string> = {
-        pending: 'Aguardando aceite',
-        confirmed: 'Confirmado',
-        preparing: 'Em prepara\u00e7\u00e3o',
-        ready: 'Pronto',
-        delivering: 'Saiu para entrega',
-        delivered: 'Entregue',
-        cancelled: 'Cancelado',
-      };
-      const st = statusMap[o.status] || o.status;
-      const total = `R$ ${((o.total || 0) / 100).toFixed(2).replace('.', ',')}`;
-      const tipo = o.orderType === 'pickup' ? 'Retirada' : 'Delivery';
-      customerContextBlock += `- Pedido ${o.orderNumber}: ${st} | ${tipo} | ${total}\n`;
-    }
-    customerContextBlock += 'REGRA: Se o cliente perguntar sobre tempo, status ou demora, use o n\u00famero do pedido acima para verificar com [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX]. N\u00c3O pe\u00e7a o n\u00famero do pedido se j\u00e1 tem a informa\u00e7\u00e3o acima!';
-  }
-  if (activeReservations.length > 0) {
-    // SEGURANÇA: sanitizar campos controlados pelo cliente antes de injetar no prompt do LLM
-    // Previne prompt injection indireto via dados de reserva (nome, obs, etc.)
-    const sanitizeContextField = (s: string | null | undefined, maxLen = 100): string => {
-      if (!s) return '';
-      // Remover marcadores de ação e tags de sistema que poderiam confundir o LLM
-      return s
-        .replace(/\[[\w_:]+\]/g, '[dado_removido]')
-        .replace(/\bsystem\b/gi, '')
-        .replace(/\bassistant\b/gi, '')
-        .slice(0, maxLen);
-    };
-    customerContextBlock += '\n\n📅 RESERVAS ATIVAS DESTE CLIENTE:\n';
-    for (const r of activeReservations) {
-      const dataRes = r.date ? new Date(r.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'data não definida';
-      const safeName = sanitizeContextField(r.customerName);
-      customerContextBlock += `- Reserva ${r.reservationNumber}: ${safeName} | ${r.numberOfPeople} pessoas | ${dataRes} | Status: ${r.status}\n`;
-    }
-    customerContextBlock += 'REGRA: Se o cliente perguntar sobre reserva, use as informações acima. NÃO diga que não sabe sobre a reserva!';
-  }
+  // Buscar e construir bloco de contexto do cliente (pedidos recentes + reservas ativas)
+  const customerContextBlock = await buildCustomerContextBlock(customerId);
 
   // Obter hist\u00f3rico de mensagens (30 mensagens para contexto mais amplo)
   const history = await getConversationMessages(conversationId, 30);
@@ -515,201 +465,28 @@ async function generateResponse(
   });
 
   // Chamar IA
-  const response = await invokeLLM({ messages });
+  let response: Awaited<ReturnType<typeof invokeLLM>>;
+  try {
+    response = await invokeLLM({ messages });
+  } catch (llmError) {
+    logger.error("Chatbot", "Falha ao chamar invokeLLM", llmError);
+    return {
+      text: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes ou ligue para o restaurante. 🙏",
+    };
+  }
 
   const aiContent = response.choices[0]?.message?.content;
+  type LLMContentPart = { type: string; text?: string };
   let aiResponse = typeof aiContent === "string"
     ? aiContent
     : Array.isArray(aiContent)
-      ? (aiContent.find((c: any) => c.type === "text") as any)?.text || "Desculpe, não entendi. Pode reformular?"
+      ? (aiContent as LLMContentPart[]).find((c) => c.type === "text")?.text || "Desculpe, não entendi. Pode reformular?"
       : "Desculpe, não entendi. Pode reformular?";
 
-  // Processar [GERAR_LINK_PEDIDO] — criar sessão e substituir pelo link real
-  if (aiResponse.includes("[GERAR_LINK_PEDIDO]")) {
-    try {
-      const db = await getDb();
-      if (db) {
-        const sessionId = randomBytes(16).toString("hex");
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-        await db.insert(orderSessions).values({
-          sessionId,
-          whatsappNumber: phone,
-          customerId: null,
-          status: "pending",
-          expiresAt,
-        });
-        const orderLink = `${SITE_URL}/pedido/${sessionId}`;
-        // Garante que o link fique em linha isolada (iOS exige URL sozinha na linha para ser clicavel)
-        aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
-        aiResponse = aiResponse.replace(/\n{3,}/g, '\n\n');
-        console.log(`[Chatbot] Link de pedido gerado para ${phone}: ${orderLink}`);
-      } else {
-        aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
-      }
-    } catch (err) {
-      console.error("[Chatbot] Erro ao gerar link de pedido:", err);
-      aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, "(link temporariamente indisponível)");
-    }
-  }
-
-  // Processar [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX] — buscar status real do pedido no banco
-  const statusMatch = aiResponse.match(/\[VERIFICAR_STATUS_PEDIDO:([A-Z0-9]+)\]/);
-  if (statusMatch) {
-    const orderNum = statusMatch[1];
-    try {
-      const db = await getDb();
-      if (db) {
-        const [order] = await db.select().from(orders).where(eq(orders.orderNumber, orderNum)).limit(1);
-        if (order) {
-          const statusMap: Record<string, string> = {
-            pending: "⏳ Aguardando aceite do restaurante",
-            confirmed: "✅ Pedido confirmado — em preparação",
-            preparing: "👨\u200d🍳 Em preparação na cozinha",
-            ready: "✅ Pronto! Aguardando entregador",
-            delivering: "🛵 Saiu para entrega!",
-            delivered: "✅ Entregue com sucesso!",
-            cancelled: "❌ Pedido cancelado",
-          };
-          const statusText = statusMap[order.status] || order.status;
-          const tipoEntrega = order.orderType === 'pickup' ? 'Retirada no balcão' : `Delivery — ${order.deliveryAddress || 'endereço não informado'}`;
-          const totalVal = `R$ ${((order.total || 0) / 100).toFixed(2).replace('.', ',')}`;
-
-          // Calcular previsão de entrega baseada no horário de confirmação
-          // RESPEITANDO horário de funcionamento do restaurante
-          let previsaoMsg = '';
-          if ((order.status === 'confirmed' || order.status === 'preparing' || order.status === 'delivering') && (order as any).confirmedAt) {
-            const confirmedAt = new Date((order as any).confirmedAt);
-            const now = new Date(); // UTC é OK pois confirmedAt também é UTC
-            const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
-            const nowBRT = getNowBRT();
-            const dayOfWeek = nowBRT.getDay();
-            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-            const currentHour = nowBRT.getHours();
-
-            // Verificar se o restaurante está aberto agora
-            // Horários: Almoço 11h-15h, Jantar 19h-23h (seg fechado jantar)
-            const isOpenNow = (currentHour >= 11 && currentHour < 15) || (currentHour >= 19 && currentHour < 23);
-
-            if (order.orderType === 'delivery') {
-              const minTime = isWeekend ? 60 : 45;
-              const maxTime = isWeekend ? 110 : 70;
-              const minRemaining = Math.max(0, minTime - minutesElapsed);
-              const maxRemaining = Math.max(0, maxTime - minutesElapsed);
-
-              if (!isOpenNow && minutesElapsed < minTime) {
-                // Restaurante fechado — calcular horário estimado baseado na próxima abertura
-                let nextOpenHour = 11;
-                if (currentHour >= 15 && currentHour < 19) nextOpenHour = 19;
-                else if (currentHour >= 23 || currentHour < 11) nextOpenHour = 11;
-                const estimatedMinStart = nextOpenHour * 60 + minTime - (currentHour * 60 + nowBRT.getMinutes());
-                const estimatedMinEnd = nextOpenHour * 60 + maxTime - (currentHour * 60 + nowBRT.getMinutes());
-                if (estimatedMinStart > 0) {
-                  const startH = Math.floor((nextOpenHour * 60 + minTime) / 60) % 24;
-                  const startM = (nextOpenHour * 60 + minTime) % 60;
-                  const endH = Math.floor((nextOpenHour * 60 + maxTime) / 60) % 24;
-                  const endM = (nextOpenHour * 60 + maxTime) % 60;
-                  previsaoMsg = `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')} e ${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
-                } else {
-                  previsaoMsg = `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
-                }
-              } else if (minutesElapsed < minTime) {
-                previsaoMsg = `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
-              } else if (minutesElapsed <= maxTime) {
-                previsaoMsg = `\n⏱️ Previsão de entrega: chegando em breve!`;
-              } else {
-                previsaoMsg = `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida fale conosco!`;
-              }
-            } else {
-              const minTime = 30;
-              const maxTime = 50;
-              const minRemaining = Math.max(0, minTime - minutesElapsed);
-              const maxRemaining = Math.max(0, maxTime - minutesElapsed);
-              if (minutesElapsed < minTime) {
-                previsaoMsg = `\n⏱️ Previsão para retirada: ${minRemaining} a ${maxRemaining} min restantes`;
-              } else if (minutesElapsed <= maxTime) {
-                previsaoMsg = `\n⏱️ Previsão: seu pedido já deve estar pronto!`;
-              } else {
-                previsaoMsg = `\n⏱️ Previsão: já deve estar pronto — pode vir retirar!`;
-              }
-            }
-          }
-
-          const statusMsg = `📦 *Pedido ${orderNum}*\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}${previsaoMsg}`;
-          aiResponse = aiResponse.replace(statusMatch[0], statusMsg);
-        } else {
-          aiResponse = aiResponse.replace(statusMatch[0], `Não encontrei o pedido *${orderNum}*. Verifique o número e tente novamente.`);
-        }
-      } else {
-        aiResponse = aiResponse.replace(statusMatch[0], "Sistema temporariamente indisponível. Tente novamente em instantes.");
-      }
-    } catch (err) {
-      console.error("[Chatbot] Erro ao verificar status do pedido:", err);
-      aiResponse = aiResponse.replace(statusMatch[0], "Não consegui verificar o status agora. Tente novamente em instantes.");
-    }
-  }
-
-  // Processar [SALVAR_RESERVA:...] — salvar reserva no banco e remover marcador da mensagem
-  const reservaRegex = /\[SALVAR_RESERVA:([^\]]+)\]/;
-  const reservaMatch = aiResponse.match(reservaRegex);
-  if (reservaMatch) {
-    try {
-      const params: Record<string, string> = {};
-      reservaMatch[1]!.split(';').forEach((pair: string) => {
-        const [key, ...rest] = pair.split('=');
-        if (key) params[key.trim()] = rest.join('=').trim();
-      });
-
-      const db = await getDb();
-      if (db) {
-        const dateStr = new Date().toISOString().slice(0, 8).replace(/-/g, '');
-        const suffix = randomBytes(2).toString('hex').toUpperCase();
-        const reservationNumber = `RES-${dateStr}-${suffix}`;
-
-        // Parsear data da reserva
-        let reservationDate = new Date();
-        try {
-          if (params.data) {
-            // Formato esperado: DD/MM/YYYY HH:MM
-            const match = params.data.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
-            if (match) {
-              const [, day, month, year, hour, min] = match;
-              reservationDate = new Date(parseInt(year!), parseInt(month!) - 1, parseInt(day!), parseInt(hour!), parseInt(min!));
-            } else {
-              const parsed = new Date(params.data);
-              if (!isNaN(parsed.getTime())) reservationDate = parsed;
-            }
-          }
-        } catch {}
-
-        const customerPhone = params.telefone || phone;
-
-        await db.insert(reservations).values({
-          customerId: null,
-          reservationNumber,
-          customerName: params.nome || 'Cliente via WhatsApp',
-          customerPhone,
-          date: reservationDate,
-          numberOfPeople: parseInt(params.pessoas || '1', 10),
-          customerNotes: params.obs && params.obs !== 'OBSERVACOES' && params.obs.trim() ? params.obs : null,
-          status: 'pending',
-          source: 'chatbot',
-        });
-
-        console.log(`[Chatbot] Reserva salva: ${reservationNumber} para ${params.nome} em ${reservationDate.toISOString()}`);
-
-        // Notificar o dono via sistema
-        await notifyOwner({
-          title: `📅 Nova reserva via WhatsApp`,
-          content: `Nome: ${params.nome || '-'}\nTelefone: ${customerPhone}\nData/Hora: ${params.data || '-'}\nPessoas: ${params.pessoas || '-'}\nObs: ${params.obs && params.obs !== 'OBSERVACOES' ? params.obs : '-'}`,
-        }).catch(() => {});
-      }
-    } catch (err) {
-      console.error('[Chatbot] Erro ao salvar reserva:', err);
-    }
-
-    // Remover o marcador da mensagem enviada ao cliente
-    aiResponse = aiResponse.replace(reservaRegex, '').replace(/\n{3,}/g, '\n\n').trim();
-  }
+  // Processar ações especiais do LLM usando o chatbotActionHandler
+  aiResponse = await handleOrderLink(aiResponse, phone);
+  aiResponse = await handleOrderStatus(aiResponse);
+  aiResponse = await handleSaveReservation(aiResponse, phone);
 
   // Detectar intenção para atualizar contexto
   const updatedContext = detectIntent(userMessage, context);

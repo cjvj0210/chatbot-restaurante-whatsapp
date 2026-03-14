@@ -3,6 +3,7 @@ import { orderSessions, testSessions, testMessages, conversations, messages, bot
 import { lt, and, eq, lte, or, desc } from "drizzle-orm";
 import { checkInstanceStatus, sendTextMessageEvolution } from "./evolutionApi";
 import { notifyOwner } from "./_core/notification";
+import { logger } from "./utils/logger";
 
 /**
  * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
@@ -44,9 +45,9 @@ export async function runMaintenance(): Promise<void> {
       .delete(messages)
       .where(lt(messages.createdAt, ninetyDaysAgo));
 
-    console.log(`[Maintenance] Limpeza concluída em ${now.toISOString()}`);
+    logger.info("Maintenance", `Limpeza concluída em ${now.toISOString()}`);
   } catch (err) {
-    console.error("[Maintenance] Erro na limpeza:", err);
+    logger.error("Maintenance", "Erro na limpeza", err);
   }
 }
 
@@ -59,7 +60,7 @@ export async function monitorWhatsAppInstance(): Promise<void> {
     const status = await checkInstanceStatus();
 
     if (status !== lastInstanceStatus) {
-      console.log(`[Monitor] Status WhatsApp mudou: ${lastInstanceStatus} → ${status}`);
+      logger.info("Monitor", `Status WhatsApp mudou: ${lastInstanceStatus} → ${status}`);
       lastInstanceStatus = status;
     }
 
@@ -67,25 +68,25 @@ export async function monitorWhatsAppInstance(): Promise<void> {
       // Instância desconectada — alertar apenas uma vez até reconectar
       if (!instanceAlertSent) {
         instanceAlertSent = true;
-        console.warn(`[Monitor] WhatsApp desconectado! Status: ${status}`);
+        logger.warn("Monitor", `WhatsApp desconectado! Status: ${status}`);
         await notifyOwner({
           title: "⚠️ WhatsApp Desconectado",
           content: `A instância WhatsApp está com status "${status}". Acesse o painel de configurações e reconecte o QR Code para restaurar o atendimento automático.`,
-        }).catch(() => {});
+        }).catch((err: unknown) => { logger.warn("Monitor", "Falha ao notificar dono sobre desconexão WhatsApp", err); });
       }
     } else {
       // Reconectou — resetar flag para permitir próximo alerta
       if (instanceAlertSent) {
         instanceAlertSent = false;
-        console.log("[Monitor] WhatsApp reconectado.");
+        logger.info("Monitor", "WhatsApp reconectado.");
         await notifyOwner({
           title: "✅ WhatsApp Reconectado",
           content: "A instância WhatsApp voltou ao status 'open'. O atendimento automático foi restaurado.",
-        }).catch(() => {});
+        }).catch((err: unknown) => { logger.warn("Monitor", "Falha ao notificar dono sobre reconexão WhatsApp", err); });
       }
     }
   } catch (err) {
-    console.error("[Monitor] Erro ao verificar instância WhatsApp:", err);
+    logger.error("Monitor", "Erro ao verificar instância WhatsApp", err);
   }
 }
 
@@ -119,7 +120,7 @@ export async function retryFailedMessages(): Promise<void> {
 
     if (failedMessages.length === 0) return;
 
-    console.log(`[RetryWorker] Processando ${failedMessages.length} mensagens com falha...`);
+    logger.info("Maintenance", `RetryWorker: Processando ${failedMessages.length} mensagens com falha...`);
 
     for (const msg of failedMessages) {
       if (!msg.whatsappNumber) continue;
@@ -138,7 +139,7 @@ export async function retryFailedMessages(): Promise<void> {
             retries: msg.retries + 1,
           })
           .where(eq(botMessages.id, msg.id));
-        console.log(`[RetryWorker] Mensagem ${msg.id} reenviada com sucesso.`);
+        logger.info("Maintenance", `RetryWorker: Mensagem ${msg.id} reenviada com sucesso.`);
       } else {
         const newRetries = msg.retries + 1;
         await db
@@ -151,11 +152,39 @@ export async function retryFailedMessages(): Promise<void> {
           .where(eq(botMessages.id, msg.id));
 
         if (newRetries >= MAX_RETRIES) {
-          console.warn(`[RetryWorker] Mensagem ${msg.id} esgotou ${MAX_RETRIES} tentativas. Abandonando.`);
+          logger.warn("Maintenance", `RetryWorker: Mensagem ${msg.id} esgotou ${MAX_RETRIES} tentativas. Abandonando.`);
         }
       }
     }
   } catch (err) {
-    console.error("[RetryWorker] Erro no worker de retry:", err);
+    logger.error("Maintenance", "RetryWorker: Erro no worker de retry", err);
+  }
+}
+
+/**
+ * Expira conversas em modo humano cujo prazo já passou (rodar a cada 5 minutos)
+ * O modo humano expira automaticamente após 30 min, mas só era detectado na próxima mensagem do cliente.
+ * Esta função garante expiração proativa para manter relatórios precisos.
+ */
+export async function expireHumanModes(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    const result = await db
+      .update(conversations)
+      .set({ humanMode: false, humanModeUntil: null })
+      .where(
+        and(
+          eq(conversations.humanMode, true),
+          lt(conversations.humanModeUntil, new Date())
+        )
+      );
+
+    if ((result as any).rowsAffected > 0) {
+      logger.info("Maintenance", `${(result as any).rowsAffected} conversas em modo humano expiradas`);
+    }
+  } catch (err) {
+    logger.error("Maintenance", "Erro ao expirar modos humanos", err);
   }
 }

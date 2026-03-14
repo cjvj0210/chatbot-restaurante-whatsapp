@@ -1130,3 +1130,29 @@
 - [x] Servidor reiniciado com correções aplicadas
 
 - [x] Configurar DIAG_SECRET como variável de ambiente separada
+
+
+## Auditoria de Arquitetura (Claude Code - Rodada 2)
+
+### Correções de Alta Severidade (7/7 implementadas)
+- [x] Criar server/services/whatsappService.ts — unificar envio WhatsApp (Evolution + Meta Cloud API)
+- [x] Extrair chatbotActionHandler.ts + customerContextBuilder.ts do chatbot.ts
+- [x] Criar server/utils/logger.ts — logger centralizado com info/warn/error/debug
+- [x] Migrar rate limiting de memória para banco de dados (checkChatbotRateLimit)
+- [x] Migrar botMessageTracker de memória para banco de dados (processed_messages)
+- [x] Criar server/utils/retry.ts — retry com backoff exponencial (1s, 2s, 4s)
+- [x] Adicionar try/catch em todas as chamadas invokeLLM()
+
+### Correções de Média Severidade (12/12 implementadas)
+- [x] Normalização de telefone centralizada em phoneNormalizer.ts
+- [x] Transcrição de áudio extraída para audioService.ts
+- [x] Lógica de modo humano separada em humanModeService.ts
+- [x] Polling configurável via POLL_INTERVAL_MS env var (10s prod, 3s dev)
+- [x] .catch(() => {}) substituído por logger.warn()
+- [x] Magic numbers extraídos para shared/constants.ts (CHATBOT + ORDER)
+- [x] checkBusinessHours() reutilizado no chatbotActionHandler.ts
+- [x] expireHumanModes() agendado a cada 5 min em maintenance.ts
+- [x] Todos os console.* substituídos por logger.* com prefixos padronizados
+- [x] Validação e truncamento de messageText no webhook e polling
+- [x] any eliminado: CustomerUpdates, LLMContentPart, OrderStatus tipados
+- [x] #bot case-insensitive + aceita #ativar/#reativar
