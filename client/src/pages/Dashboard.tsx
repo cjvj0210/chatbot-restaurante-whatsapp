@@ -96,7 +96,7 @@ export default function Dashboard() {
       utils.order.list.invalidate();
     }, 15000);
     return () => clearInterval(interval);
-  }, [utils]);
+  }, []);
 
   const kpis = [
     {
