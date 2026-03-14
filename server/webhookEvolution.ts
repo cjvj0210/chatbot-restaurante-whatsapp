@@ -75,16 +75,6 @@ interface EvolutionWebhookPayload {
 }
 
 /**
- * Extrai o número de telefone do JID do WhatsApp
- * Suporta formatos:
- *   - "5517999999999@s.whatsapp.net" → "5517999999999"
- *   - "212454869074102@lid" → "212454869074102" (Linked ID)
- */
-function extractPhoneFromJid(jid: string): string {
-  return phoneNormalizer.normalize(jid);
-}
-
-/**
  * Verifica se o JID é de uma conversa individual (não grupo/status)
  * Aceita tanto @s.whatsapp.net quanto @lid (Linked ID)
  */
@@ -252,7 +242,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       logger.info("Webhook", `JID não reconhecido, tentando processar mesmo assim: ${key.remoteJid}`);
     }
 
-    const phone = extractPhoneFromJid(key.remoteJid);
+    const phone = phoneNormalizer.normalize(key.remoteJid);
     const whatsappId = key.remoteJid; // Usar JID completo como ID único
     const messageId = key.id;
     // Extrair número real do telefone quando JID é @lid (via remoteJidAlt)

@@ -272,17 +272,6 @@ export async function deleteMenuItem(id: number): Promise<void> {
 // ===== Customers =====
 
 /**
- * Extrai o número de telefone real de um JID do WhatsApp.
- * Exemplos:
- *   "5517988112791@s.whatsapp.net" → "5517988112791"
- *   "5517988112791" → "5517988112791"
- *   "212454869074102@lid" → "212454869074102" (LID - não é o número real)
- */
-export function extractPhoneFromWhatsappId(whatsappId: string): string {
-  return whatsappId.replace("@s.whatsapp.net", "").replace("@lid", "").replace("@g.us", "").replace(/\D/g, "");
-}
-
-/**
  * Busca um cliente pelo whatsappId, com fallback inteligente.
  * 
  * Estratégia de busca (em ordem):

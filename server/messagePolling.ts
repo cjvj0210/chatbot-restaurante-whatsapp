@@ -9,9 +9,6 @@
 
 import axios from "axios";
 import { processIncomingMessage } from "./chatbot";
-import { getDb } from "./db";
-import { conversations, customers } from "../drizzle/schema";
-import { eq, like, or } from "drizzle-orm";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromPolling } from "./services/audioService";
 import { logger } from "./utils/logger";
@@ -64,13 +61,6 @@ function getEvolutionConfig() {
     apiKey: process.env.EVOLUTION_API_KEY || "",
     instanceName: process.env.EVOLUTION_INSTANCE_NAME || "teste",
   };
-}
-
-/**
- * Extrai o número de telefone do JID do WhatsApp
- */
-function extractPhoneFromJid(jid: string): string {
-  return phoneNormalizer.normalize(jid);
 }
 
 /**
@@ -200,7 +190,7 @@ async function pollMessages(): Promise<void> {
       if (typeof messageText !== "string" || !messageText.trim()) continue;
       messageText = messageText.slice(0, 2000);
 
-      const phone = extractPhoneFromJid(remoteJid);
+      const phone = phoneNormalizer.normalize(remoteJid);
       const whatsappId = remoteJid;
       // Extrair número real do telefone quando JID é @lid (via key.remoteJidAlt)
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
@@ -225,46 +215,6 @@ async function pollMessages(): Promise<void> {
     }
   } finally {
     isPolling = false;
-  }
-}
-
-/**
- * Ativa modo humano quando o operador responde manualmente
- */
-async function handleOperatorMessage(clientJid: string): Promise<void> {
-  try {
-    const db = await getDb();
-    if (!db) return;
-
-    const clientPhone = extractPhoneFromJid(clientJid);
-    const phoneDigits = clientPhone.slice(-11);
-    const phoneLast8 = clientPhone.slice(-8);
-
-    const [customer] = await db
-      .select()
-      .from(customers)
-      .where(or(like(customers.phone, `%${phoneDigits}%`), like(customers.phone, `%${phoneLast8}%`)))
-      .limit(1);
-
-    if (customer) {
-      const [conv] = await db
-        .select()
-        .from(conversations)
-        .where(eq(conversations.customerId, customer.id))
-        .orderBy(conversations.createdAt)
-        .limit(1);
-
-      if (conv) {
-        const humanModeUntil = new Date(Date.now() + 30 * 60 * 1000);
-        await db
-          .update(conversations)
-          .set({ humanMode: true, humanModeUntil })
-          .where(eq(conversations.id, conv.id));
-        logger.info("Polling", `Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
-      }
-    }
-  } catch (err) {
-    logger.error("Polling", "Erro ao ativar modo humano", err);
   }
 }
 

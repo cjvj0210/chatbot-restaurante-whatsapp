@@ -4,25 +4,13 @@ import { eq } from "drizzle-orm";
 import { sendTextMessage } from "./whatsapp";
 import { sendTextMessageEvolution } from "./evolutionApi";
 import { checkBusinessHours, getNowBRT } from "../shared/businessHours";
-
-/**
- * Normaliza número de telefone para o formato internacional 55XXXXXXXXXXX
- * Aceita: (17) 98811-2791, 17988112791, 5517988112791, 5517988112791@s.whatsapp.net
- */
-function normalizePhoneForEvolution(phone: string): string {
-  // Remover @s.whatsapp.net se presente
-  let digits = phone.replace("@s.whatsapp.net", "").replace(/\D/g, "");
-  // Se já tem DDI 55 (13 dígitos), retornar como está
-  if (digits.startsWith("55") && digits.length >= 12) return digits;
-  // Adicionar DDI 55 se não tiver
-  return "55" + digits;
-}
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 /**
  * Envia mensagem de texto via Evolution API (principal) com fallback para WhatsApp Cloud API
  */
 async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
-  const normalizedPhone = normalizePhoneForEvolution(phone);
+  const normalizedPhone = phoneNormalizer.withCountryCode(phone);
   // Tentar primeiro via Evolution API (número de teste configurado)
   const sentEvolution = await sendTextMessageEvolution(normalizedPhone, message);
   if (sentEvolution) return true;
@@ -233,7 +221,7 @@ export async function notifyWhatsAppBot(
   // Fallback: salvar na fila (normalizar telefone para formato 55XXXXXXXXXXX)
   await db.insert(botMessages).values({
     sessionId,
-    whatsappNumber: phone ? normalizePhoneForEvolution(phone) : phone,
+    whatsappNumber: phone ? phoneNormalizer.withCountryCode(phone) : phone,
     message,
     messageType: "order_confirmation",
     status: "pending",
@@ -323,7 +311,7 @@ export async function notifyStatusUpdate(
   // Fallback: salvar na fila (normalizar telefone para formato 55XXXXXXXXXXX)
   await db.insert(botMessages).values({
     sessionId: order.sessionId || `order_${order.id}`,
-    whatsappNumber: phone ? normalizePhoneForEvolution(phone) : phone,
+    whatsappNumber: phone ? phoneNormalizer.withCountryCode(phone) : phone,
     message,
     messageType: "order_status_update",
     status: "pending",

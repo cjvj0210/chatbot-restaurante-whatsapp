@@ -542,32 +542,3 @@ function detectIntent(userMessage: string, currentContext: ChatContext): ChatCon
   return updatedContext;
 }
 
-/**
- * Processa seleção de item do menu
- */
-export async function processMenuSelection(
-  customerId: number,
-  conversationId: number,
-  itemId: number,
-  quantity: number = 1
-): Promise<void> {
-  const conversation = await getActiveConversation(customerId);
-  if (!conversation) return;
-
-  const context: ChatContext = conversation.context ? JSON.parse(conversation.context) : {};
-
-  if (!context.orderItems) {
-    context.orderItems = [];
-  }
-
-  const existingIndex = context.orderItems.findIndex((i) => i.itemId === itemId);
-  if (existingIndex >= 0) {
-    context.orderItems[existingIndex]!.quantity += quantity;
-  } else {
-    context.orderItems.push({ itemId, quantity });
-  }
-
-  await updateConversation(conversation.id, {
-    context: JSON.stringify(context),
-  });
-}
