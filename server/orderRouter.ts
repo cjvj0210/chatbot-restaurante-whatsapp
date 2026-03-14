@@ -808,20 +808,30 @@ export const orderRouter = router({
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
-      // Buscar a sessão para obter o whatsappNumber
+      // Buscar a sessão para obter customerId e whatsappNumber
       const [session] = await db
-        .select()
+        .select({ customerId: orderSessions.customerId, whatsappNumber: orderSessions.whatsappNumber })
         .from(orderSessions)
         .where(eq(orderSessions.sessionId, input.sessionId))
         .limit(1);
-      if (!session?.whatsappNumber) return { success: false };
-      // Normalizar o número para buscar o cliente de forma flexível
+      if (!session) return { success: false };
+
+      // Caminho rápido: se a sessão tem customerId, atualizar diretamente (atômico, sem SELECT)
+      if (session.customerId) {
+        await db
+          .update(customers)
+          .set({ address: input.address })
+          .where(eq(customers.id, session.customerId));
+        return { success: true };
+      }
+
+      if (!session.whatsappNumber) return { success: false };
+      // Fallback: buscar cliente pelo whatsappNumber da sessão
       const phone = session.whatsappNumber.replace(/\D/g, "");
       const phoneDigits = phone.slice(-11);
       const { or: orOp } = await import("drizzle-orm");
-      // Buscar o cliente por múltiplos formatos de whatsappId/phone
       const customersList = await db
-        .select()
+        .select({ id: customers.id })
         .from(customers)
         .where(orOp(
           eq(customers.whatsappId, session.whatsappNumber),
@@ -832,7 +842,6 @@ export const orderRouter = router({
         .limit(1);
       const customer = customersList[0];
       if (!customer) return { success: false };
-      // Atualizar o endereço do cliente no banco
       await db
         .update(customers)
         .set({ address: input.address })
