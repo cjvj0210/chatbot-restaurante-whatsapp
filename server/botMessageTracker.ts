@@ -16,6 +16,7 @@
 import { getDb } from "./db";
 import { processedMessages } from "../drizzle/schema";
 import { and, eq, lt } from "drizzle-orm";
+import { logger } from "./utils/logger";
 
 // Fallback em memória (TTL 60 min) para quando o banco não está disponível
 const botSentMessagesMemory = new Map<string, number>();
@@ -47,9 +48,9 @@ export async function registerBotSentMessage(messageId: string): Promise<void> {
         source: BOT_SENT_SOURCE,
       });
 
-    console.log(`[BotTracker] Mensagem registrada no banco: ${messageId}`);
-  } catch {
-    // Silenciosamente — o fallback em memória já está registrado
+    logger.info("BotTracker", `Mensagem registrada no banco: ${messageId}`);
+  } catch (dbError) {
+    logger.warn("BotTracker", `Falha ao registrar no banco (usando fallback em memória): ${messageId}`, dbError);
   }
 }
 
@@ -87,7 +88,8 @@ export async function isBotSentMessage(messageId: string): Promise<boolean> {
     }
 
     return false;
-  } catch {
+  } catch (lookupError) {
+    logger.warn("BotTracker", `Falha ao verificar mensagem no banco: ${messageId}`, lookupError);
     return false;
   }
 }
@@ -107,9 +109,7 @@ async function cleanupExpiredMessages(): Promise<void> {
     }
   }
   if (removed > 0) {
-    console.log(
-      `[BotTracker] Limpeza memória: ${removed} mensagens expiradas removidas (restam: ${botSentMessagesMemory.size})`
-    );
+    logger.info("BotTracker", `Limpeza memória: ${removed} mensagens expiradas removidas (restam: ${botSentMessagesMemory.size})`);
   }
 
   // Limpar entradas antigas no banco também
@@ -125,8 +125,8 @@ async function cleanupExpiredMessages(): Promise<void> {
           lt(processedMessages.processedAt, cutoff)
         )
       );
-  } catch {
-    // Silenciosamente ignorar erros de limpeza
+  } catch (cleanupError) {
+    logger.warn("BotTracker", "Falha ao limpar mensagens expiradas no banco", cleanupError);
   }
 }
 

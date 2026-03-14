@@ -173,8 +173,9 @@ export async function expireHumanModes(): Promise<void> {
         )
       );
 
-    if ((result as any).rowsAffected > 0) {
-      logger.info("Maintenance", `${(result as any).rowsAffected} conversas em modo humano expiradas`);
+    const affectedRows = (result as any)?.[0]?.affectedRows ?? 0;
+    if (affectedRows > 0) {
+      logger.info("Maintenance", `${affectedRows} conversas em modo humano expiradas`);
     }
   } catch (err) {
     logger.error("Maintenance", "Erro ao expirar modos humanos", err);

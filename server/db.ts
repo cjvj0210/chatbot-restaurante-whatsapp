@@ -42,6 +42,7 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { cached, invalidateCache } from "./cache";
+import { logger } from "./utils/logger";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -50,7 +51,7 @@ export async function getDb() {
     try {
       _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      logger.warn("Database", "Failed to connect", error);
       _db = null;
     }
   }
@@ -64,7 +65,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
+    logger.warn("Database", "Cannot upsert user: database not available");
     return;
   }
 
@@ -111,7 +112,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       set: updateSet,
     });
   } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
+    logger.error("Database", "Failed to upsert user", error);
     throw error;
   }
 }
@@ -119,7 +120,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
+    logger.warn("Database", "Cannot get user: database not available");
     return undefined;
   }
 
@@ -710,7 +711,7 @@ export async function tryClaimMessage(messageId: string, source: string): Promis
   const db = await getDb();
   if (!db) {
     // Se o banco não está disponível, permitir processamento (fallback)
-    console.warn("[Dedup] Banco não disponível, permitindo processamento");
+    logger.warn("Dedup", "Banco não disponível, permitindo processamento");
     return true;
   }
 
@@ -730,8 +731,8 @@ export async function tryClaimMessage(messageId: string, source: string): Promis
     if (error?.cause?.code === "ER_DUP_ENTRY" || error?.code === "ER_DUP_ENTRY") {
       return false;
     }
-    // Outro erro: permitir processamento (fallback seguro)
-    console.error("[Dedup] Erro ao verificar mensagem:", error);
+    // Outro erro: logar para alertar sobre instabilidade, mas permitir processamento (fail-open)
+    logger.error("Dedup", `Erro inesperado ao verificar messageId ${messageId}`, error);
     return true;
   }
 }
@@ -748,7 +749,7 @@ export async function cleanupProcessedMessages(): Promise<void> {
     const { sql } = await import("drizzle-orm");
     await db.execute(sql`DELETE FROM processed_messages WHERE processedAt < DATE_SUB(NOW(), INTERVAL 1 HOUR)`);
   } catch (error) {
-    console.error("[Dedup] Erro ao limpar mensagens antigas:", error);
+    logger.error("Dedup", "Erro ao limpar mensagens antigas", error);
   }
 }
 

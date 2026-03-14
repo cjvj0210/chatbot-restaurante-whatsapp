@@ -80,7 +80,8 @@ export async function transcribeFromPolling(
 
     if ("error" in result) return null;
     return result?.text?.trim() || null;
-  } catch {
+  } catch (error) {
+    logger.error("AudioService", `Erro ao transcrever áudio ${messageId} via polling`, error);
     return null;
   }
 }
