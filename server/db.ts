@@ -1,4 +1,4 @@
-import { eq, and, desc, count, sum, avg, sql, or, like, gte } from "drizzle-orm";
+import { eq, and, desc, count, sum, avg, sql, or, like, gte, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -606,10 +606,49 @@ export async function getAddonGroupsWithOptions(menuItemId: number): Promise<Add
 
 export async function getAddonGroupsForItems(menuItemIds: number[]): Promise<Record<number, AddonGroupWithOptions[]>> {
   if (menuItemIds.length === 0) return {};
+
+  const db = await getDb();
+  if (!db) return {};
+
+  // Busca batch: todos os grupos ativos para os itens solicitados de uma vez
+  const groups = await db
+    .select()
+    .from(menuAddonGroups)
+    .where(and(inArray(menuAddonGroups.menuItemId, menuItemIds), eq(menuAddonGroups.isActive, true)))
+    .orderBy(menuAddonGroups.displayOrder);
+
+  if (groups.length === 0) {
+    return menuItemIds.reduce<Record<number, AddonGroupWithOptions[]>>((acc, id) => {
+      acc[id] = [];
+      return acc;
+    }, {});
+  }
+
+  const groupIds = groups.map((g) => g.id);
+
+  // Busca batch: todas as opções ativas para os grupos encontrados
+  const options = await db
+    .select()
+    .from(menuAddonOptions)
+    .where(and(inArray(menuAddonOptions.groupId, groupIds), eq(menuAddonOptions.isActive, true)))
+    .orderBy(menuAddonOptions.displayOrder);
+
+  // Agrupar opções por groupId em memória
+  const optionsByGroup = options.reduce<Record<number, MenuAddonOption[]>>((acc, opt) => {
+    if (!acc[opt.groupId]) acc[opt.groupId] = [];
+    acc[opt.groupId]!.push(opt);
+    return acc;
+  }, {});
+
+  // Agrupar grupos por menuItemId em memória
   const result: Record<number, AddonGroupWithOptions[]> = {};
   for (const id of menuItemIds) {
-    result[id] = await getAddonGroupsWithOptions(id);
+    result[id] = [];
   }
+  for (const group of groups) {
+    result[group.menuItemId]!.push({ ...group, options: optionsByGroup[group.id] ?? [] });
+  }
+
   return result;
 }
 
