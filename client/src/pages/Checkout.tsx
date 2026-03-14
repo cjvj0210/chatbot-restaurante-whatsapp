@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
@@ -130,7 +132,10 @@ export default function Checkout() {
       setLocation(`/pedido/${sessionId}/confirmacao`);
     },
     onError: (error) => {
-      alert(`Erro ao criar pedido: ${error.message}`);
+      toast.error(`Erro ao criar pedido: ${error.message}`, {
+        description: "Verifique os dados e tente novamente.",
+        duration: 10000,
+      });
       setIsSubmitting(false);
     },
   });
@@ -156,6 +161,8 @@ export default function Checkout() {
     setShowAddressConfirm(false);
     setStep(2);
   };
+
+  const addressModalRef = useFocusTrap<HTMLDivElement>(showAddressConfirm);
 
   const updateCustomerAddressMutation = trpc.order.updateCustomerAddress.useMutation();
 
@@ -261,14 +268,19 @@ export default function Checkout() {
     >
       {/* Modal de confirmação de endereço */}
       {showAddressConfirm && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-2 pb-4 md:px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="address-confirm-title"
+        >
+          <div ref={addressModalRef} className="bg-white rounded-3xl p-4 md:p-6 w-full max-w-md shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800">Entregar no mesmo endereço?</h3>
+                <h3 id="address-confirm-title" className="font-bold text-gray-800">Entregar no mesmo endereço?</h3>
                 <p className="text-xs text-gray-500">Seu último endereço cadastrado</p>
               </div>
             </div>
@@ -301,21 +313,32 @@ export default function Checkout() {
           <button
             onClick={() => (step > 1 ? setStep((s) => (s - 1) as 1 | 2 | 3) : setLocation(`/pedido/${sessionId}`))}
             className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            aria-label={step > 1 ? "Voltar ao passo anterior" : "Voltar ao cardápio"}
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           </button>
           <div>
             <h1 className="font-bold text-base">Finalizar Pedido</h1>
             <p className="text-xs text-red-200">Churrascaria Estrela do Sul</p>
           </div>
         </div>
+        <nav aria-label="Localização" className="flex items-center gap-2 text-xs text-red-200 px-4 py-1.5 border-t border-red-600/50">
+          <a href={`/pedido/${sessionId}`} className="text-white/80 hover:text-white hover:underline flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" aria-hidden="true" />
+            Cardápio
+          </a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page" className="text-white font-medium">Finalizar Pedido</span>
+        </nav>
 
         {/* Progress steps */}
-        <div className="px-4 pb-3 flex items-center gap-0">
+        <nav className="px-4 pb-3 flex items-center gap-0" aria-label="Progresso do pedido">
           {steps.map((s, idx) => (
             <div key={s.id} className="flex items-center flex-1">
               <div className="flex flex-col items-center">
                 <div
+                  aria-current={step === s.id ? "step" : undefined}
+                  aria-label={`Passo ${s.id}: ${s.label}${step > s.id ? " (concluído)" : ""}`}
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     step > s.id
                       ? "bg-green-400 text-white"
@@ -324,7 +347,7 @@ export default function Checkout() {
                       : "bg-white/20 text-white/60"
                   }`}
                 >
-                  {step > s.id ? <CheckCircle2 className="w-4 h-4" /> : s.id}
+                  {step > s.id ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : s.id}
                 </div>
                 <span
                   className={`text-xs mt-0.5 whitespace-nowrap ${
@@ -339,11 +362,12 @@ export default function Checkout() {
                   className={`flex-1 h-0.5 mx-1 mb-4 transition-all ${
                     step > s.id ? "bg-green-400" : "bg-white/20"
                   }`}
+                  aria-hidden="true"
                 />
               )}
             </div>
           ))}
-        </div>
+        </nav>
       </div>
 
       {/* Conteúdo */}

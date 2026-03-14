@@ -20,14 +20,15 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { announceToSR } from "../utils/announceToSR";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  pending:    { label: "Pendente",    color: "bg-yellow-100 text-yellow-700",  icon: Clock },
-  confirmed:  { label: "Confirmado",  color: "bg-blue-100 text-blue-700",      icon: Loader2 },
-  preparing:  { label: "Preparando",  color: "bg-orange-100 text-orange-700",  icon: Loader2 },
-  ready:      { label: "Pronto",      color: "bg-green-100 text-green-700",    icon: CheckCircle2 },
-  delivered:  { label: "Entregue",    color: "bg-gray-100 text-gray-600",      icon: CheckCircle2 },
-  cancelled:  { label: "Cancelado",   color: "bg-red-100 text-red-600",        icon: AlertCircle },
+  pending:    { label: "Pendente",    color: "bg-yellow-50 text-yellow-900",  icon: Clock },
+  confirmed:  { label: "Confirmado",  color: "bg-blue-50 text-blue-900",      icon: Loader2 },
+  preparing:  { label: "Preparando",  color: "bg-orange-50 text-orange-900",  icon: Loader2 },
+  ready:      { label: "Pronto",      color: "bg-green-50 text-green-900",    icon: CheckCircle2 },
+  delivered:  { label: "Entregue",    color: "bg-gray-100 text-gray-900",     icon: CheckCircle2 },
+  cancelled:  { label: "Cancelado",   color: "bg-red-50 text-red-900",        icon: AlertCircle },
 };
 
 // Gera um beep sintético usando Web Audio API
@@ -79,6 +80,7 @@ export default function Dashboard() {
       playAlertBeep();
       setTimeout(playAlertBeep, 600);
       newReservations.forEach((r) => knownReservationIds.current.add(r.id));
+      announceToSR(`${newReservations.length} nova(s) reserva(s) pendente(s)! Acesse Reservas para confirmar.`);
       toast.warning(
         `📅 ${newReservations.length} nova(s) reserva(s) pendente(s)! Acesse Reservas para confirmar.`,
         { duration: 10000, action: { label: "Ver Reservas", onClick: () => setLocation("/reservations") } }

@@ -143,10 +143,10 @@ export default function ChatSimulator() {
               className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}
             >
               <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                message.role === "user" 
-                  ? "bg-primary text-primary-foreground" 
+                message.role === "user"
+                  ? "bg-primary text-primary-foreground"
                   : "bg-muted"
-              }`}>
+              }`} aria-hidden="true">
                 {message.role === "user" ? (
                   <User className="w-4 h-4" />
                 ) : (
@@ -154,13 +154,16 @@ export default function ChatSimulator() {
                 )}
               </div>
               <div className={`flex-1 max-w-[70%] ${message.role === "user" ? "text-right" : ""}`}>
-                <div className={`inline-block p-3 rounded-lg ${
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border"
-                }`}>
+                <article
+                  aria-label={`${message.role === "user" ? "Você" : "Bot"}: ${message.content?.slice(0, 100)}`}
+                  className={`inline-block p-3 rounded-lg ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card border"
+                  }`}
+                >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                </div>
+                </article>
                 <p className="text-xs text-muted-foreground mt-1">
                   {message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                 </p>
@@ -190,14 +193,16 @@ export default function ChatSimulator() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Digite sua mensagem..."
+              aria-label="Digite sua mensagem"
               className="flex-1"
               disabled={sendMessageMutation.isPending}
             />
-            <Button 
-              onClick={handleSend} 
+            <Button
+              onClick={handleSend}
               disabled={!input.trim() || sendMessageMutation.isPending}
+              aria-label="Enviar mensagem"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">

@@ -32,13 +32,13 @@ import { ptBR } from "date-fns/locale";
 const AUTO_ACCEPT_KEY = "estreladosul_auto_accept";
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  pending:    { label: "Pendente",    bg: "bg-amber-50",   text: "text-amber-700",  dot: "bg-amber-400" },
-  confirmed:  { label: "Confirmado",  bg: "bg-blue-50",    text: "text-blue-700",   dot: "bg-blue-500" },
-  preparing:  { label: "Preparando",  bg: "bg-orange-50",  text: "text-orange-700", dot: "bg-orange-500" },
-  ready:      { label: "Pronto",      bg: "bg-green-50",   text: "text-green-700",  dot: "bg-green-500" },
-  delivering: { label: "A Caminho",   bg: "bg-indigo-50",  text: "text-indigo-700", dot: "bg-indigo-500" },
-  delivered:  { label: "Entregue",    bg: "bg-gray-100",   text: "text-gray-600",   dot: "bg-gray-400" },
-  cancelled:  { label: "Cancelado",   bg: "bg-red-50",     text: "text-red-600",    dot: "bg-red-500" },
+  pending:    { label: "Pendente",    bg: "bg-amber-50",   text: "text-amber-900",  dot: "bg-amber-400" },
+  confirmed:  { label: "Confirmado",  bg: "bg-blue-50",    text: "text-blue-900",   dot: "bg-blue-500" },
+  preparing:  { label: "Preparando",  bg: "bg-orange-50",  text: "text-orange-900", dot: "bg-orange-500" },
+  ready:      { label: "Pronto",      bg: "bg-green-50",   text: "text-green-900",  dot: "bg-green-500" },
+  delivering: { label: "A Caminho",   bg: "bg-indigo-50",  text: "text-indigo-900", dot: "bg-indigo-500" },
+  delivered:  { label: "Entregue",    bg: "bg-gray-100",   text: "text-gray-900",   dot: "bg-gray-400" },
+  cancelled:  { label: "Cancelado",   bg: "bg-red-50",     text: "text-red-900",    dot: "bg-red-500" },
 };
 
 // Fluxo simplificado: pending → confirmed (auto) → delivering (botão único) → delivered (auto após confirmar entrega)
@@ -285,45 +285,54 @@ export default function Orders() {
 
           {/* Filtros */}
           <div className="flex items-center gap-2 flex-wrap">
-            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-            <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); setCurrentPage(0); }}>
-              <SelectTrigger className="w-44 h-9 text-sm rounded-xl border-border/60">
-                <SelectValue placeholder="Filtrar status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os pedidos</SelectItem>
-                {Object.entries(statusConfig).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>
-                    <span className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${v.dot}`} />
-                      {v.label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SlidersHorizontal className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <div>
+              <label htmlFor="status-filter" className="sr-only">Filtrar por status</label>
+              <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); setCurrentPage(0); }}>
+                <SelectTrigger id="status-filter" className="w-44 h-9 text-sm rounded-xl border-border/60">
+                  <SelectValue placeholder="Filtrar status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os pedidos</SelectItem>
+                  {Object.entries(statusConfig).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${v.dot}`} aria-hidden="true" />
+                        {v.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {/* Filtro de data */}
             <div className="flex items-center gap-1.5">
-              <input
-                type="date"
-                value={filterDateFrom}
-                onChange={(e) => { setFilterDateFrom(e.target.value); setCurrentPage(0); }}
-                className="h-9 px-2 text-sm rounded-xl border border-border/60 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
-                title="Data inicial"
-              />
+              <div>
+                <label htmlFor="filterDateFrom" className="sr-only">Data inicial</label>
+                <input
+                  id="filterDateFrom"
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => { setFilterDateFrom(e.target.value); setCurrentPage(0); }}
+                  className="h-9 px-2 text-sm rounded-xl border border-border/60 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                />
+              </div>
               <span className="text-muted-foreground text-xs">até</span>
-              <input
-                type="date"
-                value={filterDateTo}
-                onChange={(e) => { setFilterDateTo(e.target.value); setCurrentPage(0); }}
-                className="h-9 px-2 text-sm rounded-xl border border-border/60 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
-                title="Data final"
-              />
+              <div>
+                <label htmlFor="filterDateTo" className="sr-only">Data final</label>
+                <input
+                  id="filterDateTo"
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => { setFilterDateTo(e.target.value); setCurrentPage(0); }}
+                  className="h-9 px-2 text-sm rounded-xl border border-border/60 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                />
+              </div>
               {(filterDateFrom || filterDateTo) && (
                 <button
                   onClick={() => { setFilterDateFrom(""); setFilterDateTo(""); setCurrentPage(0); }}
                   className="h-9 px-2 text-xs rounded-xl border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  title="Limpar filtro de data"
+                  aria-label="Limpar filtro de data"
                 >
                   ✕
                 </button>
@@ -566,9 +575,10 @@ export default function Orders() {
                       {/* Botão imprimir — sempre disponível */}
                       <button
                         onClick={() => autoPrint(order.id)}
+                        aria-label={`Imprimir pedido #${order.orderNumber}`}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
                       >
-                        <Printer className="w-4 h-4" />
+                        <Printer className="w-4 h-4" aria-hidden="true" />
                         Imprimir
                       </button>
 
@@ -684,23 +694,25 @@ export default function Orders() {
               ? `Página ${currentPage + 1} · ${orders.length} pedido${orders.length !== 1 ? "s" : ""}`
               : ""}
           </p>
-          <div className="flex items-center gap-2">
+          <nav aria-label="Paginação" className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
+              aria-label="Página anterior"
               className="h-9 px-4 text-sm rounded-xl border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               ← Anterior
             </button>
-            <span className="text-sm font-medium text-foreground px-2">{currentPage + 1}</span>
+            <span role="status" aria-live="polite" className="text-sm font-medium text-foreground px-2">{currentPage + 1}</span>
             <button
               onClick={() => setCurrentPage((p) => p + 1)}
               disabled={!orders || orders.length < PAGE_SIZE}
+              aria-label="Próxima página"
               className="h-9 px-4 text-sm rounded-xl border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Próxima →
             </button>
-          </div>
+          </nav>
         </div>
       )}
     </div>

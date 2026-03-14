@@ -168,7 +168,7 @@ function ItemDrawer({
           {/* Imagem ou placeholder */}
           {item.imageUrl ? (
             <div className="w-full h-48 overflow-hidden">
-              <LazyImage src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+              <LazyImage src={item.imageUrl} alt={item.name + (item.description ? ` — ${item.description.slice(0, 60)}` : "")} className="w-full h-full object-cover" />
             </div>
           ) : (
             <div className="w-full h-36 bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center text-5xl">
@@ -1016,7 +1016,7 @@ export default function Pedido() {
                             {item.imageUrl ? (
                               <LazyImage
                                 src={item.imageUrl}
-                                alt={item.name}
+                                alt={item.name + (item.description ? ` — ${item.description.slice(0, 60)}` : "")}
                                 className="w-full h-28 object-cover"
                               />
                             ) : (
@@ -1250,7 +1250,7 @@ export default function Pedido() {
                           {item.imageUrl ? (
                           <LazyImage
                             src={item.imageUrl}
-                            alt={item.name}
+                            alt={item.name + (item.description ? ` — ${item.description.slice(0, 60)}` : "")}
                               className="w-24 h-24 object-cover rounded-xl"
                             />
                           ) : (
