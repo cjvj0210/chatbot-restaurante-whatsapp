@@ -4,6 +4,7 @@ import { invokeLLM } from "./_core/llm";
 import { logger } from "./utils/logger";
 import { getRestaurantSettings, getDb } from "./db";
 import { getChatbotPrompt } from "./chatbotPrompt";
+import { getBRTDateTimeFormatted } from "../shared/businessHours";
 import { orderSessions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
@@ -110,21 +111,8 @@ export const chatSimulatorRouter = router({
       // Adicionar mensagem do usuário ao histórico
       history.push({ role: "user", content: message });
 
-      // Obter data/hora atual para contexto (fuso Brasília UTC-3)
-      const hoje = new Date();
-      const tzBrasilia = 'America/Sao_Paulo';
-      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
-      const dataCompleta = hoje.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        timeZone: tzBrasilia,
-      });
-      const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: tzBrasilia,
-      });
+      // Obter data/hora atual para contexto (fuso Brasília UTC-3) — com cache de 500ms
+      const { diaSemana, dataCompleta, horarioAtual } = getBRTDateTimeFormatted();
 
       // Usar o prompt COMPLETO do restaurante (mesmo do WhatsApp real)
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
@@ -252,23 +240,10 @@ export const chatSimulatorRouter = router({
       let history = audioSession?.history || [];
       history.push({ role: "user", content: `[Áudio]: ${transcribedText}` });
 
-      // Obter data/hora atual (fuso Brasília UTC-3)
-      const hoje = new Date();
-      const tzBrasilia = 'America/Sao_Paulo';
-      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
-      const dataCompleta = hoje.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        timeZone: tzBrasilia,
-      });
-      const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: tzBrasilia,
-      });
+      // Obter data/hora atual (fuso Brasília UTC-3) — com cache de 500ms
+      const { diaSemana: dS, dataCompleta: dC, horarioAtual: hA } = getBRTDateTimeFormatted();
 
-      const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
+      const systemPrompt = getChatbotPrompt(dS, dC, hA);
 
       const aiMessages = [
         { role: "system" as const, content: systemPrompt },

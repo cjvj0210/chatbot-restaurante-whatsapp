@@ -55,6 +55,30 @@ export function getNowBRT(): Date {
   return new Date(year, month, day, hour, minute, second);
 }
 
+// Cache da formatação de data/hora BRT (evita 3 chamadas Intl por request)
+let _brtCache: { diaSemana: string; dataCompleta: string; horarioAtual: string } | null = null;
+let _brtCacheAt = 0;
+const BRT_CACHE_TTL_MS = 500;
+
+/**
+ * Retorna data e hora formatadas no fuso de São Paulo, com cache de 500ms.
+ * Substitui as 3 chamadas separadas a toLocaleDateString/toLocaleTimeString
+ * em chatbot.ts e chatSimulator.ts.
+ */
+export function getBRTDateTimeFormatted(): { diaSemana: string; dataCompleta: string; horarioAtual: string } {
+  const now = Date.now();
+  if (_brtCache && now - _brtCacheAt < BRT_CACHE_TTL_MS) return _brtCache;
+  const hoje = new Date();
+  const tz = "America/Sao_Paulo";
+  _brtCache = {
+    diaSemana:    hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tz }),
+    dataCompleta: hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric", timeZone: tz }),
+    horarioAtual: hoje.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: tz }),
+  };
+  _brtCacheAt = now;
+  return _brtCache;
+}
+
 interface TimeRange {
   startH: number;
   startM: number;

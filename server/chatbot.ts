@@ -26,7 +26,7 @@ import { whatsappService } from "./services/whatsappService";
 import { buildCustomerContextBlock } from "./services/customerContextBuilder";
 import { handleOrderLink, handleOrderStatus, handleSaveReservation } from "./services/chatbotActionHandler";
 import { getChatbotPrompt } from "./chatbotPrompt";
-import { getNowBRT } from "../shared/businessHours";
+import { getNowBRT, getBRTDateTimeFormatted } from "../shared/businessHours";
 import { orderSessions, orders, reservations, conversations } from "../drizzle/schema";
 import { eq, and, lt } from "drizzle-orm";
 import { randomBytes } from "crypto";
@@ -438,21 +438,8 @@ async function generateResponse(
   context: ChatContext,
   phone: string
 ): Promise<BotResponse> {
-  // Obter data/hora atual para contexto (fuso Brasília UTC-3)
-  const hoje = new Date();
-  const tzBrasilia = 'America/Sao_Paulo';
-  const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
-  const dataCompleta = hoje.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: tzBrasilia,
-  });
-  const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: tzBrasilia,
-  });
+  // Obter data/hora atual para contexto (fuso Brasília UTC-3) — com cache de 500ms
+  const { diaSemana, dataCompleta, horarioAtual } = getBRTDateTimeFormatted();
 
   // Usar o prompt COMPLETO do restaurante
   const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
