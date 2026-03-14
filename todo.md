@@ -1259,3 +1259,6 @@
 ### Commit 2 - 2 correções extras
 - [x] DB-2: Transação atômica em criação de cliente + conversa sem registros órfãos (db.ts)
 - [x] WP-3: Janela de busca do polling adaptativa ao backoff recupera mensagens durante downtime (messagePolling.ts)
+
+## Bug - Modo humano não bloqueia o bot (14/03/2026)
+- [x] Bot responde mesmo após ativar modo humano — corrigido: verificação do modo humano movida para ANTES do FAQ cache + nova função getActiveConversationByWhatsappId

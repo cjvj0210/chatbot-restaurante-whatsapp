@@ -40,6 +40,15 @@ vi.mock("./db", () => ({
   getConversationMessages: vi.fn().mockResolvedValue([]),
   getRestaurantSettings: vi.fn().mockResolvedValue({ phone: "5517988112791", name: "Churrascaria Estrela do Sul" }),
   getDb: vi.fn().mockResolvedValue({}),
+  getActiveConversationByWhatsappId: vi.fn().mockResolvedValue({
+    id: 10,
+    customerId: 1,
+    humanMode: false,
+    humanModeUntil: null,
+    context: "{}",
+    intent: null,
+    isActive: true,
+  }),
 }));
 
 vi.mock("./_core/llm", () => ({

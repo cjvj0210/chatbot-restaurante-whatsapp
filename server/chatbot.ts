@@ -7,6 +7,7 @@ import {
   createCustomerWithConversation,
   updateCustomer,
   getActiveConversation,
+  getActiveConversationByWhatsappId,
   createConversation,
   createMessage,
   updateConversation,
@@ -318,7 +319,30 @@ async function _processIncomingMessageInternal(
     // Normalizar: se o effectivePhone contém @s.whatsapp.net, extrair só os dígitos
     const normalizedPhone = phoneNormalizer.normalize(effectivePhone);
 
-    // Verificar cache de FAQ ANTES de acessar o banco de dados
+    // ===== VERIFICAÇÃO ANTECIPADA DO MODO HUMANO =====
+    // DEVE ser feita ANTES do FAQ cache para garantir que o bot fique 100% silencioso
+    // quando o modo humano está ativo (mesmo para perguntas frequentes).
+    if (dbAvailable) {
+      const earlyConv = await getActiveConversationByWhatsappId(whatsappId, realPhone);
+      if (earlyConv?.humanMode) {
+        const stillHuman = await checkAndExpireHumanMode(earlyConv.id);
+        if (stillHuman) {
+          logger.info("Chatbot", `Modo humano ativo (verificação antecipada) — bot silencioso para ${phone}`);
+          // Salvar mensagem do usuário no histórico mesmo em modo humano
+          await createMessage({
+            conversationId: earlyConv.id,
+            role: "user",
+            content: messageText,
+            messageType: "text",
+            metadata: JSON.stringify({ humanMode: true }),
+          }).catch((err: unknown) => logger.warn("Chatbot", "Falha ao salvar msg em modo humano", err));
+          return;
+        }
+        logger.info("Chatbot", `Modo humano expirado para ${phone} — bot retomando atendimento`);
+      }
+    }
+
+    // Verificar cache de FAQ DEPOIS da verificação de modo humano
     // Funciona mesmo quando o banco está indisponível (degradação graciosa)
     const faqResponse = checkFaqCache(messageText);
     if (faqResponse) {

@@ -525,6 +525,25 @@ export async function getActiveConversation(customerId: number): Promise<Convers
   return result[0];
 }
 
+/**
+ * Busca conversa ativa diretamente pelo whatsappId do cliente (sem precisar do customerId).
+ * Usado na verificação antecipada do modo humano, antes de carregar o cliente completo.
+ */
+export async function getActiveConversationByWhatsappId(
+  whatsappId: string,
+  realPhone?: string
+): Promise<Conversation | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  // Buscar o cliente primeiro (reutiliza a lógica de busca flexível)
+  const customer = await getCustomerByWhatsappId(whatsappId, realPhone);
+  if (!customer) return undefined;
+
+  // Buscar conversa ativa do cliente
+  return getActiveConversation(customer.id);
+}
+
 export async function createConversation(conversation: InsertConversation): Promise<Conversation> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
