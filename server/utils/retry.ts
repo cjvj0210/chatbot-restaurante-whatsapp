@@ -32,7 +32,10 @@ export async function withRetry<T>(
       return await fn();
     } catch (error) {
       if (attempt === maxRetries) throw error;
-      const wait = delayMs * Math.pow(2, attempt - 1);
+      const base = delayMs * Math.pow(2, attempt - 1);
+      // Jitter de ±50% para evitar thundering herd em retries simultâneos
+      const jitter = Math.random() * base;
+      const wait = Math.round(base + jitter);
       logger.warn(
         "Retry",
         `${label} falhou (tentativa ${attempt}/${maxRetries}). Aguardando ${wait}ms...`,
