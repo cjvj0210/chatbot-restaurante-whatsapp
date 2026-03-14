@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -84,7 +84,7 @@ function autoPrint(orderId: number) {
 }
 
 // Componente de histórico de pedidos por cliente
-function CustomerHistory({ phone, currentOrderId }: { phone: string; currentOrderId: number }) {
+const CustomerHistory = memo(function CustomerHistory({ phone, currentOrderId }: { phone: string; currentOrderId: number }) {
   const { data: history, isLoading } = trpc.order.getByPhone.useQuery(
     { phone },
     { enabled: !!phone }
@@ -141,7 +141,7 @@ function CustomerHistory({ phone, currentOrderId }: { phone: string; currentOrde
       )}
     </div>
   );
-}
+});
 
 export default function Orders() {
   const utils = trpc.useUtils();
