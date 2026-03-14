@@ -206,6 +206,7 @@ export const conversations = mysqlTable("conversations", {
   index("idx_conversations_customer").on(t.customerId),
   index("idx_conversations_active").on(t.isActive),
   index("idx_conversations_deleted").on(t.deletedAt),
+  index("idx_conversations_human_mode").on(t.humanMode, t.humanModeUntil),
 ]);
 
 export type Conversation = typeof conversations.$inferSelect;
@@ -225,6 +226,7 @@ export const messages = mysqlTable("messages", {
 }, (t) => [
   index("idx_messages_conversation").on(t.conversationId),
   index("idx_messages_created_at").on(t.createdAt),
+  index("idx_messages_created_role").on(t.createdAt, t.role),
 ]);
 
 export type Message = typeof messages.$inferSelect;

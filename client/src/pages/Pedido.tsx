@@ -131,8 +131,10 @@ function ItemDrawer({
   };
 
   const allAddons = Object.values(selectedAddons).flat();
-  const addonsExtra = allAddons.reduce((sum, a) => sum + a.priceExtra * (a.quantity || 1), 0);
-  const totalPrice = (item.price + addonsExtra) * qty;
+  const totalPrice = useMemo(() => {
+    const addonsExtra = allAddons.reduce((sum, a) => sum + a.priceExtra * (a.quantity || 1), 0);
+    return (item.price + addonsExtra) * qty;
+  }, [allAddons, item.price, qty]);
 
   const handleAdd = () => {
     for (const group of addonGroups) {

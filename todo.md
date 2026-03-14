@@ -1156,3 +1156,29 @@
 - [x] Validação e truncamento de messageText no webhook e polling
 - [x] any eliminado: CustomerUpdates, LLMContentPart, OrderStatus tipados
 - [x] #bot case-insensitive + aceita #ativar/#reativar
+
+
+## Rodada 3 - Auditoria de Performance (14/03/2026)
+
+### Críticos (3)
+- [x] N+1 em order.list (orderRouter.ts) — 21 queries → 1 query (~95%)
+- [x] Memory leak em polling (messagePolling.ts) — Set sem TTL → Map com TTL 2h
+- [x] Race condition modo humano (chatbot.ts) — UPDATE atômico eliminando SELECT+UPDATE
+
+### Altos (8)
+- [x] Índices no schema (drizzle/schema.ts) — Evita full scan em conversations/messages
+- [x] useEffect no Dashboard (Dashboard.tsx) — Um único interval em vez de múltiplos
+- [x] Backoff exponencial (messagePolling.ts) — Recua até 60s em falhas consecutivas
+- [x] Limpeza periódica webhook dedup (webhookEvolution.ts) — Mapa limpo a cada 60s
+- [x] Batch queries para addons (db.ts) — 20 queries sequenciais → 2 paralelas (40x)
+- [x] useMemo no preço total (Pedido.tsx) — Sem recálculo desnecessário
+- [x] React.memo no CustomerHistory (Orders.tsx) — Sem re-renders por pedido
+- [x] Cache getRestaurantSettings (db.ts) — TTL 30s, sem query por mensagem
+
+### Médios (6) + Baixos (1)
+- [x] Lazy loading de 10 páginas admin (~120 KB no bundle inicial)
+- [x] TTL de 24h nas sessões do simulador
+- [x] FAQ cache com keyword pre-filter (evita 240 regex tests)
+- [x] Cache BRT DateTime 500ms (3 chamadas Intl → 1 cached)
+- [x] Scheduler centralizado (7 setInterval → 1 ScheduledTask[])
+- [x] Jitter nos retries da Evolution API (evita thundering herd)

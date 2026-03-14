@@ -1,4 +1,4 @@
-import { eq, and, desc, count, sum, avg, sql, or, like, gte } from "drizzle-orm";
+import { eq, and, desc, count, sum, avg, sql, or, like, gte, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -129,12 +129,15 @@ export async function getUserByOpenId(openId: string) {
 
 // ===== Restaurant Settings =====
 
-export async function getRestaurantSettings(): Promise<RestaurantSettings | undefined> {
-  const db = await getDb();
-  if (!db) return undefined;
+import { cached, invalidateCache } from "./cache";
 
-  const result = await db.select().from(restaurantSettings).limit(1);
-  return result[0];
+export async function getRestaurantSettings(): Promise<RestaurantSettings | undefined> {
+  return cached("restaurant_settings", async () => {
+    const db = await getDb();
+    if (!db) return undefined;
+    const result = await db.select().from(restaurantSettings).limit(1);
+    return result[0];
+  }, 30_000); // Cache de 30s — settings mudam raramente
 }
 
 export async function upsertRestaurantSettings(settings: InsertRestaurantSettings): Promise<void> {
@@ -148,6 +151,7 @@ export async function upsertRestaurantSettings(settings: InsertRestaurantSetting
   } else {
     await db.insert(restaurantSettings).values(settings);
   }
+  invalidateCache("restaurant_settings"); // Limpar cache após atualização
 }
 
 // ===== WhatsApp Settings =====

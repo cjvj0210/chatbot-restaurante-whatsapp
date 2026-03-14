@@ -26,9 +26,9 @@ import { whatsappService } from "./services/whatsappService";
 import { buildCustomerContextBlock } from "./services/customerContextBuilder";
 import { handleOrderLink, handleOrderStatus, handleSaveReservation } from "./services/chatbotActionHandler";
 import { getChatbotPrompt } from "./chatbotPrompt";
-import { getNowBRT } from "../shared/businessHours";
-import { orderSessions, orders, reservations } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { getNowBRT, getBRTDateTimeFormatted } from "../shared/businessHours";
+import { orderSessions, orders, reservations, conversations } from "../drizzle/schema";
+import { eq, and, lt } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { notifyOwner } from "./_core/notification";
 import { sanitizeLLMOutput } from "./sanitize";
@@ -52,6 +52,38 @@ interface ChatContext {
 
 // A deduplicação agora é feita via banco de dados (tryClaimMessage)
 // para funcionar entre múltiplas instâncias do servidor (dev + produção).
+
+/**
+ * Verifica e expira o modo humano de forma atômica via UPDATE condicional no banco.
+ * Evita race condition onde duas instâncias leem humanMode=true simultaneamente.
+ * @returns true se ainda está em modo humano, false se expirou ou não estava ativo
+ */
+async function checkAndExpireHumanMode(conversationId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  // UPDATE atômico: expira somente se humanModeUntil já passou
+  const result = await db.update(conversations)
+    .set({ humanMode: false, humanModeUntil: null })
+    .where(and(
+      eq(conversations.id, conversationId),
+      eq(conversations.humanMode, true),
+      lt(conversations.humanModeUntil, new Date())
+    ));
+
+  // Se atualizou alguma linha, acabou de expirar agora → bot pode responder
+  const rowsAffected = (result as any)?.[0]?.affectedRows ?? (result as any)?.rowsAffected ?? 0;
+  if (rowsAffected > 0) return false;
+
+  // Caso contrário, verificar o estado atual
+  const [conv] = await db
+    .select({ humanMode: conversations.humanMode })
+    .from(conversations)
+    .where(eq(conversations.id, conversationId))
+    .limit(1);
+
+  return conv?.humanMode ?? false;
+}
 
 /**
  * Lock por whatsappId para evitar processamento concorrente de múltiplas
@@ -252,20 +284,15 @@ async function _processIncomingMessageInternal(
     // 4. Obter contexto da conversa
     const context: ChatContext = conversation.context ? JSON.parse(conversation.context) : {};
 
-    // 4b. Verificar modo humano: se o operador assumiu a conversa, o bot fica silencioso
-    // O modo humano é ativado automaticamente quando o webhook detecta uma mensagem
-    // fromMe=true cujo ID NÃO está registrado no botMessageTracker (= operador humano).
-    // O operador pode enviar "bot" para desativar, ou expira após 30 minutos.
-    if (conversation.humanMode && conversation.humanModeUntil) {
-      const now = new Date();
-      if (now < new Date(conversation.humanModeUntil)) {
-        logger.info("Chatbot", `Modo humano ativo até ${new Date(conversation.humanModeUntil).toLocaleString('pt-BR')} — bot silencioso para ${phone}`);
-        return; // Bot não responde enquanto o operador está no controle
-      } else {
-        // Expirou: desativar modo humano automaticamente
-        await updateConversation(conversation.id, { humanMode: false, humanModeUntil: null });
-        logger.info("Chatbot", `Modo humano expirado para ${phone} — bot retomando atendimento`);
+    // 4b. Verificar modo humano: UPDATE atômico para evitar race condition entre múltiplas instâncias.
+    // Usa UPDATE atômico para evitar race condition entre múltiplas instâncias do servidor.
+    if (conversation.humanMode) {
+      const stillHuman = await checkAndExpireHumanMode(conversation.id);
+      if (stillHuman) {
+        logger.info("Chatbot", `Modo humano ativo — bot silencioso para ${phone}`);
+        return;
       }
+      logger.info("Chatbot", `Modo humano expirado para ${phone} — bot retomando atendimento`);
     }
 
     // 5. Verificar cache de FAQ antes de chamar o LLM (economia de tokens e latência)
@@ -411,21 +438,8 @@ async function generateResponse(
   context: ChatContext,
   phone: string
 ): Promise<BotResponse> {
-  // Obter data/hora atual para contexto (fuso Brasília UTC-3)
-  const hoje = new Date();
-  const tzBrasilia = 'America/Sao_Paulo';
-  const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
-  const dataCompleta = hoje.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: tzBrasilia,
-  });
-  const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: tzBrasilia,
-  });
+  // Obter data/hora atual para contexto (fuso Brasília UTC-3) — com cache de 500ms
+  const { diaSemana, dataCompleta, horarioAtual } = getBRTDateTimeFormatted();
 
   // Usar o prompt COMPLETO do restaurante
   const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);

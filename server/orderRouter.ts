@@ -440,25 +440,39 @@ export const orderRouter = router({
         .limit(limit)
         .offset(offset);
 
-      // Buscar itens normalizados com nomes para cada pedido
-      const ordersWithItems = await Promise.all(
-        ordersList.map(async (order) => {
-          const items = await db
-            .select({
-              id: orderItems.id,
-              menuItemId: orderItems.menuItemId,
-              name: menuItems.name,
-              quantity: orderItems.quantity,
-              price: orderItems.unitPrice,
-              observations: orderItems.observations,
-              addons: orderItems.addons,
-            })
-            .from(orderItems)
-            .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
-            .where(eq(orderItems.orderId, order.id));
-          return { ...order, orderItemsList: items };
+      if (ordersList.length === 0) return [];
+
+      // LEFT JOIN único para buscar todos os itens de todos os pedidos de uma vez (evita N+1)
+      const orderIds = ordersList.map((o) => o.id);
+      const allItems = await db
+        .select({
+          orderId: orderItems.orderId,
+          id: orderItems.id,
+          menuItemId: orderItems.menuItemId,
+          name: menuItems.name,
+          quantity: orderItems.quantity,
+          price: orderItems.unitPrice,
+          observations: orderItems.observations,
+          addons: orderItems.addons,
         })
+        .from(orderItems)
+        .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+        .where(inArray(orderItems.orderId, orderIds));
+
+      // Agrupar itens por orderId em memória
+      const itemsByOrder = allItems.reduce<Record<number, typeof allItems>>(
+        (acc, item) => {
+          if (!acc[item.orderId]) acc[item.orderId] = [];
+          acc[item.orderId]!.push(item);
+          return acc;
+        },
+        {}
       );
+
+      const ordersWithItems = ordersList.map((order) => ({
+        ...order,
+        orderItemsList: itemsByOrder[order.id] ?? [],
+      }));
 
       return ordersWithItems;
     }),
@@ -794,20 +808,30 @@ export const orderRouter = router({
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
-      // Buscar a sessão para obter o whatsappNumber
+      // Buscar a sessão para obter customerId e whatsappNumber
       const [session] = await db
-        .select()
+        .select({ customerId: orderSessions.customerId, whatsappNumber: orderSessions.whatsappNumber })
         .from(orderSessions)
         .where(eq(orderSessions.sessionId, input.sessionId))
         .limit(1);
-      if (!session?.whatsappNumber) return { success: false };
-      // Normalizar o número para buscar o cliente de forma flexível
+      if (!session) return { success: false };
+
+      // Caminho rápido: se a sessão tem customerId, atualizar diretamente (atômico, sem SELECT)
+      if (session.customerId) {
+        await db
+          .update(customers)
+          .set({ address: input.address })
+          .where(eq(customers.id, session.customerId));
+        return { success: true };
+      }
+
+      if (!session.whatsappNumber) return { success: false };
+      // Fallback: buscar cliente pelo whatsappNumber da sessão
       const phone = session.whatsappNumber.replace(/\D/g, "");
       const phoneDigits = phone.slice(-11);
       const { or: orOp } = await import("drizzle-orm");
-      // Buscar o cliente por múltiplos formatos de whatsappId/phone
       const customersList = await db
-        .select()
+        .select({ id: customers.id })
         .from(customers)
         .where(orOp(
           eq(customers.whatsappId, session.whatsappNumber),
@@ -818,7 +842,6 @@ export const orderRouter = router({
         .limit(1);
       const customer = customersList[0];
       if (!customer) return { success: false };
-      // Atualizar o endereço do cliente no banco
       await db
         .update(customers)
         .set({ address: input.address })

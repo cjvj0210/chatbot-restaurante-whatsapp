@@ -9,23 +9,25 @@
 
 import axios from "axios";
 import { processIncomingMessage } from "./chatbot";
-import { transcribeAudio } from "./_core/voiceTranscription";
-import { storagePut } from "./storage";
 import { getDb } from "./db";
 import { conversations, customers } from "../drizzle/schema";
 import { eq, like, or } from "drizzle-orm";
+import { logger } from "./utils/logger";
+import { transcribeFromPolling } from "./services/audioService";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 const POLL_INTERVAL_MS = 3000; // 3 segundos (respostas rápidas)
 const INITIAL_DELAY_MS = 15000; // 15 segundos após iniciar (dar tempo pro servidor subir)
-const MAX_PROCESSED_IDS = 500; // Máximo de IDs armazenados em memória
+const MAX_BACKOFF_MS = 60_000; // Máximo de 60 segundos entre tentativas em caso de erro
 
-// Set de IDs de mensagens já processadas (evita reprocessamento)
-const processedMessageIds = new Set<string>();
+// Map de IDs de mensagens já processadas COM TTL (evita memory leak)
+const TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
+const processedMessageIds = new Map<string, number>(); // messageId → timestamp
 
 // Timestamp da última busca bem-sucedida (em segundos Unix)
 let lastPollTimestamp = 0;
 let isPolling = false;
-let pollErrors = 0;
+let consecutiveErrors = 0;
 // Timestamp de quando o polling iniciou (para ignorar mensagens anteriores)
 let pollingStartTimestamp = 0;
 
@@ -49,6 +51,20 @@ function extractPhoneFromJid(jid: string): string {
  */
 function isIndividualChat(jid: string): boolean {
   return jid.endsWith("@s.whatsapp.net") || jid.endsWith("@lid");
+}
+
+/**
+ * Marca uma mensagem como processada localmente (Map com TTL)
+ */
+function markMessageAsProcessedLocal(messageId: string): void {
+  processedMessageIds.set(messageId, Date.now());
+  // Limpeza lazy: remover entradas expiradas quando o mapa cresce
+  if (processedMessageIds.size > 1000) {
+    const now = Date.now();
+    Array.from(processedMessageIds.entries()).forEach(([id, ts]) => {
+      if (now - ts > TTL_MS) processedMessageIds.delete(id);
+    });
+  }
 }
 
 /**
@@ -87,7 +103,7 @@ async function pollMessages(): Promise<void> {
 
     const allRecords = response.data?.messages?.records || [];
     lastPollTimestamp = now;
-    pollErrors = 0;
+    consecutiveErrors = 0; // Reset em caso de sucesso
 
     // Filtrar por timestamp NO CÓDIGO (a API ignora o filtro de timestamp)
     // Só processar mensagens posteriores ao início do polling
@@ -106,26 +122,16 @@ async function pollMessages(): Promise<void> {
       const msgId = msg.key?.id;
       if (!msgId) continue;
 
-      // Pular se já processada
+      // Pular se já processada (Map com TTL)
       if (processedMessageIds.has(msgId)) continue;
 
       // Marcar como processada ANTES de processar (evitar duplicatas)
-      processedMessageIds.add(msgId);
-
-      // Limpar IDs antigos se o set ficar muito grande
-      if (processedMessageIds.size > MAX_PROCESSED_IDS) {
-        const idsArray = Array.from(processedMessageIds);
-        const toRemove = idsArray.slice(0, idsArray.length - MAX_PROCESSED_IDS + 100);
-        toRemove.forEach((id) => processedMessageIds.delete(id));
-      }
+      markMessageAsProcessedLocal(msgId);
 
       const remoteJid = msg.key?.remoteJid || "";
       const fromMe = msg.key?.fromMe;
 
       // Ignorar todas as mensagens fromMe (enviadas pelo bot ou operador)
-      // NOTA: Não ativar modo humano aqui porque o polling não consegue
-      // distinguir mensagens do BOT de mensagens do OPERADOR — ambas são fromMe=true.
-      // O modo humano só é ativado via webhook (que recebe em tempo real).
       if (fromMe) {
         continue;
       }
@@ -157,9 +163,9 @@ async function pollMessages(): Promise<void> {
       } else if (message.imageMessage?.caption) {
         messageText = message.imageMessage.caption || "[Imagem enviada]";
       } else if (message.audioMessage || messageType === "audioMessage" || messageType === "pttMessage") {
-        // Transcrever áudio
-        console.log(`[Polling] Áudio recebido, transcrevendo... ID: ${msgId}`);
-        const transcription = await transcribeEvolutionAudio(msgId, baseUrl, apiKey, instanceName);
+        // Transcrever áudio via audioService centralizado
+        logger.info("Polling", `Áudio recebido, transcrevendo... ID: ${msgId}`);
+        const transcription = await transcribeFromPolling(msgId, baseUrl, apiKey, instanceName);
         if (transcription) {
           messageText = transcription;
         } else {
@@ -171,28 +177,30 @@ async function pollMessages(): Promise<void> {
         continue; // Tipo não suportado
       }
 
-      if (!messageText.trim()) continue;
+      if (typeof messageText !== "string" || !messageText.trim()) continue;
+      messageText = messageText.slice(0, 2000);
 
       const phone = extractPhoneFromJid(remoteJid);
       const whatsappId = remoteJid;
       // Extrair número real do telefone quando JID é @lid (via key.remoteJidAlt)
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
-      const realPhone = remoteJidAlt ? remoteJidAlt.replace("@s.whatsapp.net", "").replace(/\D/g, "") : undefined;
+      const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
-      console.log(`[Polling] Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
+      logger.info("Polling", `Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
 
       // Processar mensagem pelo chatbot (mesmo fluxo do webhook, com pushName e realPhone)
       try {
         await processIncomingMessage(whatsappId, phone, messageText, msgId, pushName || undefined, realPhone);
-        console.log(`[Polling] Mensagem processada com sucesso: ${msgId}`);
+        logger.info("Polling", `Mensagem processada com sucesso: ${msgId}`);
       } catch (err) {
-        console.error(`[Polling] Erro ao processar mensagem ${msgId}:`, err);
+        logger.error("Polling", `Erro ao processar mensagem ${msgId}`, err);
       }
     }
   } catch (error: any) {
-    pollErrors++;
-    if (pollErrors <= 3 || pollErrors % 10 === 0) {
-      console.error(`[Polling] Erro ao buscar mensagens (tentativa #${pollErrors}):`, error?.message);
+    consecutiveErrors++;
+    const backoffMs = Math.min(POLL_INTERVAL_MS * Math.pow(2, consecutiveErrors - 1), MAX_BACKOFF_MS);
+    if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
+      logger.warn("Polling", `Erro consecutivo #${consecutiveErrors}, próximo poll em ${backoffMs}ms`, error?.message);
     }
   } finally {
     isPolling = false;
@@ -231,48 +239,11 @@ async function handleOperatorMessage(clientJid: string): Promise<void> {
           .update(conversations)
           .set({ humanMode: true, humanModeUntil })
           .where(eq(conversations.id, conv.id));
-        console.log(`[Polling] Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
+        logger.info("Polling", `Modo humano ativado para ${clientPhone} até ${humanModeUntil.toISOString()}`);
       }
     }
   } catch (err) {
-    console.error("[Polling] Erro ao ativar modo humano:", err);
-  }
-}
-
-/**
- * Transcreve áudio via Evolution API + Whisper
- */
-async function transcribeEvolutionAudio(
-  messageId: string,
-  baseUrl: string,
-  apiKey: string,
-  instanceName: string
-): Promise<string | null> {
-  try {
-    const response = await axios.post(
-      `${baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`,
-      { message: { key: { id: messageId } }, convertToMp4: false },
-      { headers: { apikey: apiKey, "Content-Type": "application/json" }, timeout: 30000 }
-    );
-
-    if (!response.data?.base64) return null;
-
-    const base64Data = response.data.base64.replace(/^data:[^;]+;base64,/, "");
-    const audioBuffer = Buffer.from(base64Data, "base64");
-
-    const s3Key = `audio-transcriptions/${messageId}-${Date.now()}.ogg`;
-    const uploaded = await storagePut(s3Key, audioBuffer, "audio/ogg");
-
-    const result = await transcribeAudio({
-      audioUrl: uploaded.url,
-      language: "pt",
-      prompt: "Transcrição de mensagem de voz em português brasileiro para atendimento de restaurante",
-    });
-
-    if ("error" in result) return null;
-    return result?.text?.trim() || null;
-  } catch {
-    return null;
+    logger.error("Polling", "Erro ao ativar modo humano", err);
   }
 }
 
@@ -280,7 +251,7 @@ async function transcribeEvolutionAudio(
  * Permite que o webhook registre IDs já processados para evitar duplicatas com o polling
  */
 export function markMessageAsProcessed(messageId: string): void {
-  processedMessageIds.add(messageId);
+  markMessageAsProcessedLocal(messageId);
 }
 
 /**
@@ -291,9 +262,23 @@ export function getPollingStats() {
     processedCount: processedMessageIds.size,
     lastPollTimestamp,
     lastPollTime: lastPollTimestamp ? new Date(lastPollTimestamp * 1000).toISOString() : "never",
-    pollErrors,
+    pollErrors: consecutiveErrors,
     isPolling,
   };
+}
+
+/**
+ * Loop recursivo de polling com backoff exponencial em caso de erros.
+ * Cada iteração agenda a próxima após a conclusão, usando o intervalo
+ * base em caso de sucesso ou backoff exponencial em caso de falha.
+ */
+function pollingLoop(): void {
+  pollMessages().finally(() => {
+    const nextInterval = consecutiveErrors > 0
+      ? Math.min(POLL_INTERVAL_MS * Math.pow(2, consecutiveErrors - 1), MAX_BACKOFF_MS)
+      : POLL_INTERVAL_MS;
+    setTimeout(pollingLoop, nextInterval);
+  });
 }
 
 /**
@@ -303,21 +288,14 @@ export function startMessagePolling(): void {
   const { baseUrl } = getEvolutionConfig();
 
   if (!baseUrl) {
-    console.log("[Polling] EVOLUTION_API_URL não configurado, polling desativado");
+    logger.info("Polling", "EVOLUTION_API_URL não configurado, polling desativado");
     return;
   }
 
   // Registrar o timestamp de início para ignorar mensagens anteriores
   pollingStartTimestamp = Math.floor(Date.now() / 1000);
-  console.log(`[Polling] Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
+  logger.info("Polling", `Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
 
-  // Primeira busca após delay inicial
-  setTimeout(() => {
-    pollMessages();
-  }, INITIAL_DELAY_MS);
-
-  // Polling periódico
-  setInterval(() => {
-    pollMessages();
-  }, POLL_INTERVAL_MS);
+  // Primeira busca após delay inicial, depois loop recursivo com backoff
+  setTimeout(pollingLoop, INITIAL_DELAY_MS);
 }

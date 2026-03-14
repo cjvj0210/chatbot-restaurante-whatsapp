@@ -4,6 +4,7 @@ import { invokeLLM } from "./_core/llm";
 import { logger } from "./utils/logger";
 import { getRestaurantSettings, getDb } from "./db";
 import { getChatbotPrompt } from "./chatbotPrompt";
+import { getBRTDateTimeFormatted } from "../shared/businessHours";
 import { orderSessions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
@@ -13,11 +14,29 @@ import { getSiteUrl } from "./_core/siteUrl";
 import { notifyOwner } from "./_core/notification";
 import { reservations } from "../drizzle/schema";
 
-// Armazenamento em memória das conversas
-const conversations = new Map<string, Array<{ role: "user" | "assistant"; content: string }>>();
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas de inatividade
+
+interface ConversationSession {
+  history: Array<{ role: "user" | "assistant"; content: string }>;
+  lastAccessAt: number;
+}
+
+// Armazenamento em memória das conversas com timestamp de último acesso
+const conversations = new Map<string, ConversationSession>();
 
 // Mapa de sessão de chat → sessão de pedido ativo
 const chatOrderSessions = new Map<string, string>();
+
+// Limpeza periódica de sessões inativas há mais de 24 horas
+setInterval(() => {
+  const now = Date.now();
+  Array.from(conversations.entries()).forEach(([id, session]) => {
+    if (now - session.lastAccessAt > SESSION_TTL_MS) {
+      conversations.delete(id);
+      chatOrderSessions.delete(id);
+    }
+  });
+}, 60 * 60 * 1000); // Verificar a cada 1 hora
 
 // Processa e salva reserva detectada na resposta do bot
 async function processReservationMarker(message: string): Promise<string> {
@@ -86,26 +105,14 @@ export const chatSimulatorRouter = router({
       const { sessionId, message } = input;
 
       // Obter histórico da conversa
-      let history = conversations.get(sessionId) || [];
+      const session = conversations.get(sessionId);
+      let history = session?.history || [];
 
       // Adicionar mensagem do usuário ao histórico
       history.push({ role: "user", content: message });
 
-      // Obter data/hora atual para contexto (fuso Brasília UTC-3)
-      const hoje = new Date();
-      const tzBrasilia = 'America/Sao_Paulo';
-      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
-      const dataCompleta = hoje.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        timeZone: tzBrasilia,
-      });
-      const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: tzBrasilia,
-      });
+      // Obter data/hora atual para contexto (fuso Brasília UTC-3) — com cache de 500ms
+      const { diaSemana, dataCompleta, horarioAtual } = getBRTDateTimeFormatted();
 
       // Usar o prompt COMPLETO do restaurante (mesmo do WhatsApp real)
       const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
@@ -184,8 +191,8 @@ export const chatSimulatorRouter = router({
         history = history.slice(-20);
       }
 
-      // Salvar histórico atualizado
-      conversations.set(sessionId, history);
+      // Salvar histórico atualizado com timestamp de acesso
+      conversations.set(sessionId, { history, lastAccessAt: Date.now() });
 
       return {
         message: assistantMessage,
@@ -229,26 +236,14 @@ export const chatSimulatorRouter = router({
       const transcribedText = 'text' in transcription ? transcription.text : "";
 
       // Obter histórico da conversa
-      let history = conversations.get(sessionId) || [];
+      const audioSession = conversations.get(sessionId);
+      let history = audioSession?.history || [];
       history.push({ role: "user", content: `[Áudio]: ${transcribedText}` });
 
-      // Obter data/hora atual (fuso Brasília UTC-3)
-      const hoje = new Date();
-      const tzBrasilia = 'America/Sao_Paulo';
-      const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long", timeZone: tzBrasilia });
-      const dataCompleta = hoje.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        timeZone: tzBrasilia,
-      });
-      const horarioAtual = hoje.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: tzBrasilia,
-      });
+      // Obter data/hora atual (fuso Brasília UTC-3) — com cache de 500ms
+      const { diaSemana: dS, dataCompleta: dC, horarioAtual: hA } = getBRTDateTimeFormatted();
 
-      const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
+      const systemPrompt = getChatbotPrompt(dS, dC, hA);
 
       const aiMessages = [
         { role: "system" as const, content: systemPrompt },
@@ -313,7 +308,7 @@ export const chatSimulatorRouter = router({
 
       history.push({ role: "assistant", content: assistantMessage });
       if (history.length > 20) history = history.slice(-20);
-      conversations.set(sessionId, history);
+      conversations.set(sessionId, { history, lastAccessAt: Date.now() });
 
       return {
         message: assistantMessage,
