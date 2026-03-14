@@ -12,6 +12,7 @@ import { processIncomingMessage } from "./chatbot";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromPolling } from "./services/audioService";
 import { logger } from "./utils/logger";
+import { CHATBOT } from "../shared/constants";
 
 // Em produção usa 10s (webhook é confiável); em dev usa 3s (webhook pode não funcionar localmente)
 // Pode ser sobrescrito via POLL_INTERVAL_MS env var
@@ -260,9 +261,11 @@ export function startMessagePolling(): void {
     return;
   }
 
-  // Registrar o timestamp de início para ignorar mensagens anteriores
-  pollingStartTimestamp = Math.floor(Date.now() / 1000);
-  logger.info("Polling", `Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | ignora msgs antes de ${new Date().toISOString()}`);
+  // Registrar o timestamp de início, recuando RESTART_SAFETY_WINDOW_SECONDS para cobrir
+  // mensagens que chegaram durante o restart do servidor. O tryClaimMessage (INSERT IGNORE)
+  // garante que mensagens já processadas antes do restart não sejam reprocessadas.
+  pollingStartTimestamp = Math.floor(Date.now() / 1000) - CHATBOT.RESTART_SAFETY_WINDOW_SECONDS;
+  logger.info("Polling", `Iniciado — busca a cada ${POLL_INTERVAL_MS / 1000}s | janela de segurança: ${CHATBOT.RESTART_SAFETY_WINDOW_SECONDS}s | ignora msgs antes de ${new Date(pollingStartTimestamp * 1000).toISOString()}`);
 
   // Primeira busca após delay inicial, depois loop recursivo com backoff
   setTimeout(pollingLoop, INITIAL_DELAY_MS);
