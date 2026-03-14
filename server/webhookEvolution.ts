@@ -115,18 +115,16 @@ function isStatusBroadcast(jid: string): boolean {
  */
 const recentWebhookEvents = new Map<string, number>();
 const WEBHOOK_DEDUP_WINDOW_MS = CHATBOT.WEBHOOK_DEDUP_WINDOW_MS;
-const MAX_WEBHOOK_DEDUP = 500;
+
+// Limpeza periódica de entradas expiradas a cada 60 segundos
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, ts] of recentWebhookEvents.entries()) {
+    if (now - ts > WEBHOOK_DEDUP_WINDOW_MS) recentWebhookEvents.delete(id);
+  }
+}, 60_000);
 
 function isWebhookDuplicate(messageId: string): boolean {
-  // Limpar entradas antigas
-  if (recentWebhookEvents.size > MAX_WEBHOOK_DEDUP) {
-    const now = Date.now();
-    Array.from(recentWebhookEvents.entries()).forEach(([id, ts]) => {
-      if (now - ts > WEBHOOK_DEDUP_WINDOW_MS) {
-        recentWebhookEvents.delete(id);
-      }
-    });
-  }
   if (recentWebhookEvents.has(messageId)) {
     return true;
   }
