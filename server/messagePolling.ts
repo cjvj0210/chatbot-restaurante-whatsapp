@@ -85,10 +85,15 @@ async function pollMessages(): Promise<void> {
   }
 
   try {
-    // Sempre buscar mensagens dos últimos 60 segundos
-    // Confiamos no set de IDs processados para evitar duplicatas
+    // WP-3: Estender janela de busca proporcionalmente ao backoff.
+    // Em operação normal: 60s. Após erros consecutivos, a janela cresce para
+    // cobrir mensagens que chegaram durante a indisponibilidade.
+    // O tryClaimMessage (INSERT IGNORE) garante que não haverá reprocessamento.
     const now = Math.floor(Date.now() / 1000);
-    const since = now - 60; // Janela fixa de 60 segundos
+    const backoffWindow = consecutiveErrors > 0
+      ? Math.min(60 * Math.pow(2, consecutiveErrors), 600) // máx 10 min
+      : 60;
+    const since = now - backoffWindow;
 
     const response = await axios.post(
       `${baseUrl}/chat/findMessages/${instanceName}`,

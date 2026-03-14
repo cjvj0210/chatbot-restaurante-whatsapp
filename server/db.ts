@@ -376,6 +376,45 @@ export async function createCustomer(customer: InsertCustomer): Promise<Customer
   return inserted[0]!;
 }
 
+/**
+ * Cria um cliente e sua conversa inicial em uma única transação atômica.
+ * Garante que nunca exista um cliente sem conversa ativa após a criação.
+ *
+ * DB-2: substitui o padrão de dois inserts independentes que poderiam
+ * deixar um cliente órfão se `createConversation` falhasse.
+ */
+export async function createCustomerWithConversation(
+  customerData: InsertCustomer,
+  conversationData: Omit<InsertConversation, "customerId">
+): Promise<{ customer: Customer; conversation: Conversation }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db.transaction(async (tx) => {
+    const customerResult = await tx.insert(customers).values(customerData);
+    const customerId = Number(customerResult[0].insertId);
+
+    const convResult = await tx.insert(conversations).values({
+      ...conversationData,
+      customerId,
+    });
+    const convId = Number(convResult[0].insertId);
+
+    const [customer] = await tx
+      .select()
+      .from(customers)
+      .where(eq(customers.id, customerId))
+      .limit(1);
+    const [conversation] = await tx
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, convId))
+      .limit(1);
+
+    return { customer: customer!, conversation: conversation! };
+  });
+}
+
 export async function updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

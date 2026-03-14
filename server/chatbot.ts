@@ -4,6 +4,7 @@ import {
   getRestaurantSettings,
   getCustomerByWhatsappId,
   createCustomer,
+  createCustomerWithConversation,
   updateCustomer,
   getActiveConversation,
   createConversation,
@@ -224,35 +225,46 @@ async function findOrCreateCustomerAndConversation(
     const canonicalWhatsappId = realPhone
       ? phoneNormalizer.toJid(realPhone)
       : whatsappId;
-    customer = await createCustomer({
-      whatsappId: canonicalWhatsappId,
-      phone: normalizedPhone,
-      name: pushName || null,
-      address: null,
-    });
-  } else {
-    // Atualizar dados do cliente se estiverem faltando ou desatualizados
-    const updates: CustomerUpdates = {};
-    if (!customer.name && pushName) {
-      updates.name = pushName;
-    }
-    // Se o whatsappId atual é @lid mas temos o número real, migrar para o formato canônico
-    if (realPhone && customer.whatsappId.endsWith("@lid")) {
-      updates.whatsappId = phoneNormalizer.toJid(realPhone);
-      updates.phone = normalizedPhone;
-    }
-    // Se o phone está com o LID (muito longo), substituir pelo número real
-    if (realPhone && customer.phone && customer.phone.length > 13) {
-      updates.phone = normalizedPhone;
-    }
-    if (Object.keys(updates).length > 0) {
-      try {
-        await updateCustomer(customer.id, updates);
-        Object.assign(customer, updates);
-        logger.info("Chatbot", `Cliente ${customer.id} atualizado: ${Object.keys(updates).join(", ")}`);
-      } catch (err) {
-        logger.error("Chatbot", "Erro ao atualizar cliente", err);
+    // DB-2: criar cliente + conversa em uma transação atômica para evitar
+    // clientes órfãos (sem conversa) em caso de falha entre os dois inserts.
+    const created = await createCustomerWithConversation(
+      {
+        whatsappId: canonicalWhatsappId,
+        phone: normalizedPhone,
+        name: pushName || null,
+        address: null,
+      },
+      {
+        whatsappMessageId: messageId,
+        intent: null,
+        context: JSON.stringify({}),
+        isActive: true,
       }
+    );
+    return created;
+  }
+
+  // Cliente existente: atualizar dados se estiverem faltando ou desatualizados
+  const updates: CustomerUpdates = {};
+  if (!customer.name && pushName) {
+    updates.name = pushName;
+  }
+  // Se o whatsappId atual é @lid mas temos o número real, migrar para o formato canônico
+  if (realPhone && customer.whatsappId.endsWith("@lid")) {
+    updates.whatsappId = phoneNormalizer.toJid(realPhone);
+    updates.phone = normalizedPhone;
+  }
+  // Se o phone está com o LID (muito longo), substituir pelo número real
+  if (realPhone && customer.phone && customer.phone.length > 13) {
+    updates.phone = normalizedPhone;
+  }
+  if (Object.keys(updates).length > 0) {
+    try {
+      await updateCustomer(customer.id, updates);
+      Object.assign(customer, updates);
+      logger.info("Chatbot", `Cliente ${customer.id} atualizado: ${Object.keys(updates).join(", ")}`);
+    } catch (err) {
+      logger.error("Chatbot", "Erro ao atualizar cliente", err);
     }
   }
 
