@@ -41,6 +41,7 @@ import {
   processedMessages,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { cached, invalidateCache } from "./cache";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -129,12 +130,19 @@ export async function getUserByOpenId(openId: string) {
 
 // ===== Restaurant Settings =====
 
-export async function getRestaurantSettings(): Promise<RestaurantSettings | undefined> {
-  const db = await getDb();
-  if (!db) return undefined;
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
 
-  const result = await db.select().from(restaurantSettings).limit(1);
-  return result[0];
+export async function getRestaurantSettings(): Promise<RestaurantSettings | undefined> {
+  return cached(
+    "restaurant_settings",
+    async () => {
+      const db = await getDb();
+      if (!db) return undefined;
+      const result = await db.select().from(restaurantSettings).limit(1);
+      return result[0];
+    },
+    SETTINGS_CACHE_TTL_MS
+  );
 }
 
 export async function upsertRestaurantSettings(settings: InsertRestaurantSettings): Promise<void> {
@@ -142,12 +150,14 @@ export async function upsertRestaurantSettings(settings: InsertRestaurantSetting
   if (!db) throw new Error("Database not available");
 
   const existing = await getRestaurantSettings();
-  
+
   if (existing) {
     await db.update(restaurantSettings).set(settings).where(eq(restaurantSettings.id, existing.id));
   } else {
     await db.insert(restaurantSettings).values(settings);
   }
+  // Invalidar cache após atualização
+  invalidateCache("restaurant_settings");
 }
 
 // ===== WhatsApp Settings =====
