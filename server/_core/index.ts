@@ -228,69 +228,45 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
     // Iniciar keep-alive para manter Evolution API acordada (Render.com free tier)
     startKeepAlive();
-    // Iniciar cron job de lembretes de reserva (a cada 15 minutos)
-    setInterval(() => {
-      sendReservationReminders().catch(err =>
-        console.error('[Cron] Erro no lembrete de reserva:', err)
-      );
-    }, 15 * 60 * 1000);
-    // Executar imediatamente na inicialização também
-    sendReservationReminders().catch(() => {});
-    console.log('[Cron] Lembrete de reservas iniciado (a cada 15 min)');
-
-    // Monitoramento da instância WhatsApp (a cada 5 minutos)
-    setInterval(() => {
-      monitorWhatsAppInstance().catch(err =>
-        console.error('[Cron] Erro no monitoramento WhatsApp:', err)
-      );
-    }, 5 * 60 * 1000);
-    monitorWhatsAppInstance().catch(() => {});
-    console.log('[Cron] Monitoramento WhatsApp iniciado (a cada 5 min)');
-
-    // Manutenção: limpeza de sessões expiradas (a cada 1 hora)
-    setInterval(() => {
-      runMaintenance().catch(err =>
-        console.error('[Cron] Erro na manutenção:', err)
-      );
-    }, 60 * 60 * 1000);
-    runMaintenance().catch(() => {});
-    console.log('[Cron] Manutenção automática iniciada (a cada 1 hora)');
-
-    // Worker de retry: reenviar mensagens com falha (a cada 5 minutos)
-    setInterval(() => {
-      retryFailedMessages().catch(err =>
-        console.error('[Cron] Erro no worker de retry:', err)
-      );
-    }, 5 * 60 * 1000);
-    console.log('[Cron] Worker de retry de mensagens iniciado (a cada 5 min)');
-
-    // Expirar modo humano proativamente a cada 5 minutos
-    setInterval(() => {
-      expireHumanModes().catch(() => {});
-    }, 5 * 60 * 1000);
-    console.log('[Cron] Expiração proativa de modo humano iniciada (a cada 5 min)');
-
-    // Limpeza de rate limits do chatbot (a cada 30 minutos)
-    setInterval(() => {
-      cleanupRateLimits();
-    }, 30 * 60 * 1000);
-    console.log('[Cron] Limpeza de rate limits iniciada (a cada 30 min)');
 
     // Polling de mensagens: ATIVO como sistema principal
-    // O webhook da Evolution API no Render não dispara de forma confiável.
-    // O polling busca mensagens a cada 3s. Webhook continua ativo como complemento.
-    // Deduplicação por messageId via BANCO DE DADOS garante que não há respostas duplicadas
-    // mesmo com múltiplas instâncias do servidor (dev + produção).
     startMessagePolling();
     console.log('[Polling] Serviço de polling de mensagens ATIVO (sistema principal)');
 
-    // Limpeza de mensagens processadas no banco (a cada 30 minutos)
+    // Executar tarefas de inicialização imediata
+    sendReservationReminders().catch(() => {});
+    monitorWhatsAppInstance().catch(() => {});
+    runMaintenance().catch(() => {});
+
+    // Scheduler centralizado: um único setInterval de 5s que verifica quais tarefas precisam rodar
+    interface ScheduledTask {
+      name: string;
+      fn: () => Promise<void>;
+      intervalMs: number;
+      lastRun: number;
+    }
+
+    const scheduledTasks: ScheduledTask[] = [
+      { name: "Lembrete de reservas",        fn: () => sendReservationReminders(),  intervalMs: 15 * 60 * 1000, lastRun: Date.now() },
+      { name: "Monitoramento WhatsApp",       fn: () => monitorWhatsAppInstance(),   intervalMs:  5 * 60 * 1000, lastRun: Date.now() },
+      { name: "Manutenção automática",        fn: () => runMaintenance(),            intervalMs: 60 * 60 * 1000, lastRun: Date.now() },
+      { name: "Worker de retry",              fn: () => retryFailedMessages(),       intervalMs:  5 * 60 * 1000, lastRun: Date.now() },
+      { name: "Expiração de modo humano",     fn: () => expireHumanModes(),          intervalMs:  5 * 60 * 1000, lastRun: Date.now() },
+      { name: "Limpeza de rate limits",       fn: async () => cleanupRateLimits(),   intervalMs: 30 * 60 * 1000, lastRun: Date.now() },
+      { name: "Limpeza de dedup distribuída", fn: () => cleanupProcessedMessages(),  intervalMs: 30 * 60 * 1000, lastRun: Date.now() },
+    ];
+
+    console.log(`[Cron] ${scheduledTasks.length} tarefas agendadas via scheduler centralizado`);
+
     setInterval(() => {
-      cleanupProcessedMessages().catch(err =>
-        console.error('[Cron] Erro na limpeza de dedup:', err)
-      );
-    }, 30 * 60 * 1000);
-    console.log('[Cron] Limpeza de dedup distribuída iniciada (a cada 30 min)');
+      const now = Date.now();
+      for (const task of scheduledTasks) {
+        if (now - task.lastRun >= task.intervalMs) {
+          task.lastRun = now;
+          task.fn().catch(err => console.error(`[Cron] Erro em "${task.name}":`, err));
+        }
+      }
+    }, 5_000);
   });
 }
 
