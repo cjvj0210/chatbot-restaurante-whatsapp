@@ -185,7 +185,10 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       }
 
       // Se o ID NÃO está registrado, foi o OPERADOR que digitou manualmente
-      logger.info("Webhook", `Mensagem do OPERADOR detectada (ID não registrado): ${messageId}`);
+      logger.info("Webhook", `Mensagem do OPERADOR detectada (ID não registrado): ${messageId} | remoteJid: ${key.remoteJid} | remoteJidAlt: ${key.remoteJidAlt || 'N/A'}`);
+
+      // Extrair número real do telefone quando JID é @lid (via remoteJidAlt)
+      const operatorRealPhone = key.remoteJidAlt ? phoneNormalizer.normalize(key.remoteJidAlt) : undefined;
 
       // Extrair texto da mensagem do operador
       const operatorMsg = payload.data.message?.conversation || payload.data.message?.extendedTextMessage?.text || "";
@@ -193,13 +196,14 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       // Aceitar variações do comando para reativar o bot
       const normalizedCmd = operatorMsg.trim().toLowerCase();
       if (BOT_COMMANDS.has(normalizedCmd)) {
-        logger.info("Webhook", `Comando ${normalizedCmd} recebido — apagando mensagem e reativando bot`);
+        logger.info("Webhook", `🟢 Comando ${normalizedCmd} recebido de operador — remoteJid: ${key.remoteJid} | realPhone: ${operatorRealPhone || 'N/A'}`);
 
         // 1. Apagar a mensagem #bot antes do cliente ver
-        await deleteMessageForEveryone(key.remoteJid, messageId, true);
+        const deleteResult = await deleteMessageForEveryone(key.remoteJid, messageId, true);
+        logger.info("Webhook", `Delete #bot result: ${deleteResult ? 'sucesso' : 'FALHOU'}`);
 
-        // 2. Desativar modo humano
-        await deactivateHumanModeForJid(key.remoteJid);
+        // 2. Desativar modo humano (passar realPhone para resolver JIDs @lid)
+        await deactivateHumanModeForJid(key.remoteJid, operatorRealPhone);
 
         // 3. Enviar confirmação silenciosa ao operador (mensagem que se auto-apaga)
         // Enviamos uma confirmação e apagamos em 3 segundos
@@ -214,8 +218,8 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
 
       // Qualquer outra mensagem do operador → ativar modo humano (30 min)
       // Verificar se já está em modo humano para não enviar notificação repetida
-      const isAlreadyHuman = await isHumanModeActiveForJid(key.remoteJid);
-      await activateHumanModeForJid(key.remoteJid);
+      const isAlreadyHuman = await isHumanModeActiveForJid(key.remoteJid, operatorRealPhone);
+      await activateHumanModeForJid(key.remoteJid, operatorRealPhone);
 
       if (!isAlreadyHuman) {
         // Primeira mensagem do operador: enviar notificação silenciosa

@@ -167,7 +167,7 @@ describe("webhookEvolution — fromMe=true routing (QM-27)", () => {
 
     await handleEvolutionWebhook(req, res);
 
-    expect(mockDeactivateHumanMode).toHaveBeenCalledWith(payload.data.key.remoteJid);
+    expect(mockDeactivateHumanMode).toHaveBeenCalledWith(payload.data.key.remoteJid, undefined);
     expect(mockProcessIncomingMessage).not.toHaveBeenCalled();
   });
 
@@ -182,7 +182,7 @@ describe("webhookEvolution — fromMe=true routing (QM-27)", () => {
 
     await handleEvolutionWebhook(req, res);
 
-    expect(mockActivateHumanMode).toHaveBeenCalledWith(payload.data.key.remoteJid);
+    expect(mockActivateHumanMode).toHaveBeenCalledWith(payload.data.key.remoteJid, undefined);
     expect(mockProcessIncomingMessage).not.toHaveBeenCalled();
   });
 

@@ -1273,3 +1273,8 @@
 - [x] Adicionar detecção NLP como fallback (frases como "quero falar com humano", "atendente", etc.)
 - [x] Adicionar remoção do marcador [CHAMAR_ATENDENTE] da resposta antes de enviar ao cliente
 - [x] 6 novos testes (NLP fallback, detecção de pedido do cliente, não-ativação falsa, remoção do marcador)
+
+## Bug - Comando #bot (14/03/2026 - 19:52)
+- [x] Comando #bot aparece no chat do cliente como mensagem visível — CAUSA: deleteMessageForEveryone pode falhar/demorar. Adicionado logging detalhado.
+- [x] Comando #bot não reativa o bot — CAUSA RAIZ: humanModeService não passava realPhone para getCustomerByWhatsappId. JIDs @lid não encontravam customer salvo com @s.whatsapp.net. Corrigido com findCustomerByJid com fallback.
+- [x] #bot é interceptado no webhook (fromMe=true) e NÃO chega ao processIncomingMessage. Polling ignora fromMe=true.
