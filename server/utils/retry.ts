@@ -16,20 +16,20 @@ export interface RetryOptions {
 /**
  * Executa uma função assíncrona com retry e backoff exponencial.
  *
- * @param fn - Função a ser executada
+ * @param operation - Função a ser executada
  * @param options - Opções de retry
  * @returns Resultado da função em caso de sucesso
  * @throws Último erro caso todas as tentativas falhem
  */
 export async function withRetry<T>(
-  fn: () => Promise<T>,
+  operation: () => Promise<T>,
   options: RetryOptions = {}
 ): Promise<T> {
   const { maxRetries = 3, delayMs = 1000, label = "Operação" } = options;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await fn();
+      return await operation();
     } catch (error) {
       if (attempt === maxRetries) throw error;
       const base = delayMs * Math.pow(2, attempt - 1);

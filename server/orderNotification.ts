@@ -124,7 +124,7 @@ export function formatConfirmationMessage(
   orderType: string,
   customerName: string
 ): string {
-  const tempo = calcularTempoEstimado(orderType);
+  const deliveryTimeRange = calcularTempoEstimado(orderType);
   const now = getNowBRT();
   const dayOfWeek = now.getDay(); // Horário BRT
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -160,8 +160,8 @@ export function formatConfirmationMessage(
   }
 
   // Calcular horário estimado de chegada
-  const chegadaMin = new Date(baseTime.getTime() + tempo.min * 60 * 1000);
-  const chegadaMax = new Date(baseTime.getTime() + tempo.max * 60 * 1000);
+  const chegadaMin = new Date(baseTime.getTime() + deliveryTimeRange.min * 60 * 1000);
+  const chegadaMax = new Date(baseTime.getTime() + deliveryTimeRange.max * 60 * 1000);
   // Formatar hora diretamente (d já está em BRT, não precisa de timeZone)
   const formatHora = (d: Date) => {
     const h = d.getHours().toString().padStart(2, '0');

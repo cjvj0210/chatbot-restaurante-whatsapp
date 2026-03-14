@@ -24,3 +24,12 @@ export const ORDER = {
   /** Tempo estimado de entrega padrão (minutos) */
   DEFAULT_ESTIMATED_TIME_MINUTES: 40,
 } as const;
+
+export const INFRA = {
+  /** Intervalo de ping keep-alive para Evolution API (ms) */
+  KEEP_ALIVE_PING_INTERVAL_MS: 4 * 60 * 1000,
+  /** Intervalo de verificação do webhook (ms) */
+  WEBHOOK_CHECK_INTERVAL_MS: 15 * 60 * 1000,
+  /** Delay inicial antes do primeiro polling/keep-alive (ms) */
+  POLLING_INITIAL_DELAY_MS: 15_000,
+} as const;

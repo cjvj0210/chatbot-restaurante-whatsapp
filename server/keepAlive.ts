@@ -14,10 +14,11 @@ import axios from "axios";
 import { notifyOwner } from "./_core/notification";
 import { logger } from "./utils/logger";
 import { getSiteUrl } from "./_core/siteUrl";
+import { INFRA } from "../shared/constants";
 
-const PING_INTERVAL_MS = 4 * 60 * 1000; // 4 minutos (mais agressivo para evitar hibernação)
+const PING_INTERVAL_MS = INFRA.KEEP_ALIVE_PING_INTERVAL_MS;
 const INITIAL_DELAY_MS = 10000; // 10 segundos após iniciar
-const WEBHOOK_CHECK_INTERVAL_MS = 15 * 60 * 1000; // Verificar webhook a cada 15 min
+const WEBHOOK_CHECK_INTERVAL_MS = INFRA.WEBHOOK_CHECK_INTERVAL_MS;
 
 let lastSuccessfulPing = Date.now();
 let consecutiveFailures = 0;

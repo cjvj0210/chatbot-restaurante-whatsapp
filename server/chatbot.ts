@@ -37,6 +37,13 @@ interface ChatContext {
   awaitingInput?: string;
 }
 
+/** Fields that can be updated on an existing customer record */
+interface CustomerUpdates {
+  name?: string;
+  whatsappId?: string;
+  phone?: string;
+}
+
 // A deduplicação agora é feita via banco de dados (tryClaimMessage)
 // para funcionar entre múltiplas instâncias do servidor (dev + produção).
 
@@ -78,14 +85,14 @@ async function checkAndExpireHumanMode(conversationId: number): Promise<boolean>
  */
 const processingLocks = new Map<string, Promise<void>>();
 
-async function withClientLock(whatsappId: string, fn: () => Promise<void>): Promise<void> {
+async function withClientLock(whatsappId: string, operation: () => Promise<void>): Promise<void> {
   // Esperar qualquer processamento anterior do mesmo cliente terminar
   const existing = processingLocks.get(whatsappId);
   if (existing) {
     await existing;
   }
 
-  const promise = fn();
+  const promise = operation();
   processingLocks.set(whatsappId, promise);
 
   try {
@@ -215,11 +222,6 @@ async function _processIncomingMessageInternal(
       });
     } else {
       // Atualizar dados do cliente se estiverem faltando
-      interface CustomerUpdates {
-        name?: string;
-        whatsappId?: string;
-        phone?: string;
-      }
       const updates: CustomerUpdates = {};
       if (!customer.name && pushName) {
         updates.name = pushName;
@@ -340,7 +342,11 @@ async function _processIncomingMessageInternal(
         const settings = await getRestaurantSettings();
         const restaurantPhone = settings?.phone
           ? settings.phone.replace(/\D/g, "")
-          : "5517982123269"; // fallback
+          : process.env.RESTAURANT_PHONE?.replace(/\D/g, "") ?? "";
+
+        if (!restaurantPhone) {
+          logger.warn("Chatbot", "Telefone do restaurante não configurado — alerta de atendente não enviado");
+        } else {
         const restaurantPhoneNorm = restaurantPhone.startsWith("55")
           ? restaurantPhone
           : `55${restaurantPhone}`;
@@ -357,6 +363,7 @@ async function _processIncomingMessageInternal(
           logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
         });
         logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
+        } // end else (restaurantPhone exists)
       } catch (err) {
         logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);
       }

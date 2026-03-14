@@ -48,10 +48,9 @@ function markMessageAsProcessedLocal(messageId: string): void {
 // Timestamp da última busca bem-sucedida (em segundos Unix)
 let lastPollTimestamp = 0;
 let isPolling = false;
-let pollErrors = 0;
 // Timestamp de quando o polling iniciou (para ignorar mensagens anteriores)
 let pollingStartTimestamp = 0;
-// Backoff exponencial para erros consecutivos
+// Contador de erros consecutivos (resetado no sucesso, usado para backoff e logging)
 let consecutiveErrors = 0;
 const MAX_BACKOFF_MS = 60_000;
 
@@ -106,7 +105,6 @@ async function pollMessages(): Promise<void> {
 
     const allRecords = response.data?.messages?.records || [];
     lastPollTimestamp = now;
-    pollErrors = 0;
     if (consecutiveErrors > 0) {
       logger.info("Polling", `Polling recuperado após ${consecutiveErrors} erro(s) consecutivo(s)`);
       consecutiveErrors = 0;
@@ -207,10 +205,9 @@ async function pollMessages(): Promise<void> {
       }
     }
   } catch (error: any) {
-    pollErrors++;
     consecutiveErrors++;
     const backoffMs = Math.min(POLL_INTERVAL_MS * Math.pow(2, consecutiveErrors - 1), MAX_BACKOFF_MS);
-    if (pollErrors <= 3 || pollErrors % 10 === 0) {
+    if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
       logger.warn("Polling", `Erro consecutivo #${consecutiveErrors}, próximo poll em ${backoffMs}ms`, error?.message);
     }
   } finally {

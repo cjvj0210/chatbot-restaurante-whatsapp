@@ -74,6 +74,9 @@ interface EvolutionWebhookPayload {
   apikey?: string;
 }
 
+/** Comandos que o operador pode enviar para reativar o bot (verificados em fromMe=true) */
+const BOT_COMMANDS = new Set(["#bot", "#ativar", "#reativar"]);
+
 /**
  * Verifica se o JID é de uma conversa individual (não grupo/status)
  * Aceita tanto @s.whatsapp.net quanto @lid (Linked ID)
@@ -188,7 +191,6 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       const operatorMsg = payload.data.message?.conversation || payload.data.message?.extendedTextMessage?.text || "";
 
       // Aceitar variações do comando para reativar o bot
-      const BOT_COMMANDS = new Set(["#bot", "#ativar", "#reativar"]);
       const normalizedCmd = operatorMsg.trim().toLowerCase();
       if (BOT_COMMANDS.has(normalizedCmd)) {
         logger.info("Webhook", `Comando ${normalizedCmd} recebido — apagando mensagem e reativando bot`);
