@@ -7,6 +7,8 @@
 interface FaqEntry {
   patterns: RegExp[];
   response: string;
+  /** Palavras-chave rápidas: se nenhuma estiver presente, pula os regexes */
+  quickKeywords: string[];
   /** Se true, a resposta depende do horário/dia e deve ser gerada dinamicamente */
   dynamic?: boolean;
 }
@@ -20,11 +22,13 @@ export function checkFaqCache(message: string, diaSemana?: string, horarioAtual?
     .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // remover acentos
 
   for (const entry of FAQ_ENTRIES) {
+    // Pré-filtro rápido: pular regex se nenhuma keyword estiver presente na string
+    if (entry.quickKeywords.length > 0 && !entry.quickKeywords.some((kw) => normalized.includes(kw))) {
+      continue;
+    }
+
     for (const pattern of entry.patterns) {
       if (pattern.test(normalized)) {
-        if (entry.dynamic && typeof entry.response === "string") {
-          return entry.response;
-        }
         return entry.response;
       }
     }
@@ -36,6 +40,7 @@ export function checkFaqCache(message: string, diaSemana?: string, horarioAtual?
 const FAQ_ENTRIES: FaqEntry[] = [
   // --- Saudações simples ---
   {
+    quickKeywords: ["oi", "ola", "hey", "eai", "bom", "boa", "opa", "fala"],
     patterns: [
       /^(oi|ola|hey|eai|e ai|bom dia|boa tarde|boa noite|opa|fala)[\s!?.]*$/,
       /^(oi|ola|hey|opa),?\s*(tudo bem|tudo bom|como vai|beleza|suave)[\s!?.]*$/,
@@ -45,6 +50,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Endereço ---
   {
+    quickKeywords: ["onde", "endereco", "localiza", "chego"],
     patterns: [
       /onde (fica|e|fica o|e o|localiza)/i,
       /qual (o )?endereco/i,
@@ -57,6 +63,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Formas de pagamento ---
   {
+    quickKeywords: ["pagamento", "pagar", "cartao", "pix", "dinheiro", "credito", "debito"],
     patterns: [
       /forma.?de.?pagamento/i,
       /aceita.?(cartao|pix|dinheiro|credito|debito)/i,
@@ -68,6 +75,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Telefone ---
   {
+    quickKeywords: ["telefone", "contato", "ligar", "numero", "whatsapp"],
     patterns: [
       /qual (o )?telefone/i,
       /numero.?(de )?telefone/i,
@@ -79,6 +87,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Taxa de serviço ---
   {
+    quickKeywords: ["taxa", "servico", "gorjeta", "garcom", "10", "porcento"],
     patterns: [
       /taxa.?de.?servico/i,
       /cobr(a|am).?10/i,
@@ -91,6 +100,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Aniversário ---
   {
+    quickKeywords: ["aniversario", "niver", "desconto"],
     patterns: [
       /aniversario/i,
       /niver/i,
@@ -102,6 +112,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Desconto bariátrica ---
   {
+    quickKeywords: ["bariatric", "desconto", "carteirinha", "operacao"],
     patterns: [
       /bariatric/i,
       /desconto.?bariatric/i,
@@ -113,6 +124,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Vagas de emprego ---
   {
+    quickKeywords: ["vaga", "trabalhar", "curriculo", "contratando", "emprego"],
     patterns: [
       /vaga.?de.?emprego/i,
       /trabalhar.?(ai|aqui|no restaurante)/i,
@@ -125,6 +137,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Fornecedores ---
   {
+    quickKeywords: ["fornecedor", "compras", "vender", "produto", "representante"],
     patterns: [
       /fornecedor/i,
       /responsavel.?(de |por )?compras/i,
@@ -136,6 +149,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Crianças pagam? ---
   {
+    quickKeywords: ["crianca", "preco", "valor", "quanto", "kids", "infantil"],
     patterns: [
       /crianca.?pag/i,
       /preco.?(de |da |pra )?crianca/i,
@@ -149,6 +163,7 @@ const FAQ_ENTRIES: FaqEntry[] = [
 
   // --- Taxa de entrega ---
   {
+    quickKeywords: ["entrega", "frete", "taxa", "valor", "quanto"],
     patterns: [
       /taxa.?de.?entrega/i,
       /quanto.?(custa|e).?a?.?entrega/i,
