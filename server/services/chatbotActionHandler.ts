@@ -15,9 +15,7 @@ import { orderSessions, orders, reservations } from "../../drizzle/schema";
 import { getNowBRT, checkBusinessHours } from "../../shared/businessHours";
 import { notifyOwner } from "../_core/notification";
 import { logger } from "../utils/logger";
-
-// URL do site em produção — hardcoded para evitar SITE_DEV_URL sobrescrever
-const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
+import { getSiteUrl } from "../_core/siteUrl";
 
 /**
  * Processa [GERAR_LINK_PEDIDO] — cria uma order session e substitui o placeholder
@@ -38,7 +36,7 @@ export async function handleOrderLink(aiResponse: string, phone: string): Promis
         status: "pending",
         expiresAt,
       });
-      const orderLink = `${SITE_URL}/pedido/${sessionId}`;
+      const orderLink = `${getSiteUrl()}/pedido/${sessionId}`;
       // Link em linha isolada (iOS exige URL sozinha na linha para ser clicável)
       aiResponse = aiResponse.replace(/\[GERAR_LINK_PEDIDO\]/g, `\n${orderLink}\n`);
       aiResponse = aiResponse.replace(/\n{3,}/g, "\n\n");
@@ -52,6 +50,85 @@ export async function handleOrderLink(aiResponse: string, phone: string): Promis
   }
 
   return aiResponse;
+}
+
+/**
+ * Calcula a mensagem de previsão de entrega para pedidos delivery.
+ * Separado de handleOrderStatus para reduzir complexidade ciclomática.
+ */
+function calcularPrevisaoDelivery(
+  minutesElapsed: number,
+  isOpenNow: boolean,
+  isWeekend: boolean,
+  nowBRT: Date
+): string {
+  const deliveryMinMinutes = isWeekend ? 60 : 45;
+  const deliveryMaxMinutes = isWeekend ? 110 : 70;
+  const minRemaining = Math.max(0, deliveryMinMinutes - minutesElapsed);
+  const maxRemaining = Math.max(0, deliveryMaxMinutes - minutesElapsed);
+
+  if (!isOpenNow && minutesElapsed < deliveryMinMinutes) {
+    const currentHour = nowBRT.getHours();
+    let nextOpenHour = 11;
+    if (currentHour >= 15 && currentHour < 19) nextOpenHour = 19;
+    else if (currentHour >= 23 || currentHour < 11) nextOpenHour = 11;
+    const estimatedMinStart =
+      nextOpenHour * 60 + deliveryMinMinutes - (currentHour * 60 + nowBRT.getMinutes());
+    if (estimatedMinStart > 0) {
+      const startH = Math.floor((nextOpenHour * 60 + deliveryMinMinutes) / 60) % 24;
+      const startM = (nextOpenHour * 60 + deliveryMinMinutes) % 60;
+      const endH = Math.floor((nextOpenHour * 60 + deliveryMaxMinutes) / 60) % 24;
+      const endM = (nextOpenHour * 60 + deliveryMaxMinutes) % 60;
+      return `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")} e ${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+    }
+    return `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
+  }
+
+  if (minutesElapsed > deliveryMaxMinutes) {
+    return `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida fale conosco!`;
+  }
+  if (minutesElapsed >= deliveryMinMinutes) {
+    return `\n⏱️ Previsão de entrega: chegando em breve!`;
+  }
+  return `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
+}
+
+/**
+ * Calcula a mensagem de previsão de retirada no balcão.
+ */
+function calcularPrevisaoRetirada(minutesElapsed: number): string {
+  const pickupMinMinutes = 30;
+  const pickupMaxMinutes = 50;
+  const minRemaining = Math.max(0, pickupMinMinutes - minutesElapsed);
+  const maxRemaining = Math.max(0, pickupMaxMinutes - minutesElapsed);
+
+  if (minutesElapsed < pickupMinMinutes) {
+    return `\n⏱️ Previsão para retirada: ${minRemaining} a ${maxRemaining} min restantes`;
+  }
+  if (minutesElapsed <= pickupMaxMinutes) {
+    return `\n⏱️ Previsão: seu pedido já deve estar pronto!`;
+  }
+  return `\n⏱️ Previsão: já deve estar pronto — pode vir retirar!`;
+}
+
+/**
+ * Calcula a mensagem de previsão de entrega/retirada com base no pedido e tempo decorrido.
+ */
+function calcularPrevisaoStatus(
+  orderType: string,
+  confirmedAt: Date
+): string {
+  const now = new Date();
+  const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
+
+  if (orderType !== "delivery") {
+    return calcularPrevisaoRetirada(minutesElapsed);
+  }
+
+  const nowBRT = getNowBRT();
+  const { isOpen: isOpenNow } = checkBusinessHours("delivery", nowBRT);
+  const isWeekend = nowBRT.getDay() === 0 || nowBRT.getDay() === 6;
+  return calcularPrevisaoDelivery(minutesElapsed, isOpenNow, isWeekend, nowBRT);
 }
 
 /**
@@ -86,59 +163,9 @@ export async function handleOrderStatus(aiResponse: string): Promise<string> {
         const totalVal = `R$ ${((order.total || 0) / 100).toFixed(2).replace(".", ",")}`;
 
         let previsaoMsg = "";
-        if (
-          (order.status === "confirmed" || order.status === "preparing" || order.status === "delivering") &&
-          order.confirmedAt
-        ) {
-          const confirmedAt = new Date(order.confirmedAt);
-          const now = new Date();
-          const minutesElapsed = Math.floor((now.getTime() - confirmedAt.getTime()) / 60000);
-          const nowBRT = getNowBRT();
-          const { isOpen: isOpenNow } = checkBusinessHours("delivery", nowBRT);
-          const isWeekend = nowBRT.getDay() === 0 || nowBRT.getDay() === 6;
-          const currentHour = nowBRT.getHours();
-
-          if (order.orderType === "delivery") {
-            const minTime = isWeekend ? 60 : 45;
-            const maxTime = isWeekend ? 110 : 70;
-            const minRemaining = Math.max(0, minTime - minutesElapsed);
-            const maxRemaining = Math.max(0, maxTime - minutesElapsed);
-
-            if (!isOpenNow && minutesElapsed < minTime) {
-              let nextOpenHour = 11;
-              if (currentHour >= 15 && currentHour < 19) nextOpenHour = 19;
-              else if (currentHour >= 23 || currentHour < 11) nextOpenHour = 11;
-              const estimatedMinStart =
-                nextOpenHour * 60 + minTime - (currentHour * 60 + nowBRT.getMinutes());
-              if (estimatedMinStart > 0) {
-                const startH = Math.floor((nextOpenHour * 60 + minTime) / 60) % 24;
-                const startM = (nextOpenHour * 60 + minTime) % 60;
-                const endH = Math.floor((nextOpenHour * 60 + maxTime) / 60) % 24;
-                const endM = (nextOpenHour * 60 + maxTime) % 60;
-                previsaoMsg = `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")} e ${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
-              } else {
-                previsaoMsg = `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
-              }
-            } else if (minutesElapsed < minTime) {
-              previsaoMsg = `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
-            } else if (minutesElapsed <= maxTime) {
-              previsaoMsg = `\n⏱️ Previsão de entrega: chegando em breve!`;
-            } else {
-              previsaoMsg = `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida fale conosco!`;
-            }
-          } else {
-            const minTime = 30;
-            const maxTime = 50;
-            const minRemaining = Math.max(0, minTime - minutesElapsed);
-            const maxRemaining = Math.max(0, maxTime - minutesElapsed);
-            if (minutesElapsed < minTime) {
-              previsaoMsg = `\n⏱️ Previsão para retirada: ${minRemaining} a ${maxRemaining} min restantes`;
-            } else if (minutesElapsed <= maxTime) {
-              previsaoMsg = `\n⏱️ Previsão: seu pedido já deve estar pronto!`;
-            } else {
-              previsaoMsg = `\n⏱️ Previsão: já deve estar pronto — pode vir retirar!`;
-            }
-          }
+        const isActiveStatus = order.status === "confirmed" || order.status === "preparing" || order.status === "delivering";
+        if (isActiveStatus && order.confirmedAt) {
+          previsaoMsg = calcularPrevisaoStatus(order.orderType, new Date(order.confirmedAt));
         }
 
         const statusMsg = `📦 *Pedido ${orderNum}*\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}${previsaoMsg}`;
@@ -206,7 +233,10 @@ export async function handleSaveReservation(aiResponse: string, phone: string): 
             if (!isNaN(parsed.getTime())) reservationDate = parsed;
           }
         }
-      } catch {}
+      } catch (dateParseError) {
+        logger.warn("ActionHandler", `Falha ao parsear data da reserva: "${params.data}"`, dateParseError);
+        // reservationDate permanece como new Date() — reserva será criada com data atual
+      }
 
       const customerPhone = params.telefone || phone;
 

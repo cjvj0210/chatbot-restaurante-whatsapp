@@ -13,6 +13,7 @@
 import axios from "axios";
 import { notifyOwner } from "./_core/notification";
 import { logger } from "./utils/logger";
+import { getSiteUrl } from "./_core/siteUrl";
 
 const PING_INTERVAL_MS = 4 * 60 * 1000; // 4 minutos (mais agressivo para evitar hibernação)
 const INITIAL_DELAY_MS = 10000; // 10 segundos após iniciar
@@ -31,10 +32,7 @@ function getEvolutionConfig() {
 }
 
 function getWebhookUrl(): string {
-  // IMPORTANTE: usar VITE_SITE_URL (URL publicada permanente, manus.space)
-  // NÃO usar SITE_DEV_URL pois é a URL temporária de desenvolvimento do sandbox
-  const siteUrl = process.env.VITE_SITE_URL || "https://chatbotwa-hesngyeo.manus.space";
-  return `${siteUrl}/api/webhook/evolution`;
+  return `${getSiteUrl()}/api/webhook/evolution`;
 }
 
 /**

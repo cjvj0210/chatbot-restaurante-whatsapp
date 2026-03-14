@@ -1,35 +1,25 @@
 import { invokeLLM } from "./_core/llm";
 import type { Message as LLMMessage } from "./_core/llm";
 import {
-  getMenuCategories,
-  getMenuItems,
   getRestaurantSettings,
-  createOrder,
-  createReservation,
-  createFeedback,
   getCustomerByWhatsappId,
   createCustomer,
   getActiveConversation,
   createConversation,
   createMessage,
   updateConversation,
-  getMessagesByConversation,
   getDb,
   tryClaimMessage,
-  getRecentOrdersByCustomer,
-  getActiveReservationsByCustomer,
   getConversationMessages,
 } from "./db";
 import { sendTextMessage, sendButtonMessage, sendListMessage } from "./whatsapp";
-import { sendTextMessageEvolution, sendMediaMessageEvolution } from "./evolutionApi";
 import { whatsappService } from "./services/whatsappService";
 import { buildCustomerContextBlock } from "./services/customerContextBuilder";
 import { handleOrderLink, handleOrderStatus, handleSaveReservation } from "./services/chatbotActionHandler";
 import { getChatbotPrompt } from "./chatbotPrompt";
-import { getNowBRT, getBRTDateTimeFormatted } from "../shared/businessHours";
-import { orderSessions, orders, reservations, conversations } from "../drizzle/schema";
+import { getBRTDateTimeFormatted } from "../shared/businessHours";
+import { conversations } from "../drizzle/schema";
 import { eq, and, lt } from "drizzle-orm";
-import { randomBytes } from "crypto";
 import { notifyOwner } from "./_core/notification";
 import { sanitizeLLMOutput } from "./sanitize";
 import { checkChatbotRateLimit } from "./chatbotRateLimit";
@@ -37,9 +27,6 @@ import { checkFaqCache } from "./faqCache";
 import { logger } from "./utils/logger";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { CHATBOT } from "../shared/constants";
-// URL HARDCODED - não usar process.env pois SITE_DEV_URL pode sobrescrever em produção
-// Domínio publicado correto: chatbotwa-hesngyeo.manus.space
-const SITE_URL = "https://chatbotwa-hesngyeo.manus.space";
 
 interface ChatContext {
   intent?: "order" | "reservation" | "info" | "feedback" | "other";
