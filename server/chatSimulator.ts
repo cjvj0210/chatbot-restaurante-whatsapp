@@ -13,11 +13,29 @@ import { getSiteUrl } from "./_core/siteUrl";
 import { notifyOwner } from "./_core/notification";
 import { reservations } from "../drizzle/schema";
 
-// Armazenamento em memória das conversas
-const conversations = new Map<string, Array<{ role: "user" | "assistant"; content: string }>>();
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas de inatividade
+
+interface ConversationSession {
+  history: Array<{ role: "user" | "assistant"; content: string }>;
+  lastAccessAt: number;
+}
+
+// Armazenamento em memória das conversas com timestamp de último acesso
+const conversations = new Map<string, ConversationSession>();
 
 // Mapa de sessão de chat → sessão de pedido ativo
 const chatOrderSessions = new Map<string, string>();
+
+// Limpeza periódica de sessões inativas há mais de 24 horas
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, session] of conversations.entries()) {
+    if (now - session.lastAccessAt > SESSION_TTL_MS) {
+      conversations.delete(id);
+      chatOrderSessions.delete(id);
+    }
+  }
+}, 60 * 60 * 1000); // Verificar a cada 1 hora
 
 // Processa e salva reserva detectada na resposta do bot
 async function processReservationMarker(message: string): Promise<string> {
@@ -86,7 +104,8 @@ export const chatSimulatorRouter = router({
       const { sessionId, message } = input;
 
       // Obter histórico da conversa
-      let history = conversations.get(sessionId) || [];
+      const session = conversations.get(sessionId);
+      let history = session?.history || [];
 
       // Adicionar mensagem do usuário ao histórico
       history.push({ role: "user", content: message });
@@ -184,8 +203,8 @@ export const chatSimulatorRouter = router({
         history = history.slice(-20);
       }
 
-      // Salvar histórico atualizado
-      conversations.set(sessionId, history);
+      // Salvar histórico atualizado com timestamp de acesso
+      conversations.set(sessionId, { history, lastAccessAt: Date.now() });
 
       return {
         message: assistantMessage,
@@ -229,7 +248,8 @@ export const chatSimulatorRouter = router({
       const transcribedText = 'text' in transcription ? transcription.text : "";
 
       // Obter histórico da conversa
-      let history = conversations.get(sessionId) || [];
+      const audioSession = conversations.get(sessionId);
+      let history = audioSession?.history || [];
       history.push({ role: "user", content: `[Áudio]: ${transcribedText}` });
 
       // Obter data/hora atual (fuso Brasília UTC-3)
@@ -313,7 +333,7 @@ export const chatSimulatorRouter = router({
 
       history.push({ role: "assistant", content: assistantMessage });
       if (history.length > 20) history = history.slice(-20);
-      conversations.set(sessionId, history);
+      conversations.set(sessionId, { history, lastAccessAt: Date.now() });
 
       return {
         message: assistantMessage,
