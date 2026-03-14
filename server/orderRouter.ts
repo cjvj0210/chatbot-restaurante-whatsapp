@@ -440,25 +440,39 @@ export const orderRouter = router({
         .limit(limit)
         .offset(offset);
 
-      // Buscar itens normalizados com nomes para cada pedido
-      const ordersWithItems = await Promise.all(
-        ordersList.map(async (order) => {
-          const items = await db
-            .select({
-              id: orderItems.id,
-              menuItemId: orderItems.menuItemId,
-              name: menuItems.name,
-              quantity: orderItems.quantity,
-              price: orderItems.unitPrice,
-              observations: orderItems.observations,
-              addons: orderItems.addons,
-            })
-            .from(orderItems)
-            .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
-            .where(eq(orderItems.orderId, order.id));
-          return { ...order, orderItemsList: items };
+      if (ordersList.length === 0) return [];
+
+      // LEFT JOIN único para buscar todos os itens de todos os pedidos de uma vez (evita N+1)
+      const orderIds = ordersList.map((o) => o.id);
+      const allItems = await db
+        .select({
+          orderId: orderItems.orderId,
+          id: orderItems.id,
+          menuItemId: orderItems.menuItemId,
+          name: menuItems.name,
+          quantity: orderItems.quantity,
+          price: orderItems.unitPrice,
+          observations: orderItems.observations,
+          addons: orderItems.addons,
         })
+        .from(orderItems)
+        .innerJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+        .where(inArray(orderItems.orderId, orderIds));
+
+      // Agrupar itens por orderId em memória
+      const itemsByOrder = allItems.reduce<Record<number, typeof allItems>>(
+        (acc, item) => {
+          if (!acc[item.orderId]) acc[item.orderId] = [];
+          acc[item.orderId]!.push(item);
+          return acc;
+        },
+        {}
       );
+
+      const ordersWithItems = ordersList.map((order) => ({
+        ...order,
+        orderItemsList: itemsByOrder[order.id] ?? [],
+      }));
 
       return ordersWithItems;
     }),
