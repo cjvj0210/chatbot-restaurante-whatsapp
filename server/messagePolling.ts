@@ -25,9 +25,28 @@ const POLL_INTERVAL_MS = process.env.POLL_INTERVAL_MS
     : 3_000;
 const INITIAL_DELAY_MS = 15000; // 15 segundos após iniciar (dar tempo pro servidor subir)
 const MAX_PROCESSED_IDS = 500; // Máximo de IDs armazenados em memória
+const MESSAGE_ID_TTL_MS = 2 * 60 * 60 * 1000; // 2 horas
 
-// Set de IDs de mensagens já processadas (evita reprocessamento)
-const processedMessageIds = new Set<string>();
+// Map de IDs de mensagens já processadas: id → timestamp de inserção
+const processedMessageIds = new Map<string, number>();
+
+function markMessageAsProcessedLocal(messageId: string): void {
+  const now = Date.now();
+  processedMessageIds.set(messageId, now);
+
+  // Limpeza por TTL
+  for (const [id, ts] of processedMessageIds.entries()) {
+    if (now - ts > MESSAGE_ID_TTL_MS) processedMessageIds.delete(id);
+  }
+
+  // Fallback: remover os mais antigos se ainda exceder o limite
+  if (processedMessageIds.size > MAX_PROCESSED_IDS) {
+    const sorted = [...processedMessageIds.entries()].sort((a, b) => a[1] - b[1]);
+    for (let i = 0; i < sorted.length - MAX_PROCESSED_IDS; i++) {
+      processedMessageIds.delete(sorted[i]![0]);
+    }
+  }
+}
 
 // Timestamp da última busca bem-sucedida (em segundos Unix)
 let lastPollTimestamp = 0;
@@ -117,14 +136,7 @@ async function pollMessages(): Promise<void> {
       if (processedMessageIds.has(msgId)) continue;
 
       // Marcar como processada ANTES de processar (evitar duplicatas)
-      processedMessageIds.add(msgId);
-
-      // Limpar IDs antigos se o set ficar muito grande
-      if (processedMessageIds.size > MAX_PROCESSED_IDS) {
-        const idsArray = Array.from(processedMessageIds);
-        const toRemove = idsArray.slice(0, idsArray.length - MAX_PROCESSED_IDS + 100);
-        toRemove.forEach((id) => processedMessageIds.delete(id));
-      }
+      markMessageAsProcessedLocal(msgId);
 
       const remoteJid = msg.key?.remoteJid || "";
       const fromMe = msg.key?.fromMe;
@@ -251,7 +263,7 @@ async function handleOperatorMessage(clientJid: string): Promise<void> {
  * Permite que o webhook registre IDs já processados para evitar duplicatas com o polling
  */
 export function markMessageAsProcessed(messageId: string): void {
-  processedMessageIds.add(messageId);
+  markMessageAsProcessedLocal(messageId);
 }
 
 /**
