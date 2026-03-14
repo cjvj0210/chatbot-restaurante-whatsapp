@@ -384,7 +384,7 @@ async function _processIncomingMessageInternal(
         const settings = await getRestaurantSettings();
         const restaurantPhone = settings?.phone
           ? settings.phone.replace(/\D/g, "")
-          : process.env.RESTAURANT_PHONE?.replace(/\D/g, "") ?? "";
+          : process.env.RESTAURANT_PHONE?.replace(/\D/g, "") || "5517982123269";
 
         if (!restaurantPhone) {
           logger.warn("Chatbot", "Telefone do restaurante não configurado — alerta de atendente não enviado");

@@ -1215,3 +1215,23 @@
 - [x] JSDoc adicionado às funções principais do chatbotActionHandler
 - [x] Dead code removido: sendButtonMessage, sendListMessage
 - [x] Constantes INFRA em shared/constants.ts (KEEP_ALIVE_PING_INTERVAL_MS, etc.)
+
+## Rodada 5 - Auditoria UX/Acessibilidade + Fix Polling (Claude Code)
+
+### Fix Polling (bug mensagens perdidas no restart)
+- [x] pollingStartTimestamp recuado 2 min (RESTART_SAFETY_WINDOW_SECONDS) para cobrir gap de restart
+- [x] Constante RESTART_SAFETY_WINDOW_SECONDS adicionada em shared/constants.ts
+
+### Acessibilidade WCAG 2.1 AA
+- [x] Novo hook useFocusTrap.ts para modais e diálogos
+- [x] Novo utilitário announceToSR.ts para anúncios a leitores de tela
+- [x] DashboardLayout.tsx — role="navigation" e aria-labels
+- [x] ChatSimulator.tsx — aria-live, roles, labels em inputs
+- [x] Checkout.tsx — aria-labels, roles, melhorias de foco
+- [x] Customers.tsx — tabela acessível com roles e aria-labels
+- [x] Dashboard.tsx — cards com aria-labels descritivos
+- [x] Orders.tsx — tabela com aria-sort, roles, melhorias de navegação por teclado
+- [x] Pedido.tsx — melhorias de acessibilidade em formulários
+- [x] PublicTest.tsx — labels e roles acessíveis
+- [x] Settings.tsx — aria-labels em formulários de configuração
+- [x] Simulator.tsx — melhorias de acessibilidade no simulador

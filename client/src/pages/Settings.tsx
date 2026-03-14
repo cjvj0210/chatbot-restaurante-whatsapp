@@ -18,6 +18,7 @@ import {
   Clock,
   MapPin,
   Phone,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -262,6 +263,7 @@ export default function SettingsPage() {
                   <Switch
                     id="acceptsDelivery"
                     name="acceptsDelivery"
+                    aria-label="Aceitar pedidos de delivery"
                     defaultChecked={restaurantSettings?.acceptsDelivery ?? true}
                   />
                 </div>
@@ -273,6 +275,7 @@ export default function SettingsPage() {
                   <Switch
                     id="acceptsReservation"
                     name="acceptsReservation"
+                    aria-label="Aceitar reservas"
                     defaultChecked={restaurantSettings?.acceptsReservation ?? true}
                   />
                 </div>
@@ -317,11 +320,16 @@ export default function SettingsPage() {
           </div>
 
           <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-border/50">
-              <h2 className="font-semibold text-foreground">WhatsApp Cloud API</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Credenciais do Meta for Developers para integração com WhatsApp Business
-              </p>
+            <div className="px-6 py-4 border-b border-border/50 flex items-center gap-3">
+              <div>
+                <h2 className="font-semibold text-foreground">WhatsApp Cloud API</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Credenciais do Meta for Developers para integração com WhatsApp Business
+                </p>
+              </div>
+              {whatsappLoading && (
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-auto" />
+              )}
             </div>
 
             {whatsappLoading ? (
@@ -428,6 +436,7 @@ export default function SettingsPage() {
                   <Switch
                     id="isActive"
                     name="isActive"
+                    aria-label="Ativar chatbot automático"
                     defaultChecked={whatsappSettings?.isActive ?? false}
                   />
                 </div>

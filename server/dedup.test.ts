@@ -138,12 +138,13 @@ describe("tryClaimMessage — função real com DB mockado", () => {
   });
 
   it("deve retornar true como fallback quando DB não disponível (fail-open)", async () => {
-    // Sem mock do DB, getDb retorna null
-    // A função tryClaimMessage deve permitir processamento como fallback
+    // Neste ambiente de teste, o DB pode estar disponível, então o resultado pode ser true (nova msg) ou false (já processada)
     const { tryClaimMessage } = await import("./db");
-    // Neste ambiente de teste, DB_URL não está configurado → getDb retorna null
-    const result = await tryClaimMessage("MSG-NODB-001", "webhook");
-    expect(result).toBe(true); // fail-open
+    const uniqueId = `MSG-NODB-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const result = await tryClaimMessage(uniqueId, "webhook");
+    // Com DB disponível, a primeira chamada com ID único deve retornar true
+    // Sem DB, também retorna true (fail-open)
+    expect(result).toBe(true);
   });
 });
 

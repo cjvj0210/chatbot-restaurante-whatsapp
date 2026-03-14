@@ -83,29 +83,35 @@ export default function Customers() {
       </div>
 
       {/* Busca */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nome, telefone ou endereço..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      <div className="space-y-1.5">
+        <label htmlFor="customer-search" className="sr-only">Buscar clientes</label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+          <Input
+            id="customer-search"
+            placeholder="Buscar por nome, telefone ou endereço..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+            aria-describedby="search-hint"
+          />
+        </div>
+        <p id="search-hint" className="sr-only">Busca em tempo real por nome, telefone ou endereço</p>
       </div>
 
       {/* Tabela */}
       <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm" aria-label="Clientes cadastrados">
             <thead>
               <tr className="border-b border-border/50 bg-muted/30">
-                <th className="text-left px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Cliente</th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Telefone</th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide hidden md:table-cell">Endereço</th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide hidden lg:table-cell">Aniversário</th>
-                <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Pedidos</th>
-                <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Total Gasto</th>
-                <th className="text-right px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide hidden lg:table-cell">Cadastro</th>
+                <th scope="col" className="text-left px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Cliente</th>
+                <th scope="col" className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Telefone</th>
+                <th scope="col" className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide hidden md:table-cell">Endereço</th>
+                <th scope="col" className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide hidden lg:table-cell">Aniversário</th>
+                <th scope="col" className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Pedidos</th>
+                <th scope="col" className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Total Gasto</th>
+                <th scope="col" className="text-right px-5 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide hidden lg:table-cell">Cadastro</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">

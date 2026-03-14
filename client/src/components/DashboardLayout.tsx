@@ -208,6 +208,7 @@ function DashboardLayoutContent({
 
   return (
     <>
+      <div id="sr-announcer" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div className="relative" ref={sidebarRef}>
         <Sidebar collapsible="icon" className="border-r-0" disableTransition={isResizing}>
           {/* Header da sidebar */}
@@ -329,7 +330,7 @@ function DashboardLayoutContent({
         <div
           className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/30 transition-colors ${
             isCollapsed ? "hidden" : ""
-          }`}
+          } ${isResizing ? "bg-primary/50 !w-1.5" : ""}`}
           onMouseDown={() => {
             if (!isCollapsed) setIsResizing(true);
           }}

@@ -412,7 +412,8 @@ export default function Simulator() {
               key={message.id}
               className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
-              <div
+              <article
+                aria-label={`${message.sender === "user" ? "Você" : "Bot"}: ${message.text?.slice(0, 100)}`}
                 className={`max-w-[80%] rounded-lg p-3 shadow-sm ${
                   message.sender === "user"
                     ? "bg-[#d9fdd3] dark:bg-[#005c4b] text-gray-900 dark:text-white"
@@ -447,7 +448,7 @@ export default function Simulator() {
                     minute: "2-digit",
                   })}
                 </p>
-              </div>
+              </article>
             </div>
           ))}
 
@@ -468,33 +469,40 @@ export default function Simulator() {
 
         {/* Input */}
         <div className="bg-[#f0f0f0] dark:bg-[#202c33] p-3 rounded-b-lg">
+          {isTyping && (
+            <p className="text-xs text-muted-foreground italic px-1 pb-2 text-center">
+              Aguardando resposta...
+            </p>
+          )}
           <div className="flex gap-2">
             <Button
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isTyping || isProcessingAudio}
+              aria-label={isRecording ? "Parar gravação" : "Gravar áudio"}
               className={`${
                 isRecording
                   ? "bg-red-600 hover:bg-red-700 animate-pulse"
                   : "bg-[#075e54] hover:bg-[#064e47]"
               } text-white`}
-              title={isRecording ? "Parar gravação" : "Gravar áudio"}
             >
-              {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isRecording ? <Square className="w-4 h-4" aria-hidden="true" /> : <Mic className="w-4 h-4" aria-hidden="true" />}
             </Button>
             <Input
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Digite uma mensagem..."
+              aria-label="Digite uma mensagem"
               className="flex-1 bg-white dark:bg-[#2a3942] border-none"
               disabled={isTyping || isRecording}
             />
             <Button
               onClick={handleSend}
               disabled={!inputText.trim() || isTyping || isRecording}
+              aria-label="Enviar mensagem"
               className="bg-[#075e54] hover:bg-[#064e47] text-white"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
