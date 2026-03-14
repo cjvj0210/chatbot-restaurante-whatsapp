@@ -274,3 +274,116 @@ describe("processIncomingMessage — marcador [CHAMAR_ATENDENTE]", () => {
     );
   });
 });
+
+describe("processIncomingMessage — NLP fallback para modo humano", () => {
+  it("deve ativar modo humano via NLP quando LLM diz 'vou te conectar' SEM marcador", async () => {
+    vi.clearAllMocks();
+
+    const dbMock = await import("./db");
+    const { invokeLLM } = await import("./_core/llm");
+
+    vi.mocked(dbMock.tryClaimMessage).mockResolvedValueOnce(true);
+    // LLM esqueceu o marcador [CHAMAR_ATENDENTE] mas está claramente transferindo
+    vi.mocked(invokeLLM).mockResolvedValueOnce({
+      choices: [{ message: { content: "Certo! Vou te conectar com nossa equipe agora. Aguarde um momento! 😊" } }],
+    } as any);
+
+    const { processIncomingMessage } = await import("./chatbot");
+    await processIncomingMessage(WHATSAPP_ID, PHONE, "quero falar com humano", MSG_ID + "-nlp-1");
+
+    // updateConversation deve ter sido chamado para ativar humanMode
+    expect(dbMock.updateConversation).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.objectContaining({ humanMode: true })
+    );
+  });
+
+  it("deve ativar modo humano via NLP quando LLM diz 'vou te transferir para' SEM marcador", async () => {
+    vi.clearAllMocks();
+
+    const dbMock = await import("./db");
+    const { invokeLLM } = await import("./_core/llm");
+
+    vi.mocked(dbMock.tryClaimMessage).mockResolvedValueOnce(true);
+    vi.mocked(invokeLLM).mockResolvedValueOnce({
+      choices: [{ message: { content: "Entendo! Vou te transferir para um atendente que pode resolver isso." } }],
+    } as any);
+
+    const { processIncomingMessage } = await import("./chatbot");
+    await processIncomingMessage(WHATSAPP_ID, PHONE, "preciso de ajuda", MSG_ID + "-nlp-2");
+
+    expect(dbMock.updateConversation).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.objectContaining({ humanMode: true })
+    );
+  });
+
+  it("deve ativar modo humano quando CLIENTE pede explicitamente atendente humano", async () => {
+    vi.clearAllMocks();
+
+    const dbMock = await import("./db");
+    const { invokeLLM } = await import("./_core/llm");
+
+    vi.mocked(dbMock.tryClaimMessage).mockResolvedValueOnce(true);
+    // LLM responde normalmente sem marcador e sem frase de transferência
+    vi.mocked(invokeLLM).mockResolvedValueOnce({
+      choices: [{ message: { content: "Claro, posso te ajudar com isso! 😊" } }],
+    } as any);
+
+    const { processIncomingMessage } = await import("./chatbot");
+    // Cliente pede explicitamente "quero falar com uma pessoa"
+    await processIncomingMessage(WHATSAPP_ID, PHONE, "quero falar com uma pessoa", MSG_ID + "-client-human");
+
+    expect(dbMock.updateConversation).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.objectContaining({ humanMode: true })
+    );
+  });
+
+  it("NÃO deve ativar modo humano para mensagens normais sem pedido de atendente", async () => {
+    vi.clearAllMocks();
+
+    const dbMock = await import("./db");
+    const { invokeLLM } = await import("./_core/llm");
+
+    vi.mocked(dbMock.tryClaimMessage).mockResolvedValueOnce(true);
+    vi.mocked(invokeLLM).mockResolvedValueOnce({
+      choices: [{ message: { content: "O rodízio no jantar sai R$ 109,90 por pessoa! 🥩" } }],
+    } as any);
+
+    const { processIncomingMessage } = await import("./chatbot");
+    await processIncomingMessage(WHATSAPP_ID, PHONE, "quanto custa o rodízio?", MSG_ID + "-normal");
+
+    // updateConversation NÃO deve ter sido chamado com humanMode: true
+    const updateCalls = vi.mocked(dbMock.updateConversation).mock.calls;
+    const humanModeCalls = updateCalls.filter(
+      ([, data]) => (data as any)?.humanMode === true
+    );
+    expect(humanModeCalls).toHaveLength(0);
+  });
+});
+
+describe("processIncomingMessage — remoção do marcador [CHAMAR_ATENDENTE] da resposta", () => {
+  it("deve remover [CHAMAR_ATENDENTE] da resposta enviada ao cliente", async () => {
+    vi.clearAllMocks();
+
+    const dbMock = await import("./db");
+    const { invokeLLM } = await import("./_core/llm");
+    const { whatsappService } = await import("./services/whatsappService");
+
+    vi.mocked(dbMock.tryClaimMessage).mockResolvedValueOnce(true);
+    vi.mocked(invokeLLM).mockResolvedValueOnce({
+      choices: [{ message: { content: "Vou te conectar com nossa equipe! Aguarde. 😊\n\n[CHAMAR_ATENDENTE]" } }],
+    } as any);
+
+    const { processIncomingMessage } = await import("./chatbot");
+    await processIncomingMessage(WHATSAPP_ID, PHONE, "quero falar com atendente", MSG_ID + "-clean-marker");
+
+    // Verificar que a mensagem enviada ao cliente NÃO contém o marcador
+    const sendCalls = vi.mocked(whatsappService.sendText).mock.calls;
+    const clientMessages = sendCalls.filter(([jid]) => jid === WHATSAPP_ID);
+    for (const [, text] of clientMessages) {
+      expect(text).not.toContain("[CHAMAR_ATENDENTE]");
+    }
+  });
+});

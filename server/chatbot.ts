@@ -445,9 +445,48 @@ async function _processIncomingMessageInternal(
     }
 
     // 7b. Detectar pedido de atendente humano e ativar modo humano IMEDIATAMENTE
-    // SEGURANÇA: usar APENAS o marcador explícito [CHAMAR_ATENDENTE] gerado pelo LLM
-    // (não keyword matching no texto — evita ativação acidental por palavras comuns como "atendente")
-    const botRequestedHuman = response.text.includes("[CHAMAR_ATENDENTE]");
+    // CAMADA 1: Marcador explícito [CHAMAR_ATENDENTE] gerado pelo LLM (preferível)
+    const hasExplicitMarker = response.text.includes("[CHAMAR_ATENDENTE]");
+
+    // CAMADA 2: Detecção NLP como fallback — se o LLM esqueceu o marcador mas
+    // claramente está transferindo para atendente humano na resposta
+    const nlpHumanPhrases = [
+      "vou te conectar com",
+      "vou te transferir para",
+      "vou chamar um atendente",
+      "vou transferir você",
+      "transferindo para um atendente",
+      "conectar com nossa equipe",
+      "aguarde um momento que já te conecto",
+      "vou te passar para",
+      "encaminhando para atendente",
+    ];
+    const lowerResponse = response.text.toLowerCase();
+    const hasNlpHumanTransfer = nlpHumanPhrases.some(phrase => lowerResponse.includes(phrase));
+
+    // Também verificar se o CLIENTE pediu explicitamente atendente humano
+    const lowerUserMsg = messageText.toLowerCase();
+    const clientRequestedHuman = [
+      "quero falar com humano",
+      "quero falar com uma pessoa",
+      "quero falar com atendente",
+      "falar com alguém",
+      "atendente humano",
+      "pessoa real",
+      "falar com gente",
+      "quero um atendente",
+      "me passa pra um atendente",
+      "me transfere",
+      "chamar atendente",
+      "quero atendimento humano",
+    ].some(phrase => lowerUserMsg.includes(phrase));
+
+    const botRequestedHuman = hasExplicitMarker || hasNlpHumanTransfer || clientRequestedHuman;
+
+    if (botRequestedHuman && !hasExplicitMarker) {
+      logger.warn("Chatbot", `Modo humano ativado via fallback NLP (sem marcador explícito) para ${phone}. ` +
+        `NLP match: ${hasNlpHumanTransfer}, Cliente pediu: ${clientRequestedHuman}`);
+    }
 
     if (botRequestedHuman) {
       try {
@@ -489,6 +528,15 @@ async function _processIncomingMessageInternal(
       } catch (err) {
         logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);
       }
+    }
+
+    // 7c. Remover marcador [CHAMAR_ATENDENTE] da resposta antes de enviar ao cliente
+    // O cliente NÃO deve ver o marcador interno do sistema
+    if (response.text.includes("[CHAMAR_ATENDENTE]")) {
+      response.text = response.text
+        .replace(/\[CHAMAR_ATENDENTE\]/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
     }
 
     // 8. Enviar resposta ao cliente

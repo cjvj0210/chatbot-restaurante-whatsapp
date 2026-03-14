@@ -1262,3 +1262,14 @@
 
 ## Bug - Modo humano não bloqueia o bot (14/03/2026)
 - [x] Bot responde mesmo após ativar modo humano — corrigido: verificação do modo humano movida para ANTES do FAQ cache + nova função getActiveConversationByWhatsappId
+
+## Bug PERSISTENTE - Modo humano ainda não bloqueia o bot (14/03/2026 - 19:20)
+- [x] Bot continua respondendo após ativar modo humano — CAUSA RAIZ: prompt do LLM não instruía o marcador [CHAMAR_ATENDENTE]. Corrigido com 3 camadas: prompt explícito + NLP fallback + detecção de pedido do cliente
+
+## Bug CRÍTICO - Prompt do LLM não instrui marcador [CHAMAR_ATENDENTE] (14/03/2026)
+- [x] Prompt do LLM diz "transfira para atendente humano" mas NUNCA instrui o LLM a incluir o marcador [CHAMAR_ATENDENTE] na resposta
+- [x] Resultado: LLM gera texto como "vou te conectar com nossa equipe" SEM o marcador, e chatbot.ts (linha 450) nunca detecta
+- [x] Adicionar seção explícita no prompt instruindo uso do marcador [CHAMAR_ATENDENTE] em TODAS as situações de transferência
+- [x] Adicionar detecção NLP como fallback (frases como "quero falar com humano", "atendente", etc.)
+- [x] Adicionar remoção do marcador [CHAMAR_ATENDENTE] da resposta antes de enviar ao cliente
+- [x] 6 novos testes (NLP fallback, detecção de pedido do cliente, não-ativação falsa, remoção do marcador)
