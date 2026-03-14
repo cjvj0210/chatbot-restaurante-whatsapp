@@ -29,6 +29,7 @@ import { logger } from "./utils/logger";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { getAffectedRows } from "./utils/dbHelpers";
 import { CHATBOT } from "../shared/constants";
+import { withRetry } from "./utils/retry";
 
 interface ChatContext {
   intent?: "order" | "reservation" | "info" | "feedback" | "other";
@@ -85,12 +86,18 @@ async function checkAndExpireHumanMode(conversationId: number): Promise<boolean>
  * mensagens do mesmo cliente (evita race conditions no LLM/DB).
  */
 const processingLocks = new Map<string, Promise<void>>();
+// Timeout máximo de espera no lock — maior que o timeout do LLM (60s) + margem
+const LOCK_TIMEOUT_MS = 90_000;
 
 async function withClientLock(whatsappId: string, operation: () => Promise<void>): Promise<void> {
   // Esperar qualquer processamento anterior do mesmo cliente terminar
+  // Com timeout para evitar vazamento de memória se LLM demorar indefinidamente
   const existing = processingLocks.get(whatsappId);
   if (existing) {
-    await existing;
+    await Promise.race([
+      existing,
+      new Promise<void>((resolve) => setTimeout(resolve, LOCK_TIMEOUT_MS)),
+    ]);
   }
 
   const promise = operation();
@@ -277,8 +284,13 @@ async function _processIncomingMessageInternal(
   realPhone?: string
 ): Promise<void> {
   try {
+    // Verificar disponibilidade do banco antecipadamente para degradação graciosa
+    const db = await getDb();
+    const dbAvailable = db !== null;
+
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
-    if (!(await checkChatbotRateLimit(whatsappId))) {
+    // Pular se banco indisponível — não bloquear clientes por instabilidade do DB
+    if (dbAvailable && !(await checkChatbotRateLimit(whatsappId))) {
       logger.warn("Chatbot", `Rate limit atingido para ${phone} (${whatsappId})`);
       const limitMsg = "Você enviou muitas mensagens em pouco tempo. Aguarde alguns minutos e tente novamente, ou ligue para nosso telefone fixo. 😊";
       await whatsappService.sendText(whatsappId, limitMsg);
@@ -294,7 +306,56 @@ async function _processIncomingMessageInternal(
     // Normalizar: se o effectivePhone contém @s.whatsapp.net, extrair só os dígitos
     const normalizedPhone = phoneNormalizer.normalize(effectivePhone);
 
-    // 1+2. Buscar/criar cliente e conversa ativa
+    // Verificar cache de FAQ ANTES de acessar o banco de dados
+    // Funciona mesmo quando o banco está indisponível (degradação graciosa)
+    const faqResponse = checkFaqCache(messageText);
+    if (faqResponse) {
+      logger.info("Chatbot", `FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
+      // Enviar resposta imediatamente (não depende do banco)
+      await whatsappService.sendText(whatsappId, faqResponse);
+      // Persistir histórico no banco em background (não crítico — não falhar se DB indisponível)
+      if (dbAvailable) {
+        findOrCreateCustomerAndConversation(whatsappId, normalizedPhone, messageId, pushName, realPhone)
+          .then(({ conversation }) => Promise.all([
+            createMessage({ conversationId: conversation.id, role: "user", content: messageText, messageType: "text", metadata: null }),
+            createMessage({ conversationId: conversation.id, role: "assistant", content: faqResponse, messageType: "text", metadata: JSON.stringify({ source: "faq_cache" }) }),
+          ]))
+          .catch((err: unknown) => logger.warn("Chatbot", "FAQ: falha ao persistir histórico no banco (não crítico)", err));
+      }
+      return;
+    }
+
+    // Modo degradado: banco indisponível e sem hit de FAQ
+    // Chamar LLM sem histórico para continuar atendendo mesmo assim
+    if (!dbAvailable) {
+      logger.warn("Chatbot", `Banco indisponível — modo degradado para ${phone}`);
+      try {
+        const { diaSemana, dataCompleta, horarioAtual } = getBRTDateTimeFormatted();
+        const systemPrompt = getChatbotPrompt(diaSemana, dataCompleta, horarioAtual);
+        const degradedResult = await withRetry(
+          () => invokeLLM({ messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: messageText },
+          ] }),
+          { maxRetries: 2, delayMs: 1500, label: "invokeLLM-degraded" }
+        );
+        const aiContent = degradedResult.choices[0]?.message?.content;
+        type DegradedContentPart = { type: string; text?: string };
+        let aiText = typeof aiContent === "string"
+          ? aiContent
+          : Array.isArray(aiContent)
+            ? (aiContent as DegradedContentPart[]).find((c) => c.type === "text")?.text || ""
+            : "";
+        aiText = sanitizeLLMOutput(aiText) || "Desculpe, estou com dificuldades técnicas. Por favor, ligue para o restaurante. 🙏";
+        await whatsappService.sendText(whatsappId, aiText);
+      } catch (degradedErr) {
+        logger.error("Chatbot", "Erro no modo degradado", degradedErr);
+        await whatsappService.sendText(whatsappId, "Estamos com dificuldades técnicas no momento. Por favor, ligue para o restaurante ou tente novamente em alguns minutos. 🙏").catch(() => {});
+      }
+      return;
+    }
+
+    // 1+2. Buscar/criar cliente e conversa ativa (banco disponível)
     const { customer, conversation } = await findOrCreateCustomerAndConversation(
       whatsappId,
       normalizedPhone,
@@ -324,23 +385,6 @@ async function _processIncomingMessageInternal(
         return;
       }
       logger.info("Chatbot", `Modo humano expirado para ${phone} — bot retomando atendimento`);
-    }
-
-    // 5. Verificar cache de FAQ antes de chamar o LLM (economia de tokens e latência)
-    const faqResponse = checkFaqCache(messageText);
-    if (faqResponse) {
-      logger.info("Chatbot", `FAQ cache hit para ${phone}: "${messageText.slice(0, 50)}"`);
-      // Salvar resposta do FAQ como mensagem do assistente
-      await createMessage({
-        conversationId: conversation.id,
-        role: "assistant",
-        content: faqResponse,
-        messageType: "text",
-        metadata: JSON.stringify({ source: "faq_cache" }),
-      });
-      // Enviar resposta via WhatsApp
-      await whatsappService.sendText(whatsappId, faqResponse);
-      return;
     }
 
     // 5b. Processar mensagem com IA usando o prompt completo do restaurante
@@ -497,12 +541,15 @@ async function generateResponse(
     content: userMessage,
   });
 
-  // Chamar IA
+  // Chamar IA com retry para erros transientes
   let response: Awaited<ReturnType<typeof invokeLLM>>;
   try {
-    response = await invokeLLM({ messages });
+    response = await withRetry(
+      () => invokeLLM({ messages }),
+      { maxRetries: 2, delayMs: 1500, label: "invokeLLM-chatbot" }
+    );
   } catch (llmError) {
-    logger.error("Chatbot", "Falha ao chamar invokeLLM", llmError);
+    logger.error("Chatbot", "Falha ao chamar invokeLLM após retries", llmError);
     return {
       text: "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em instantes ou ligue para o restaurante. 🙏",
     };

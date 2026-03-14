@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { processIncomingMessage } from "./chatbot";
-import { sendTextMessageEvolution, deleteMessageForEveryone } from "./evolutionApi";
+import { sendTextMessageEvolution, deleteMessageForEveryone, sendTextMessageEvolutionWithId } from "./evolutionApi";
 import { whatsappService } from "./services/whatsappService";
 import { markMessageAsProcessed } from "./messagePolling";
 import { isBotSentMessage } from "./botMessageTracker";
@@ -312,36 +312,6 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
  * Usado para enviar notificações que serão apagadas depois.
  */
 async function sendTextAndGetId(remoteJid: string, text: string): Promise<string | null> {
-  try {
-    const axios = (await import("axios")).default;
-    const baseUrl = process.env.EVOLUTION_API_URL || "";
-    const apiKey = process.env.EVOLUTION_API_KEY || "";
-    const instanceName = process.env.EVOLUTION_INSTANCE_NAME || "teste";
-
-    if (!baseUrl || !apiKey) return null;
-
-    const isLid = remoteJid.endsWith("@lid");
-    const normalizedTo = isLid ? remoteJid : remoteJid.replace("@s.whatsapp.net", "").replace(/\D/g, "");
-
-    const response = await axios.post(
-      `${baseUrl}/message/sendText/${instanceName}`,
-      { number: normalizedTo, text },
-      {
-        headers: { apikey: apiKey, "Content-Type": "application/json" },
-        timeout: 15000,
-      }
-    );
-
-    const sentId = response.data?.key?.id;
-    if (sentId) {
-      // Registrar no tracker para que o webhook não trate como mensagem do operador
-      const { registerBotSentMessage } = await import("./botMessageTracker");
-      await registerBotSentMessage(sentId);
-    }
-    return sentId || null;
-  } catch (error: any) {
-    logger.error("Webhook", "Erro ao enviar mensagem silenciosa", error?.message);
-    return null;
-  }
+  return sendTextMessageEvolutionWithId(remoteJid, text);
 }
 

@@ -1,5 +1,6 @@
 import { eq, and, desc, count, sum, avg, sql, or, like, gte, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import {
   InsertUser,
   users,
@@ -45,17 +46,33 @@ import { cached, invalidateCache } from "./cache";
 import { logger } from "./utils/logger";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _lastInitAttemptMs = 0;
+const DB_INIT_RETRY_INTERVAL_MS = 10_000;
 
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      logger.warn("Database", "Failed to connect", error);
-      _db = null;
-    }
+  if (_db) return _db;
+  if (!process.env.DATABASE_URL) return null;
+
+  const now = Date.now();
+  if (now - _lastInitAttemptMs < DB_INIT_RETRY_INTERVAL_MS) {
+    return null; // circuit breaker: não tentar inicialização mais de 1x a cada 10s
   }
-  return _db;
+  _lastInitAttemptMs = now;
+
+  try {
+    const pool = mysql.createPool({
+      uri: process.env.DATABASE_URL,
+      connectionLimit: 5,
+      waitForConnections: true,
+      queueLimit: 10,
+      connectTimeout: 10_000,
+    });
+    _db = drizzle(pool);
+    return _db;
+  } catch (error) {
+    logger.error("Database", "Failed to initialize connection pool", error);
+    return null;
+  }
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -592,16 +609,22 @@ export async function getAddonGroupsWithOptions(menuItemId: number): Promise<Add
     .where(and(eq(menuAddonGroups.menuItemId, menuItemId), eq(menuAddonGroups.isActive, true)))
     .orderBy(menuAddonGroups.displayOrder);
 
-  const result: AddonGroupWithOptions[] = [];
-  for (const group of groups) {
-    const options = await db
-      .select()
-      .from(menuAddonOptions)
-      .where(and(eq(menuAddonOptions.groupId, group.id), eq(menuAddonOptions.isActive, true)))
-      .orderBy(menuAddonOptions.displayOrder);
-    result.push({ ...group, options });
-  }
-  return result;
+  if (groups.length === 0) return [];
+
+  const groupIds = groups.map((g) => g.id);
+  const options = await db
+    .select()
+    .from(menuAddonOptions)
+    .where(and(inArray(menuAddonOptions.groupId, groupIds), eq(menuAddonOptions.isActive, true)))
+    .orderBy(menuAddonOptions.displayOrder);
+
+  const optionsByGroup = options.reduce<Record<number, MenuAddonOption[]>>((acc, opt) => {
+    if (!acc[opt.groupId]) acc[opt.groupId] = [];
+    acc[opt.groupId]!.push(opt);
+    return acc;
+  }, {});
+
+  return groups.map((group) => ({ ...group, options: optionsByGroup[group.id] ?? [] }));
 }
 
 export async function getAddonGroupsForItems(menuItemIds: number[]): Promise<Record<number, AddonGroupWithOptions[]>> {

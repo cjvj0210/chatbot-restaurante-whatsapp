@@ -22,7 +22,7 @@ export const CHATBOT = {
    * cobrir mensagens que chegaram durante o restart do servidor (~30s).
    * Seguro pois tryClaimMessage (INSERT IGNORE) evita reprocessamento.
    */
-  RESTART_SAFETY_WINDOW_SECONDS: 120,
+  RESTART_SAFETY_WINDOW_SECONDS: 300,
 } as const;
 
 export const ORDER = {

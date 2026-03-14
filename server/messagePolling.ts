@@ -195,12 +195,12 @@ async function pollMessages(): Promise<void> {
       const remoteJidAlt = msg.key?.remoteJidAlt || undefined;
       const realPhone = remoteJidAlt ? phoneNormalizer.normalize(remoteJidAlt) : undefined;
 
-      logger.info("Polling", `Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
+      logger.debug("Polling", `Nova mensagem de ${phone} (${pushName}): "${messageText.substring(0, 80)}" | realPhone: ${realPhone || 'N/A'}`);
 
       // Processar mensagem pelo chatbot (mesmo fluxo do webhook, com pushName e realPhone)
       try {
         await processIncomingMessage(whatsappId, phone, messageText, msgId, pushName || undefined, realPhone);
-        logger.info("Polling", `Mensagem processada com sucesso: ${msgId}`);
+        logger.debug("Polling", `Mensagem processada com sucesso: ${msgId}`);
       } catch (err) {
         logger.error("Polling", `Erro ao processar mensagem ${msgId}`, err);
       }

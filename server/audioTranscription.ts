@@ -15,14 +15,20 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     }
 
     // 1. Obter URL do áudio
-    const mediaUrlResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${audioId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${settings.accessToken}`,
-        },
-      }
-    );
+    const mediaController = new AbortController();
+    const mediaTimeoutId = setTimeout(() => mediaController.abort(), 15_000);
+    let mediaUrlResponse: Response;
+    try {
+      mediaUrlResponse = await fetch(
+        `https://graph.facebook.com/v21.0/${audioId}`,
+        {
+          headers: { Authorization: `Bearer ${settings.accessToken}` },
+          signal: mediaController.signal,
+        }
+      );
+    } finally {
+      clearTimeout(mediaTimeoutId);
+    }
 
     if (!mediaUrlResponse.ok) {
       logger.warn("AudioTranscription", `Failed to get media URL: ${await mediaUrlResponse.text()}`);
@@ -33,16 +39,22 @@ export async function transcribeWhatsAppAudio(audioId: string): Promise<string |
     const audioUrl = mediaData.url;
 
     if (!audioUrl) {
-      console.error("[AudioTranscription] No URL in media response");
+      logger.error("AudioTranscription", "No URL in media response", null);
       return null;
     }
 
     // 2. Baixar áudio
-    const audioResponse = await fetch(audioUrl, {
-      headers: {
-        Authorization: `Bearer ${settings.accessToken}`,
-      },
-    });
+    const audioController = new AbortController();
+    const audioTimeoutId = setTimeout(() => audioController.abort(), 15_000);
+    let audioResponse: Response;
+    try {
+      audioResponse = await fetch(audioUrl, {
+        headers: { Authorization: `Bearer ${settings.accessToken}` },
+        signal: audioController.signal,
+      });
+    } finally {
+      clearTimeout(audioTimeoutId);
+    }
 
     if (!audioResponse.ok) {
       logger.warn("AudioTranscription", `Failed to download audio: ${await audioResponse.text()}`);
