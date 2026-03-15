@@ -1290,3 +1290,20 @@
 - [x] Após #bot reativar, bot retoma conversa automaticamente (busca histórico, identifica última pergunta pendente, gera resposta via LLM)
 - [x] Quando cliente pede atendente via fallback NLP, bot envia mensagem de transição padrão ("Aguarde uns minutinhos...")
 - [x] Notificação melhorada para operador no número do restaurante com dados do cliente e instruções
+
+## Bug - Bot contradiz status do pedido (15/03/2026) - CORRIGIDO
+- [x] Bot diz "aguardando aceite" quando já confirmado: CORRIGIDO - customerContextBuilder injeta instrução explícita para priorizar status do banco
+- [x] LLM não recebia status atualizado: CORRIGIDO - bloco de contexto reforçado com "ATENÇÃO: IGNORE status do histórico"
+- [x] Re-consulta do banco: já funcionava via customerContextBuilder, reforçado com instrução explícita
+- [x] Histórico desatualizado: LLM agora instruído a ignorar status do histórico
+
+## Bug - Número errado na notificação de cancelamento (15/03/2026) - CORRIGIDO
+- [x] Notificação de cancelamento: trocado (17) 9 8212-3269 por (17) 3325-8628 em orderNotification.ts
+- [x] Reserva cancelada: trocado em routers.ts
+- [x] Lembrete de reserva: trocado em reservationReminder.ts
+
+## Bug - Previsão de entrega em horário fechado (15/03/2026) - CORRIGIDO
+- [x] Previsão agora considera isEarlyOrder do checkBusinessHours
+- [x] Se pedido antecipado (antes das 11h), previsão começa a contar da abertura (11h ou 19h)
+- [x] Mensagem inclui nota "(A produção começa às HH:MM)" para pedidos antecipados
+- [x] Número fixo (17) 3325-8628 usado em mensagem de atraso

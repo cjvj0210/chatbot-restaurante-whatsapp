@@ -301,7 +301,7 @@ export const appRouter = router({
               if (input.status === "confirmed") {
                 msg = `✅ *Reserva Confirmada!*\n\nOlá, *${reservation.customerName}*! 🎉\n\nSua reserva foi *confirmada* pelo restaurante!\n\n📅 *Data:* ${dataFormatada}\n👥 *Pessoas:* ${reservation.numberOfPeople}\n🔖 *Reserva:* #${reservation.reservationNumber}\n\nLembre-se: é importante que 80% do grupo chegue no horário combinado. 👍\n\n_Esperamos você! Churrascaria Estrela do Sul 🌟_`;
               } else {
-                msg = `❌ *Reserva Cancelada*\n\nOlá, *${reservation.customerName}*,\n\nInfelizmente não foi possível confirmar sua reserva para ${dataFormatada}.\n\nEntre em contato conosco para reagendar:\n📞 (17) 9 8212-3269\n\n_Churrascaria Estrela do Sul 🌟_`;
+                msg = `❌ *Reserva Cancelada*\n\nOlá, *${reservation.customerName}*,\n\nInfelizmente não foi possível confirmar sua reserva para ${dataFormatada}.\n\nEntre em contato conosco para reagendar:\n📞 Telefone fixo: (17) 3325-8628\n\n_Churrascaria Estrela do Sul 🌟_`;
               }
 
               await whatsappService.sendText(normalizedPhone, msg).catch((err: unknown) => {

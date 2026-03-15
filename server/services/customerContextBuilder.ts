@@ -33,24 +33,32 @@ export async function buildCustomerContextBlock(customerId: number): Promise<str
   let block = "";
 
   if (recentOrders.length > 0) {
-    block += "\n\n📦 PEDIDOS RECENTES DESTE CLIENTE (últimas 24h):\n";
+    block += "\n\n📦 PEDIDOS RECENTES DESTE CLIENTE — STATUS EM TEMPO REAL DO BANCO DE DADOS:\n";
+    block += "⚠️⚠️⚠️ ATENÇÃO MÁXIMA: O status listado abaixo é o status ATUAL e REAL do pedido, consultado AGORA no banco de dados. Se o histórico de mensagens anteriores mostrar um status diferente (ex: \"aguardando aceite\" quando aqui diz \"Confirmado\"), você DEVE IGNORAR o histórico e usar APENAS o status abaixo. O banco de dados é SEMPRE a fonte de verdade! ⚠️⚠️⚠️\n\n";
     const statusMap: Record<string, string> = {
-      pending: "Aguardando aceite",
-      confirmed: "Confirmado",
-      preparing: "Em preparação",
-      ready: "Pronto",
-      delivering: "Saiu para entrega",
-      delivered: "Entregue",
-      cancelled: "Cancelado",
+      pending: "⏳ Aguardando aceite do restaurante",
+      confirmed: "✅ CONFIRMADO pelo restaurante — em preparação",
+      preparing: "👨‍🍳 Em preparação na cozinha",
+      ready: "✅ Pronto para retirada/entrega",
+      delivering: "🛵 Saiu para entrega",
+      delivered: "✅ Entregue",
+      cancelled: "❌ Cancelado",
     };
     for (const o of recentOrders) {
       const st = statusMap[o.status] || o.status;
       const total = `R$ ${((o.total || 0) / 100).toFixed(2).replace(".", ",")}`;
       const tipo = o.orderType === "pickup" ? "Retirada" : "Delivery";
-      block += `- Pedido ${o.orderNumber}: ${st} | ${tipo} | ${total}\n`;
+      block += `→ Pedido ${o.orderNumber}: ${st} | ${tipo} | ${total}\n`;
     }
-    block +=
-      "REGRA: Se o cliente perguntar sobre tempo, status ou demora, use o número do pedido acima para verificar com [VERIFICAR_STATUS_PEDIDO:PEDXXXXXXXX]. NÃO peça o número do pedido se já tem a informação acima!";
+
+    // Usar o primeiro pedido como referência para a regra de verificação
+    const firstOrderNum = recentOrders[0]!.orderNumber;
+    block += "\nREGRAS OBRIGATÓRIAS SOBRE PEDIDOS:\n";
+    block += `1. Se o cliente perguntar sobre tempo, status ou demora, use [VERIFICAR_STATUS_PEDIDO:${firstOrderNum}] para buscar o status ATUALIZADO. NÃO peça o número do pedido se já tem acima!\n`;
+    block += "2. NUNCA contradiga o status listado acima. Se acima diz \"CONFIRMADO\", o pedido JÁ FOI ACEITO. NÃO diga \"aguardando aceite\".\n";
+    block += "3. Se o status acima diz \"Confirmado\" e o cliente pergunta se foi aceito, responda SIM, já foi confirmado.\n";
+    block += "4. SEMPRE confie no status listado AQUI (banco de dados), nunca no que foi dito em mensagens anteriores do histórico.\n";
+    block += "5. Se o cliente questionar uma contradição com mensagem anterior, peça desculpas e informe o status CORRETO (o que está listado aqui).\n";
   }
 
   if (activeReservations.length > 0) {

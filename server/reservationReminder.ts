@@ -53,7 +53,7 @@ export async function sendReservationReminders(): Promise<void> {
         `👥 *Pessoas:* ${reservation.numberOfPeople}\n` +
         `🔖 *Reserva:* #${reservation.reservationNumber}\n\n` +
         `Lembre-se: é importante que 80% do grupo chegue no horário combinado. 👍\n\n` +
-        `_Qualquer dúvida, entre em contato: 📞 (17) 9 8212-3269_\n\n` +
+        `_Qualquer dúvida, entre em contato: 📞 Telefone fixo: (17) 3325-8628_\n\n` +
         `_Churrascaria Estrela do Sul 🌟_`;
 
       const sent = await sendTextMessageEvolution(normalizedPhone, msg).catch(() => false);

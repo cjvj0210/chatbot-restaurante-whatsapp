@@ -272,7 +272,7 @@ export function formatStatusUpdateForWhatsApp(
     ready: `✨ *Pedido #${orderNumber} Pronto!*\n\nSeu pedido está pronto para retirada! 🎉`,
     delivering: `🚚 *Pedido #${orderNumber} Saiu para Entrega!*\n\nSeu pedido está a caminho! ${estimatedTime ? `Previsão: ${estimatedTime} minutos 🏍️` : ""}`,
     delivered: `🎉 *Pedido #${orderNumber} Entregue!*\n\nEsperamos que aproveite muito! Obrigado pela preferência! ❤️\n\n_Churrascaria Estrela do Sul 🌟_`,
-    cancelled: `❌ *Pedido #${orderNumber} Cancelado*\n\nSeu pedido foi cancelado. Entre em contato conosco para mais informações.\n📞 (17) 9 8212-3269`,
+    cancelled: `❌ *Pedido #${orderNumber} Cancelado*\n\nSeu pedido foi cancelado. Entre em contato conosco para mais informações.\n📞 Telefone fixo: (17) 3325-8628`,
   };
 
   return statusMessages[status] || `Pedido #${orderNumber} — Status atualizado: ${status}`;

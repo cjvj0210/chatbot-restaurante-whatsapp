@@ -57,39 +57,120 @@ export async function handleOrderLink(aiResponse: string, phone: string): Promis
 }
 
 /**
+ * Determina o horário efetivo de início da produção.
+ * Se o pedido foi confirmado antes da abertura do restaurante (ex: 09:02 mas abre às 11h),
+ * a produção só começa quando o restaurante abre. Nesse caso, retorna o horário de abertura.
+ * Caso contrário, retorna o confirmedAt original.
+ */
+function getEffectiveProductionStart(confirmedAt: Date, orderType: string): Date {
+  const nowBRT = getNowBRT();
+  const bh = checkBusinessHours(orderType === "delivery" ? "delivery" : "pickup", nowBRT);
+  
+  // Se o restaurante está aberto com pedido antecipado (isEarlyOrder),
+  // significa que estamos ANTES do horário de abertura real.
+  // A produção só começa quando o restaurante abre.
+  if (bh.isEarlyOrder && bh.currentShift) {
+    // Determinar o horário de abertura do turno atual
+    const day = nowBRT.getDay();
+    let openHour: number;
+    let openMinute: number;
+    
+    if (bh.currentShift === "lunch") {
+      openHour = 11;
+      openMinute = 0;
+    } else {
+      openHour = 19;
+      openMinute = 0;
+    }
+    
+    // Criar data de abertura no mesmo dia
+    const openingTime = new Date(nowBRT.getFullYear(), nowBRT.getMonth(), nowBRT.getDate(), openHour, openMinute, 0);
+    
+    // Se confirmedAt é antes da abertura, usar a abertura como início efetivo
+    // Comparar usando horas BRT (confirmedAt pode estar em UTC)
+    const confirmedBRT = new Date(confirmedAt);
+    if (confirmedBRT < openingTime || nowBRT < openingTime) {
+      return openingTime;
+    }
+  }
+  
+  return confirmedAt;
+}
+
+/**
  * Calcula a mensagem de previsão de entrega para pedidos delivery.
- * Separado de handleOrderStatus para reduzir complexidade ciclomática.
+ * Agora considera o horário de funcionamento do restaurante:
+ * - Se o pedido foi confirmado antes da abertura, o tempo começa a contar da abertura
+ * - Se o restaurante está fechado, calcula baseado no próximo horário de abertura
  */
 function calcularPrevisaoDelivery(
   minutesElapsed: number,
-  isOpenNow: boolean,
   isWeekend: boolean,
-  nowBRT: Date
+  nowBRT: Date,
+  confirmedAt: Date
 ): string {
   const deliveryMinMinutes = isWeekend ? 60 : 45;
   const deliveryMaxMinutes = isWeekend ? 110 : 70;
-  const minRemaining = Math.max(0, deliveryMinMinutes - minutesElapsed);
-  const maxRemaining = Math.max(0, deliveryMaxMinutes - minutesElapsed);
 
-  if (!isOpenNow && minutesElapsed < deliveryMinMinutes) {
+  // Verificar se estamos em período de pedido antecipado
+  const bh = checkBusinessHours("delivery", nowBRT);
+  
+  if (bh.isEarlyOrder) {
+    // Pedido antecipado: a produção começa na abertura do restaurante
+    let openHour = 11;
+    let openMinute = 0;
+    if (bh.currentShift === "dinner") {
+      openHour = 19;
+      openMinute = 0;
+    }
+    
+    const openingMinutes = openHour * 60 + openMinute;
+    const currentMinutes = nowBRT.getHours() * 60 + nowBRT.getMinutes();
+    
+    if (currentMinutes < openingMinutes) {
+      // Ainda não abriu — calcular previsão a partir da abertura
+      const startH = Math.floor((openingMinutes + deliveryMinMinutes) / 60) % 24;
+      const startM = (openingMinutes + deliveryMinMinutes) % 60;
+      const endH = Math.floor((openingMinutes + deliveryMaxMinutes) / 60) % 24;
+      const endM = (openingMinutes + deliveryMaxMinutes) % 60;
+      return `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")} e ${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}\n(A produção começa às ${String(openHour).padStart(2, "0")}:${String(openMinute).padStart(2, "0")})`;
+    }
+    
+    // Já abriu mas foi pedido antecipado — calcular tempo desde a abertura
+    const minutesSinceOpen = currentMinutes - openingMinutes;
+    const minRemaining = Math.max(0, deliveryMinMinutes - minutesSinceOpen);
+    const maxRemaining = Math.max(0, deliveryMaxMinutes - minutesSinceOpen);
+    
+    if (minutesSinceOpen > deliveryMaxMinutes) {
+      return `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida, ligue no telefone fixo: (17) 3325-8628`;
+    }
+    if (minutesSinceOpen >= deliveryMinMinutes) {
+      return `\n⏱️ Previsão de entrega: chegando em breve!`;
+    }
+    return `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
+  }
+  
+  if (!bh.isOpen && minutesElapsed < deliveryMinMinutes) {
+    // Restaurante fechado — calcular baseado no próximo horário
     const currentHour = nowBRT.getHours();
     let nextOpenHour = 11;
     if (currentHour >= 15 && currentHour < 19) nextOpenHour = 19;
     else if (currentHour >= 23 || currentHour < 11) nextOpenHour = 11;
-    const estimatedMinStart =
-      nextOpenHour * 60 + deliveryMinMinutes - (currentHour * 60 + nowBRT.getMinutes());
-    if (estimatedMinStart > 0) {
-      const startH = Math.floor((nextOpenHour * 60 + deliveryMinMinutes) / 60) % 24;
-      const startM = (nextOpenHour * 60 + deliveryMinMinutes) % 60;
-      const endH = Math.floor((nextOpenHour * 60 + deliveryMaxMinutes) / 60) % 24;
-      const endM = (nextOpenHour * 60 + deliveryMaxMinutes) % 60;
-      return `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")} e ${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
-    }
-    return `\n⏱️ Previsão de entrega: ${minRemaining} a ${maxRemaining} min restantes`;
+    
+    const openingMinutes = nextOpenHour * 60;
+    const startH = Math.floor((openingMinutes + deliveryMinMinutes) / 60) % 24;
+    const startM = (openingMinutes + deliveryMinMinutes) % 60;
+    const endH = Math.floor((openingMinutes + deliveryMaxMinutes) / 60) % 24;
+    const endM = (openingMinutes + deliveryMaxMinutes) % 60;
+    return `\n⏱️ Previsão de entrega: entre ${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")} e ${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }
 
+  // Restaurante aberto, cálculo normal
+  const minRemaining = Math.max(0, deliveryMinMinutes - minutesElapsed);
+  const maxRemaining = Math.max(0, deliveryMaxMinutes - minutesElapsed);
+
   if (minutesElapsed > deliveryMaxMinutes) {
-    return `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida fale conosco!`;
+    return `\n⏱️ Previsão: já deveria ter chegado — qualquer dúvida, ligue no telefone fixo: (17) 3325-8628`;
   }
   if (minutesElapsed >= deliveryMinMinutes) {
     return `\n⏱️ Previsão de entrega: chegando em breve!`;
@@ -117,6 +198,8 @@ function calcularPrevisaoRetirada(minutesElapsed: number): string {
 
 /**
  * Calcula a mensagem de previsão de entrega/retirada com base no pedido e tempo decorrido.
+ * Agora considera o horário de funcionamento: se o pedido foi confirmado antes da abertura,
+ * o tempo começa a contar a partir do horário de abertura do restaurante.
  */
 function calcularPrevisaoStatus(
   orderType: string,
@@ -130,9 +213,8 @@ function calcularPrevisaoStatus(
   }
 
   const nowBRT = getNowBRT();
-  const { isOpen: isOpenNow } = checkBusinessHours("delivery", nowBRT);
   const isWeekend = nowBRT.getDay() === 0 || nowBRT.getDay() === 6;
-  return calcularPrevisaoDelivery(minutesElapsed, isOpenNow, isWeekend, nowBRT);
+  return calcularPrevisaoDelivery(minutesElapsed, isWeekend, nowBRT, confirmedAt);
 }
 
 /**
@@ -175,12 +257,12 @@ export async function handleOrderStatus(aiResponse: string): Promise<string> {
           previsaoMsg = calcularPrevisaoStatus(order.orderType, new Date(order.confirmedAt));
         }
 
-        const statusMsg = `📦 *Pedido ${orderNum}*\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}${previsaoMsg}`;
+        const statusMsg = `📦 Pedido ${orderNum}\nStatus: ${statusText}\n${tipoEntrega}\nTotal: ${totalVal}${previsaoMsg}`;
         aiResponse = aiResponse.replace(statusMatch[0]!, statusMsg);
       } else {
         aiResponse = aiResponse.replace(
           statusMatch[0]!,
-          `Não encontrei o pedido *${orderNum}*. Verifique o número e tente novamente.`
+          `Não encontrei o pedido ${orderNum}. Verifique o número e tente novamente.`
         );
       }
     } else {
