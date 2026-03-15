@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { processIncomingMessage } from "./chatbot";
+import { processIncomingMessage, resumeConversationAfterBot } from "./chatbot";
 import { sendTextMessageEvolution, deleteMessageForEveryone, sendTextMessageEvolutionWithId } from "./evolutionApi";
 import { whatsappService } from "./services/whatsappService";
 import { markMessageAsProcessed } from "./messagePolling";
@@ -196,7 +196,7 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
       // Aceitar variações do comando para reativar o bot
       const normalizedCmd = operatorMsg.trim().toLowerCase();
       if (BOT_COMMANDS.has(normalizedCmd)) {
-        logger.info("Webhook", `🟢 Comando ${normalizedCmd} recebido de operador — remoteJid: ${key.remoteJid} | realPhone: ${operatorRealPhone || 'N/A'}`);
+        logger.info("Webhook", `\u{1F7E2} Comando ${normalizedCmd} recebido de operador \u2014 remoteJid: ${key.remoteJid} | realPhone: ${operatorRealPhone || 'N/A'}`);
 
         // 1. Apagar a mensagem #bot antes do cliente ver
         const deleteResult = await deleteMessageForEveryone(key.remoteJid, messageId, true);
@@ -205,14 +205,23 @@ export async function handleEvolutionWebhook(req: Request, res: Response): Promi
         // 2. Desativar modo humano (passar realPhone para resolver JIDs @lid)
         await deactivateHumanModeForJid(key.remoteJid, operatorRealPhone);
 
-        // 3. Enviar confirmação silenciosa ao operador (mensagem que se auto-apaga)
-        // Enviamos uma confirmação e apagamos em 3 segundos
-        const confirmMsg = await sendTextAndGetId(key.remoteJid, "✅ Bot reativado para esta conversa!");
+        // 3. Enviar confirma\u00e7\u00e3o silenciosa ao operador (mensagem que se auto-apaga)
+        const confirmMsg = await sendTextAndGetId(key.remoteJid, "\u2705 Bot reativado para esta conversa!");
         if (confirmMsg) {
           setTimeout(async () => {
             await deleteMessageForEveryone(key.remoteJid, confirmMsg, true);
           }, 3000);
         }
+
+        // 4. RETOMAR CONVERSA AUTOMATICAMENTE
+        // Aguardar 2 segundos para a confirma\u00e7\u00e3o ser exibida, depois retomar
+        setTimeout(async () => {
+          try {
+            await resumeConversationAfterBot(key.remoteJid, operatorRealPhone);
+          } catch (err) {
+            logger.error("Webhook", "Erro ao retomar conversa ap\u00f3s #bot", err);
+          }
+        }, 2000);
         return;
       }
 

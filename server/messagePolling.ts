@@ -8,7 +8,7 @@
  */
 
 import axios from "axios";
-import { processIncomingMessage } from "./chatbot";
+import { processIncomingMessage, resumeConversationAfterBot } from "./chatbot";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { transcribeFromPolling } from "./services/audioService";
 import { logger } from "./utils/logger";
@@ -171,6 +171,14 @@ async function pollMessages(): Promise<void> {
             // Desativar modo humano
             await deactivateHumanModeForJid(remoteJid, fmRealPhone);
             logger.info("Polling", `Bot reativado via polling para ${remoteJid}`);
+            // Retomar conversa automaticamente após 2 segundos
+            setTimeout(async () => {
+              try {
+                await resumeConversationAfterBot(remoteJid, fmRealPhone);
+              } catch (resumeErr) {
+                logger.error("Polling", "Erro ao retomar conversa após #bot", resumeErr);
+              }
+            }, 2000);
           } catch (err) {
             logger.error("Polling", `Erro ao processar #bot via polling`, err);
           }

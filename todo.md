@@ -1285,3 +1285,8 @@
 - [x] Transferência: cache em memória do modo humano por phone normalizado (3 camadas: cache + DB + NLP)
 - [x] Bot continuou respondendo: cache em memória garante silenciamento imediato independente de JID
 - [x] Demora + msgs em lote: reduzido backoff máximo e janela de segurança
+
+## Melhorias de UX no Modo Humano e #bot (15/03/2026)
+- [x] Após #bot reativar, bot retoma conversa automaticamente (busca histórico, identifica última pergunta pendente, gera resposta via LLM)
+- [x] Quando cliente pede atendente via fallback NLP, bot envia mensagem de transição padrão ("Aguarde uns minutinhos...")
+- [x] Notificação melhorada para operador no número do restaurante com dados do cliente e instruções

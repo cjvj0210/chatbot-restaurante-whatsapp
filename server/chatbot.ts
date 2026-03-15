@@ -565,7 +565,16 @@ async function _processIncomingMessageInternal(
         setHumanModeCache(normalizedPhone, humanModeUntil.getTime());
         logger.info("Chatbot", `✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
 
-        // Enviar alerta ao restaurante
+        // Se o modo humano foi ativado via fallback (sem marcador explícito do LLM),
+        // garantir que a resposta ao cliente inclua uma mensagem de transição clara
+        if (!hasExplicitMarker) {
+          // Substituir a resposta do LLM por uma mensagem de transição padrão
+          // (o LLM pode ter respondido algo genérico sem mencionar a transferência)
+          response.text = "Certo! Aguarde uns minutinhos que já vou chamar um atendente para te ajudar. \u{1F60A}\n\nSe for urgente, pode ligar no nosso telefone fixo: (17) 3325-8628 \u{1F4DE}\n\nLembre-se que este número de WhatsApp não recebe ligações. Para ligar, use sempre o telefone fixo acima.";
+          logger.info("Chatbot", `Resposta substituída por mensagem de transição padrão (fallback NLP)`);
+        }
+
+        // Enviar alerta ao restaurante (notificação para o operador)
         const settings = await getRestaurantSettings();
         const restaurantPhone = settings?.phone
           ? settings.phone.replace(/\D/g, "")
@@ -574,25 +583,25 @@ async function _processIncomingMessageInternal(
         if (!restaurantPhone) {
           logger.warn("Chatbot", "Telefone do restaurante não configurado — alerta de atendente não enviado");
         } else {
-        const restaurantPhoneNorm = restaurantPhone.startsWith("55")
-          ? restaurantPhone
-          : `55${restaurantPhone}`;
-        // Enviar alerta para o JID correto (com @s.whatsapp.net)
-        const restaurantJid = `${restaurantPhoneNorm}@s.whatsapp.net`;
+          const restaurantPhoneNorm = restaurantPhone.startsWith("55")
+            ? restaurantPhone
+            : `55${restaurantPhone}`;
+          // Enviar alerta para o JID correto (com @s.whatsapp.net)
+          const restaurantJid = `${restaurantPhoneNorm}@s.whatsapp.net`;
 
-        const alertMsg =
-          `🚨 *Atenção — Cliente aguardando atendimento humano!*\n\n` +
-          `👤 *Cliente:* ${customer.name || phone}\n` +
-          `📱 *Telefone:* ${phone}\n` +
-          `💬 *Última mensagem:* "${messageText.substring(0, 100)}"\n\n` +
-          `Responda diretamente para este contato no WhatsApp.\n` +
-          `_O bot está pausado por 30 min. Envie #bot para reativar._`;
+          const alertMsg =
+            `\u{1F6A8} *Atenção — Cliente chamando atendente!*\n\n` +
+            `\u{1F464} *Cliente:* ${customer.name || phone}\n` +
+            `\u{1F4F1} *Telefone:* ${phone}\n` +
+            `\u{1F4AC} *Última mensagem:* "${messageText.substring(0, 100)}"\n\n` +
+            `\u{1F449} Abra o chat deste contato e responda diretamente.\n` +
+            `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
-        await whatsappService.sendText(restaurantJid, alertMsg).catch((err: unknown) => {
-          logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
-        });
-        logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantJid}`);
-        } // end else (restaurantPhone exists)
+          await whatsappService.sendText(restaurantJid, alertMsg).catch((err: unknown) => {
+            logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
+          });
+          logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantJid}`);
+        }
       } catch (err) {
         logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);
       }
@@ -773,3 +782,160 @@ function detectIntent(userMessage: string, currentContext: ChatContext): ChatCon
   return updatedContext;
 }
 
+
+/**
+ * Retoma a conversa automaticamente após o operador enviar #bot.
+ * Busca o histórico da conversa, identifica a última pergunta do cliente
+ * que ficou sem resposta do bot, e gera uma resposta proativa.
+ *
+ * @param remoteJid - JID do cliente (para enviar a mensagem)
+ * @param realPhone - Número real do telefone (quando JID é @lid)
+ */
+export async function resumeConversationAfterBot(
+  remoteJid: string,
+  realPhone?: string
+): Promise<void> {
+  try {
+    const phone = phoneNormalizer.normalize(realPhone || remoteJid);
+    logger.info("Chatbot", `Retomando conversa automaticamente para ${phone} (${remoteJid})`);
+
+    // Buscar customer e conversa ativa
+    const customer = await getCustomerByWhatsappId(remoteJid, realPhone);
+    if (!customer) {
+      logger.warn("Chatbot", `Customer não encontrado para retomada: ${remoteJid}`);
+      return;
+    }
+
+    const conversation = await getActiveConversation(customer.id);
+    if (!conversation) {
+      logger.warn("Chatbot", `Conversa ativa não encontrada para retomada: customer ${customer.id}`);
+      return;
+    }
+
+    // Buscar últimas mensagens para encontrar a última pergunta do cliente sem resposta
+    const history = await getConversationMessages(conversation.id, 10);
+    // history vem em DESC, reverter para cronológico
+    history.reverse();
+
+    // Encontrar a última mensagem do cliente (que pode ter ficado sem resposta do bot)
+    let lastClientMessage = "";
+    let lastClientMsgIndex = -1;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i]!.role === "user") {
+        lastClientMessage = history[i]!.content;
+        lastClientMsgIndex = i;
+        break;
+      }
+    }
+
+    if (!lastClientMessage) {
+      // Sem mensagem do cliente pendente, enviar saudação genérica de retomada
+      const resumeMsg = "Oi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?";
+      await whatsappService.sendText(remoteJid, resumeMsg);
+      // Salvar no histórico
+      await createMessage({
+        conversationId: conversation.id,
+        role: "assistant",
+        content: resumeMsg,
+        messageType: "text",
+        metadata: JSON.stringify({ resumeAfterBot: true }),
+      }).catch(() => {});
+      return;
+    }
+
+    // Verificar se a última mensagem do cliente já teve resposta do bot
+    const hasResponse = lastClientMsgIndex < history.length - 1 &&
+      history.slice(lastClientMsgIndex + 1).some(m => m.role === "assistant");
+
+    if (hasResponse) {
+      // A última mensagem já foi respondida, mas pode ter havido mensagens durante o modo humano
+      // Buscar mensagens do cliente que foram enviadas durante o modo humano (sem resposta do bot)
+      const humanModeMessages = history.filter(m =>
+        m.role === "user" && m.metadata && JSON.parse(m.metadata as string)?.humanMode === true
+      );
+
+      if (humanModeMessages.length > 0) {
+        // Há mensagens do cliente durante o modo humano — gerar resposta para a última
+        lastClientMessage = humanModeMessages[humanModeMessages.length - 1]!.content;
+      } else {
+        // Tudo já foi respondido, enviar saudação de retomada
+        const resumeMsg = "Oi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?";
+        await whatsappService.sendText(remoteJid, resumeMsg);
+        await createMessage({
+          conversationId: conversation.id,
+          role: "assistant",
+          content: resumeMsg,
+          messageType: "text",
+          metadata: JSON.stringify({ resumeAfterBot: true }),
+        }).catch(() => {});
+        return;
+      }
+    }
+
+    // Gerar resposta para a última mensagem pendente do cliente
+    logger.info("Chatbot", `Gerando resposta de retomada para: "${lastClientMessage.substring(0, 80)}"`);
+
+    const context: ChatContext = conversation.context
+      ? JSON.parse(conversation.context as string)
+      : {};
+
+    const response = await generateResponse(
+      customer.id,
+      conversation.id,
+      lastClientMessage,
+      context,
+      phone
+    );
+
+    // Remover marcador [CHAMAR_ATENDENTE] se presente (não queremos reativar modo humano na retomada)
+    let responseText = response.text
+      .replace(/\[CHAMAR_ATENDENTE\]/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    // Enviar resposta ao cliente
+    const orderLinkMatch = responseText.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
+    if (orderLinkMatch) {
+      const orderLink = orderLinkMatch[0];
+      const textBeforeLink = responseText.split(orderLink)[0]!.trim();
+      const textAfterLink = responseText.split(orderLink)[1]?.trim() || "";
+      const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
+      const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
+      const sent = await whatsappService.sendMedia(remoteJid, bannerUrl, caption);
+      if (!sent) {
+        await whatsappService.sendText(remoteJid, responseText);
+      }
+    } else {
+      await whatsappService.sendText(remoteJid, responseText);
+    }
+
+    // Salvar no histórico
+    await createMessage({
+      conversationId: conversation.id,
+      role: "user",
+      content: lastClientMessage,
+      messageType: "text",
+      metadata: JSON.stringify({ reprocessedAfterBot: true }),
+    }).catch(() => {});
+
+    await createMessage({
+      conversationId: conversation.id,
+      role: "assistant",
+      content: responseText,
+      messageType: "text",
+      metadata: JSON.stringify({ resumeAfterBot: true }),
+    }).catch(() => {});
+
+    // Atualizar contexto se necessário
+    if (response.updatedContext) {
+      await updateConversation(conversation.id, {
+        context: JSON.stringify(response.updatedContext),
+        intent: response.updatedContext.intent || conversation.intent,
+      }).catch(() => {});
+    }
+
+    logger.info("Chatbot", `✅ Conversa retomada automaticamente para ${phone}`);
+  } catch (err) {
+    logger.error("Chatbot", `Erro ao retomar conversa após #bot para ${remoteJid}`, err);
+  }
+}
