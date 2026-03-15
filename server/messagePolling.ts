@@ -91,7 +91,7 @@ async function pollMessages(): Promise<void> {
     // O tryClaimMessage (INSERT IGNORE) garante que não haverá reprocessamento.
     const now = Math.floor(Date.now() / 1000);
     const backoffWindow = consecutiveErrors > 0
-      ? Math.min(60 * Math.pow(2, consecutiveErrors), 600) // máx 10 min
+      ? Math.min(60 * Math.pow(2, consecutiveErrors), 120) // máx 2 min (reduzido de 10 min)
       : 60;
     const since = now - backoffWindow;
 
@@ -118,9 +118,17 @@ async function pollMessages(): Promise<void> {
 
     // Filtrar por timestamp NO CÓDIGO (a API ignora o filtro de timestamp)
     // Só processar mensagens posteriores ao início do polling
+    // E com no máximo MAX_MESSAGE_AGE_SECONDS de idade (evita reprocessar mensagens antigas após deploy)
+    const MAX_MESSAGE_AGE_SECONDS = 120; // 2 minutos máximo
     const records = allRecords.filter((m: any) => {
       const ts = m.messageTimestamp || 0;
-      return ts >= pollingStartTimestamp;
+      if (ts < pollingStartTimestamp) return false;
+      // Ignorar mensagens muito antigas (proteção contra reprocessamento pós-deploy)
+      if (now - ts > MAX_MESSAGE_AGE_SECONDS) {
+        logger.debug("Polling", `Mensagem ignorada por idade (${now - ts}s): ${m.key?.id}`);
+        return false;
+      }
+      return true;
     });
 
     if (records.length === 0) {
@@ -142,11 +150,31 @@ async function pollMessages(): Promise<void> {
       const remoteJid = msg.key?.remoteJid || "";
       const fromMe = msg.key?.fromMe;
 
-      // Ignorar todas as mensagens fromMe (enviadas pelo bot ou operador)
-      // NOTA: Não ativar modo humano aqui porque o polling não consegue
-      // distinguir mensagens do BOT de mensagens do OPERADOR — ambas são fromMe=true.
-      // O modo humano só é ativado via webhook (que recebe em tempo real).
+      // Mensagens fromMe=true: verificar se é comando #bot do operador
+      // O polling não consegue distinguir bot de operador para mensagens normais,
+      // mas PODE detectar o comando #bot especificamente (sempre é do operador).
       if (fromMe) {
+        // Verificar se é comando #bot (fallback quando webhook não funciona)
+        const fmMsg = msg.message || {};
+        const fmText = (fmMsg as any).conversation || (fmMsg as any).extendedTextMessage?.text || "";
+        const fmCmd = fmText.trim().toLowerCase();
+        if (fmCmd === "#bot" || fmCmd === "#ativar" || fmCmd === "#reativar") {
+          logger.info("Polling", `🟢 Comando ${fmCmd} detectado via polling (fallback) para ${remoteJid}`);
+          try {
+            const { deactivateHumanModeForJid } = await import("./services/humanModeService");
+            const { deleteMessageForEveryone } = await import("./evolutionApi");
+            // Extrair realPhone para o #bot
+            const fmJidAlt = msg.key?.remoteJidAlt || undefined;
+            const fmRealPhone = fmJidAlt ? phoneNormalizer.normalize(fmJidAlt) : undefined;
+            // Tentar apagar a mensagem #bot
+            await deleteMessageForEveryone(remoteJid, msgId, true);
+            // Desativar modo humano
+            await deactivateHumanModeForJid(remoteJid, fmRealPhone);
+            logger.info("Polling", `Bot reativado via polling para ${remoteJid}`);
+          } catch (err) {
+            logger.error("Polling", `Erro ao processar #bot via polling`, err);
+          }
+        }
         continue;
       }
 

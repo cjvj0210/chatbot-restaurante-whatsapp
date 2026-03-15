@@ -21,8 +21,9 @@ export const CHATBOT = {
    * O polling recua este valor ao definir pollingStartTimestamp para
    * cobrir mensagens que chegaram durante o restart do servidor (~30s).
    * Seguro pois tryClaimMessage (INSERT IGNORE) evita reprocessamento.
+   * NOTA: Reduzido de 300 para 60 para evitar reprocessamento de mensagens antigas após deploy.
    */
-  RESTART_SAFETY_WINDOW_SECONDS: 300,
+  RESTART_SAFETY_WINDOW_SECONDS: 60,
 } as const;
 
 export const ORDER = {

@@ -278,6 +278,9 @@ describe("processIncomingMessage — marcador [CHAMAR_ATENDENTE]", () => {
 describe("processIncomingMessage — NLP fallback para modo humano", () => {
   it("deve ativar modo humano via NLP quando LLM diz 'vou te conectar' SEM marcador", async () => {
     vi.clearAllMocks();
+    // Limpar cache em memória do modo humano (pode ter sido ativado por teste anterior)
+    const { clearHumanModeCache } = await import("./chatbot");
+    clearHumanModeCache(PHONE);
 
     const dbMock = await import("./db");
     const { invokeLLM } = await import("./_core/llm");
@@ -300,6 +303,8 @@ describe("processIncomingMessage — NLP fallback para modo humano", () => {
 
   it("deve ativar modo humano via NLP quando LLM diz 'vou te transferir para' SEM marcador", async () => {
     vi.clearAllMocks();
+    const { clearHumanModeCache } = await import("./chatbot");
+    clearHumanModeCache(PHONE);
 
     const dbMock = await import("./db");
     const { invokeLLM } = await import("./_core/llm");
@@ -320,6 +325,8 @@ describe("processIncomingMessage — NLP fallback para modo humano", () => {
 
   it("deve ativar modo humano quando CLIENTE pede explicitamente atendente humano", async () => {
     vi.clearAllMocks();
+    const { clearHumanModeCache } = await import("./chatbot");
+    clearHumanModeCache(PHONE);
 
     const dbMock = await import("./db");
     const { invokeLLM } = await import("./_core/llm");
@@ -342,6 +349,8 @@ describe("processIncomingMessage — NLP fallback para modo humano", () => {
 
   it("NÃO deve ativar modo humano para mensagens normais sem pedido de atendente", async () => {
     vi.clearAllMocks();
+    const { clearHumanModeCache } = await import("./chatbot");
+    clearHumanModeCache(PHONE);
 
     const dbMock = await import("./db");
     const { invokeLLM } = await import("./_core/llm");
@@ -366,6 +375,8 @@ describe("processIncomingMessage — NLP fallback para modo humano", () => {
 describe("processIncomingMessage — remoção do marcador [CHAMAR_ATENDENTE] da resposta", () => {
   it("deve remover [CHAMAR_ATENDENTE] da resposta enviada ao cliente", async () => {
     vi.clearAllMocks();
+    const { clearHumanModeCache } = await import("./chatbot");
+    clearHumanModeCache(PHONE);
 
     const dbMock = await import("./db");
     const { invokeLLM } = await import("./_core/llm");

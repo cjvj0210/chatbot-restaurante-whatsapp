@@ -1278,3 +1278,10 @@
 - [x] Comando #bot aparece no chat do cliente como mensagem visível — CAUSA: deleteMessageForEveryone pode falhar/demorar. Adicionado logging detalhado.
 - [x] Comando #bot não reativa o bot — CAUSA RAIZ: humanModeService não passava realPhone para getCustomerByWhatsappId. JIDs @lid não encontravam customer salvo com @s.whatsapp.net. Corrigido com findCustomerByJid com fallback.
 - [x] #bot é interceptado no webhook (fromMe=true) e NÃO chega ao processIncomingMessage. Polling ignora fromMe=true.
+
+## Bugs CRÍTICOS reportados pelo usuário (14/03/2026 - 21:43) - CORRIGIDOS
+- [x] #bot: adicionado fallback no polling para detectar #bot quando webhook não funciona
+- [x] Reprocessamento: reduzido RESTART_SAFETY_WINDOW de 300s para 60s + filtro de idade máxima de 2min + backoff máximo de 2min
+- [x] Transferência: cache em memória do modo humano por phone normalizado (3 camadas: cache + DB + NLP)
+- [x] Bot continuou respondendo: cache em memória garante silenciamento imediato independente de JID
+- [x] Demora + msgs em lote: reduzido backoff máximo e janela de segurança

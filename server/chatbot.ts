@@ -42,6 +42,46 @@ interface ChatContext {
   awaitingInput?: string;
 }
 
+// ===== CACHE EM MEMÓRIA DO MODO HUMANO =====
+// Camada extra de proteção: mesmo se o lookup do banco falhar por JID inconsistente,
+// o cache garante que o bot fique silencioso pelo tempo correto.
+// Chave: phone normalizado (apenas dígitos). Valor: timestamp de expiração.
+const humanModeCache = new Map<string, number>();
+
+/** Ativa o modo humano no cache em memória */
+export function setHumanModeCache(phone: string, expiresAt: number): void {
+  const key = phone.replace(/\D/g, "").slice(-11); // Últimos 11 dígitos
+  humanModeCache.set(key, expiresAt);
+  logger.info("HumanModeCache", `Modo humano cacheado para ${key} até ${new Date(expiresAt).toISOString()}`);
+}
+
+/** Desativa o modo humano no cache em memória */
+export function clearHumanModeCache(phone: string): void {
+  const key = phone.replace(/\D/g, "").slice(-11);
+  humanModeCache.delete(key);
+  logger.info("HumanModeCache", `Modo humano removido do cache para ${key}`);
+}
+
+/** Verifica se o modo humano está ativo no cache em memória */
+function isHumanModeCached(phone: string): boolean {
+  const key = phone.replace(/\D/g, "").slice(-11);
+  const expiresAt = humanModeCache.get(key);
+  if (!expiresAt) return false;
+  if (Date.now() > expiresAt) {
+    humanModeCache.delete(key);
+    return false;
+  }
+  return true;
+}
+
+// Limpeza periódica do cache (a cada 5 minutos)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, expiresAt] of Array.from(humanModeCache.entries())) {
+    if (now > expiresAt) humanModeCache.delete(key);
+  }
+}, 5 * 60 * 1000);
+
 /** Fields that can be updated on an existing customer record */
 interface CustomerUpdates {
   name?: string;
@@ -320,6 +360,26 @@ async function _processIncomingMessageInternal(
     const normalizedPhone = phoneNormalizer.normalize(effectivePhone);
 
     // ===== VERIFICAÇÃO ANTECIPADA DO MODO HUMANO =====
+    // CAMADA 1: Cache em memória (rápido, não depende de lookup de JID no banco)
+    // Garante silenciamento mesmo se o JID mudar entre @lid e @s.whatsapp.net
+    if (isHumanModeCached(normalizedPhone)) {
+      logger.info("Chatbot", `Modo humano ativo (CACHE) — bot silencioso para ${phone}`);
+      // Tentar salvar mensagem no histórico em background
+      if (dbAvailable) {
+        getActiveConversationByWhatsappId(whatsappId, realPhone)
+          .then(conv => conv && createMessage({
+            conversationId: conv.id,
+            role: "user",
+            content: messageText,
+            messageType: "text",
+            metadata: JSON.stringify({ humanMode: true }),
+          }))
+          .catch((err: unknown) => logger.warn("Chatbot", "Falha ao salvar msg em modo humano (cache)", err));
+      }
+      return;
+    }
+
+    // CAMADA 2: Verificação via banco de dados (mais lenta, mas persistente)
     // DEVE ser feita ANTES do FAQ cache para garantir que o bot fique 100% silencioso
     // quando o modo humano está ativo (mesmo para perguntas frequentes).
     if (dbAvailable) {
@@ -327,7 +387,11 @@ async function _processIncomingMessageInternal(
       if (earlyConv?.humanMode) {
         const stillHuman = await checkAndExpireHumanMode(earlyConv.id);
         if (stillHuman) {
-          logger.info("Chatbot", `Modo humano ativo (verificação antecipada) — bot silencioso para ${phone}`);
+          // Sincronizar cache com o banco
+          if (earlyConv.humanModeUntil) {
+            setHumanModeCache(normalizedPhone, new Date(earlyConv.humanModeUntil).getTime());
+          }
+          logger.info("Chatbot", `Modo humano ativo (verificação antecipada DB) — bot silencioso para ${phone}`);
           // Salvar mensagem do usuário no histórico mesmo em modo humano
           await createMessage({
             conversationId: earlyConv.id,
@@ -497,6 +561,8 @@ async function _processIncomingMessageInternal(
           humanMode: true,
           humanModeUntil,
         });
+        // Cachear em memória para garantir silenciamento imediato
+        setHumanModeCache(normalizedPhone, humanModeUntil.getTime());
         logger.info("Chatbot", `✅ Modo humano ATIVADO PREVENTIVAMENTE para ${phone} até ${humanModeUntil.toISOString()}`);
 
         // Enviar alerta ao restaurante
@@ -511,6 +577,8 @@ async function _processIncomingMessageInternal(
         const restaurantPhoneNorm = restaurantPhone.startsWith("55")
           ? restaurantPhone
           : `55${restaurantPhone}`;
+        // Enviar alerta para o JID correto (com @s.whatsapp.net)
+        const restaurantJid = `${restaurantPhoneNorm}@s.whatsapp.net`;
 
         const alertMsg =
           `🚨 *Atenção — Cliente aguardando atendimento humano!*\n\n` +
@@ -520,10 +588,10 @@ async function _processIncomingMessageInternal(
           `Responda diretamente para este contato no WhatsApp.\n` +
           `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
-        await whatsappService.sendText(restaurantPhoneNorm, alertMsg).catch((err: unknown) => {
+        await whatsappService.sendText(restaurantJid, alertMsg).catch((err: unknown) => {
           logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
         });
-        logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantPhoneNorm}`);
+        logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantJid}`);
         } // end else (restaurantPhone exists)
       } catch (err) {
         logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);

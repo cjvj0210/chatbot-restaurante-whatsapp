@@ -5,10 +5,15 @@
  *
  * NOTA: As funções recebem `realPhone` opcional para resolver o problema de
  * JIDs @lid que não encontram o customer salvo com @s.whatsapp.net.
+ *
+ * Integra com o cache em memória do chatbot.ts para garantir silenciamento
+ * imediato mesmo quando o lookup do banco falha por JID inconsistente.
  */
 import { getCustomerByWhatsappId, getActiveConversation, updateConversation } from "../db";
 import { logger } from "../utils/logger";
+import { phoneNormalizer } from "../utils/phoneNormalizer";
 import { CHATBOT } from "../../shared/constants";
+import { setHumanModeCache, clearHumanModeCache } from "../chatbot";
 
 /**
  * Busca um customer pelo remoteJid, com fallback para realPhone.
@@ -40,24 +45,36 @@ async function findCustomerByJid(remoteJid: string, realPhone?: string) {
 }
 
 /**
+ * Extrai o phone normalizado de um remoteJid + realPhone para uso no cache.
+ */
+function getPhoneForCache(remoteJid: string, realPhone?: string): string {
+  if (realPhone) return phoneNormalizer.normalize(realPhone);
+  return phoneNormalizer.normalize(remoteJid);
+}
+
+/**
  * Activates human mode for a conversation identified by JID.
  * When an operator responds manually, the bot goes silent for HUMAN_MODE_DURATION_MS.
  */
 export async function activateHumanModeForJid(remoteJid: string, realPhone?: string): Promise<void> {
   try {
+    // SEMPRE cachear em memória, mesmo se o lookup do banco falhar
+    const phoneForCache = getPhoneForCache(remoteJid, realPhone);
+    const humanModeUntil = new Date(Date.now() + CHATBOT.HUMAN_MODE_DURATION_MS);
+    setHumanModeCache(phoneForCache, humanModeUntil.getTime());
+
     const customer = await findCustomerByJid(remoteJid, realPhone);
     if (!customer) {
-      logger.warn("HumanMode", `Customer NOT FOUND for ${remoteJid} (realPhone: ${realPhone || 'N/A'}) — human mode not activated`);
+      logger.warn("HumanMode", `Customer NOT FOUND for ${remoteJid} (realPhone: ${realPhone || 'N/A'}) — human mode activated ONLY in cache`);
       return;
     }
 
     const conversation = await getActiveConversation(customer.id);
     if (!conversation) {
-      logger.warn("HumanMode", `Active conversation NOT FOUND for customer ${customer.id} (${remoteJid}) — human mode not activated`);
+      logger.warn("HumanMode", `Active conversation NOT FOUND for customer ${customer.id} (${remoteJid}) — human mode activated ONLY in cache`);
       return;
     }
 
-    const humanModeUntil = new Date(Date.now() + CHATBOT.HUMAN_MODE_DURATION_MS);
     await updateConversation(conversation.id, { humanMode: true, humanModeUntil });
 
     logger.info("HumanMode", `Human mode ACTIVATED for ${remoteJid} (customer ${customer.id}) until ${humanModeUntil.toISOString()}`);
@@ -72,15 +89,19 @@ export async function activateHumanModeForJid(remoteJid: string, realPhone?: str
  */
 export async function deactivateHumanModeForJid(remoteJid: string, realPhone?: string): Promise<void> {
   try {
+    // SEMPRE limpar cache em memória, mesmo se o lookup do banco falhar
+    const phoneForCache = getPhoneForCache(remoteJid, realPhone);
+    clearHumanModeCache(phoneForCache);
+
     const customer = await findCustomerByJid(remoteJid, realPhone);
     if (!customer) {
-      logger.warn("HumanMode", `Customer NOT FOUND for ${remoteJid} (realPhone: ${realPhone || 'N/A'}) — cannot deactivate human mode`);
+      logger.warn("HumanMode", `Customer NOT FOUND for ${remoteJid} (realPhone: ${realPhone || 'N/A'}) — human mode deactivated ONLY in cache`);
       return;
     }
 
     const conversation = await getActiveConversation(customer.id);
     if (!conversation) {
-      logger.warn("HumanMode", `Active conversation NOT FOUND for customer ${customer.id} (${remoteJid}) — cannot deactivate human mode`);
+      logger.warn("HumanMode", `Active conversation NOT FOUND for customer ${customer.id} (${remoteJid}) — human mode deactivated ONLY in cache`);
       return;
     }
 
