@@ -86,13 +86,13 @@ async function pollMessages(): Promise<void> {
 
   try {
     // WP-3: Estender janela de busca proporcionalmente ao backoff.
-    // Em operação normal: 60s. Após erros consecutivos, a janela cresce para
-    // cobrir mensagens que chegaram durante a indisponibilidade.
+    // Em operação normal: 120s. Após erros consecutivos (ex: Render cold start),
+    // a janela cresce para cobrir mensagens que chegaram durante a indisponibilidade.
     // O tryClaimMessage (INSERT IGNORE) garante que não haverá reprocessamento.
     const now = Math.floor(Date.now() / 1000);
     const backoffWindow = consecutiveErrors > 0
-      ? Math.min(60 * Math.pow(2, consecutiveErrors), 120) // máx 2 min (reduzido de 10 min)
-      : 60;
+      ? Math.min(120 * Math.pow(2, consecutiveErrors), 1200) // máx 20 min (cobre cold start do Render)
+      : 120;
     const since = now - backoffWindow;
 
     const response = await axios.post(
@@ -111,21 +111,31 @@ async function pollMessages(): Promise<void> {
 
     const allRecords = response.data?.messages?.records || [];
     lastPollTimestamp = now;
+    // Quando recuperar de erros, manter o contador por ESTA iteração para que
+    // o MAX_MESSAGE_AGE_SECONDS expandido ainda se aplique às mensagens desta busca.
+    // O contador será zerado DEPOIS do processamento das mensagens.
+    const errorsBeforeRecovery = consecutiveErrors;
     if (consecutiveErrors > 0) {
-      logger.info("Polling", `Polling recuperado após ${consecutiveErrors} erro(s) consecutivo(s)`);
-      consecutiveErrors = 0;
+      const expandedAge = Math.min(120 + (consecutiveErrors * 120), 1200);
+      logger.info("Polling", `Polling recuperado após ${consecutiveErrors} erro(s) consecutivo(s) — janela expandida para ${expandedAge}s`);
     }
 
     // Filtrar por timestamp NO CÓDIGO (a API ignora o filtro de timestamp)
     // Só processar mensagens posteriores ao início do polling
-    // E com no máximo MAX_MESSAGE_AGE_SECONDS de idade (evita reprocessar mensagens antigas após deploy)
-    const MAX_MESSAGE_AGE_SECONDS = 120; // 2 minutos máximo
+    // Janela de idade dinâmica: em operação normal usa 120s, mas após erros
+    // consecutivos (ex: Render cold start de até 5 min), expande proporcionalmente
+    // para não descartar mensagens que chegaram durante a indisponibilidade.
+    // A deduplicação via tryClaimMessage (INSERT IGNORE) garante que não haverá reprocessamento.
+    const BASE_MAX_AGE_SECONDS = 120; // 2 minutos em operação normal
+    const MAX_MESSAGE_AGE_SECONDS = consecutiveErrors > 0
+      ? Math.min(BASE_MAX_AGE_SECONDS + (consecutiveErrors * 120), 1200) // até 20 min após cold start
+      : BASE_MAX_AGE_SECONDS;
     const records = allRecords.filter((m: any) => {
       const ts = m.messageTimestamp || 0;
       if (ts < pollingStartTimestamp) return false;
       // Ignorar mensagens muito antigas (proteção contra reprocessamento pós-deploy)
       if (now - ts > MAX_MESSAGE_AGE_SECONDS) {
-        logger.debug("Polling", `Mensagem ignorada por idade (${now - ts}s): ${m.key?.id}`);
+        logger.debug("Polling", `Mensagem ignorada por idade (${now - ts}s > ${MAX_MESSAGE_AGE_SECONDS}s): ${m.key?.id}`);
         return false;
       }
       return true;
@@ -245,6 +255,10 @@ async function pollMessages(): Promise<void> {
       } catch (err) {
         logger.error("Polling", `Erro ao processar mensagem ${msgId}`, err);
       }
+    }
+    // Zerar o contador de erros DEPOIS de processar as mensagens com janela expandida
+    if (errorsBeforeRecovery > 0) {
+      consecutiveErrors = 0;
     }
   } catch (error: any) {
     consecutiveErrors++;

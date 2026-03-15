@@ -35,7 +35,7 @@ export const ORDER = {
 
 export const INFRA = {
   /** Intervalo de ping keep-alive para Evolution API (ms) */
-  KEEP_ALIVE_PING_INTERVAL_MS: 4 * 60 * 1000,
+  KEEP_ALIVE_PING_INTERVAL_MS: 2 * 60 * 1000, // Reduzido de 4min para 2min para minimizar cold starts do Render
   /** Intervalo de verificação do webhook (ms) */
   WEBHOOK_CHECK_INTERVAL_MS: 15 * 60 * 1000,
   /** Delay inicial antes do primeiro polling/keep-alive (ms) */

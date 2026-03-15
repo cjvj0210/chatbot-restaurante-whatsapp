@@ -1307,3 +1307,13 @@
 - [x] Se pedido antecipado (antes das 11h), previsão começa a contar da abertura (11h ou 19h)
 - [x] Mensagem inclui nota "(A produção começa às HH:MM)" para pedidos antecipados
 - [x] Número fixo (17) 3325-8628 usado em mensagem de atraso
+
+## BUG - Bot Não Responde Mensagens (15/03/2026) - CORRIGIDO
+- [x] Investigar por que o bot não está respondendo mensagens no WhatsApp
+- [x] Verificar logs do servidor e webhook — Timeouts no polling (Render cold start)
+- [x] Verificar conexão com Evolution API — Instância OK (state: open), API respondendo
+- [x] Causa raiz: Render cold start + MAX_MESSAGE_AGE_SECONDS=120s descartava mensagens antigas
+- [x] Correção: Janela de idade dinâmica (120s normal, até 1200s após cold start)
+- [x] Correção: backoffWindow expandido (120s normal, até 1200s após erros)
+- [x] Correção: keepAlive reduzido de 4min para 2min para minimizar cold starts
+- [ ] Testar e confirmar funcionamento
