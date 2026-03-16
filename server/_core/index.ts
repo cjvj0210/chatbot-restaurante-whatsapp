@@ -19,6 +19,7 @@ import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages, expireHum
 import { cleanupRateLimits } from "../chatbotRateLimit";
 import { startMessagePolling, getPollingStats } from "../messagePolling";
 import { cleanupProcessedMessages } from "../db";
+import { startTokenRefreshScheduler } from "../tokenRefresh";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -243,6 +244,8 @@ async function startServer() {
       console.log('[CloudAPI] Provider: Meta Cloud API oficial');
       console.log('[CloudAPI] Webhook endpoint: /api/webhook/cloud');
       console.log('[CloudAPI] Polling e KeepAlive desativados (desnecessários com Cloud API)');
+      // Iniciar renovação automática do token de longa duração
+      startTokenRefreshScheduler();
     } else {
       // Iniciar keep-alive para manter Evolution API acordada (Render.com free tier)
       startKeepAlive();

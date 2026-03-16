@@ -1,0 +1,130 @@
+{
+  "query": "SELECT id, role, SUBSTRING(content, 1, 120) as content, createdAt FROM messages WHERE role='user' ORDER BY createdAt DESC LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, role, SUBSTRING(content, 1, 120) as content, createdAt FROM messages WHERE role='user' ORDER BY createdAt DESC LIMIT 20",
+  "rows": [
+    {
+      "id": "510019",
+      "role": "user",
+      "content": "teste",
+      "createdAt": "2026-03-16 16:22:45"
+    },
+    {
+      "id": "510017",
+      "role": "user",
+      "content": "teste de log",
+      "createdAt": "2026-03-16 16:22:34"
+    },
+    {
+      "id": "510015",
+      "role": "user",
+      "content": "Não sei, na verdade vou pedir uma marmita pra entrega",
+      "createdAt": "2026-03-16 16:20:09"
+    },
+    {
+      "id": "510013",
+      "role": "user",
+      "content": "Queria agendar uma reserva",
+      "createdAt": "2026-03-16 16:19:50"
+    },
+    {
+      "id": "510011",
+      "role": "user",
+      "content": "Você abre hoje?",
+      "createdAt": "2026-03-16 16:19:22"
+    },
+    {
+      "id": "510009",
+      "role": "user",
+      "content": "Delivery",
+      "createdAt": "2026-03-16 16:19:17"
+    },
+    {
+      "id": "510007",
+      "role": "user",
+      "content": "Quero fazer pedido",
+      "createdAt": "2026-03-16 16:19:10"
+    },
+    {
+      "id": "510005",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-16 16:19:05"
+    },
+    {
+      "id": "510003",
+      "role": "user",
+      "content": "Quero fazer um pedido",
+      "createdAt": "2026-03-16 16:18:20"
+    },
+    {
+      "id": "510001",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-16 16:18:09"
+    },
+    {
+      "id": "480003",
+      "role": "user",
+      "content": "Queria falar com um atendente",
+      "createdAt": "2026-03-15 16:28:36"
+    },
+    {
+      "id": "480001",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-15 16:28:36"
+    },
+    {
+      "id": "450042",
+      "role": "user",
+      "content": "Certo, que horas você acha que chega?",
+      "createdAt": "2026-03-15 12:04:23"
+    },
+    {
+      "id": "450040",
+      "role": "user",
+      "content": "Verifique de novo",
+      "createdAt": "2026-03-15 12:04:04"
+    },
+    {
+      "id": "450038",
+      "role": "user",
+      "content": "Mas você acabou de me falar ali em cima que ele foi confirmado",
+      "createdAt": "2026-03-15 12:03:37"
+    },
+    {
+      "id": "450036",
+      "role": "user",
+      "content": "Você acha que vai demorar muito?",
+      "createdAt": "2026-03-15 12:03:14"
+    },
+    {
+      "id": "450034",
+      "role": "user",
+      "content": "Certo",
+      "createdAt": "2026-03-15 12:03:08"
+    },
+    {
+      "id": "450032",
+      "role": "user",
+      "content": "Olá! Gostaria de acompanhar meu pedido *PED76130484*",
+      "createdAt": "2026-03-15 12:02:27"
+    },
+    {
+      "id": "450030",
+      "role": "user",
+      "content": "Ah não, tá certo então. Outra coisa, eu queria agendar um pedido de delivery, como que eu faço?",
+      "createdAt": "2026-03-15 11:45:15"
+    },
+    {
+      "id": "450028",
+      "role": "user",
+      "content": "Ah não, tá certo então. Outra coisa, eu queria agendar um pedido de delivery, como que eu faço?",
+      "createdAt": "2026-03-15 11:45:08"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\trole\tcontent\tcreatedAt\n510019\tuser\tteste\t2026-03-16 16:22:45\n510017\tuser\tteste de log\t2026-03-16 16:22:34\n510015\tuser\tNão sei, na verdade vou pedir uma marmita pra entrega\t2026-03-16 16:20:09\n510013\tuser\tQueria agendar uma reserva\t2026-03-16 16:19:50\n510011\tuser\tVocê abre hoje?\t2026-03-16 16:19:22\n510009\tuser\tDelivery\t2026-03-16 16:19:17\n510007\tuser\tQuero fazer pedido\t2026-03-16 16:19:10\n510005\tuser\tOi\t2026-03-16 16:19:05\n510003\tuser\tQuero fazer um pedido\t2026-03-16 16:18:20\n510001\tuser\tOi\t2026-03-16 16:18:09\n480003\tuser\tQueria falar com um atendente\t2026-03-15 16:28:36\n480001\tuser\tOi\t2026-03-15 16:28:36\n450042\tuser\tCerto, que horas você acha que chega?\t2026-03-15 12:04:23\n450040\tuser\tVerifique de novo\t2026-03-15 12:04:04\n450038\tuser\tMas você acabou de me falar ali em cima que ele foi confirmado\t2026-03-15 12:03:37\n450036\tuser\tVocê acha que vai demorar muito?\t2026-03-15 12:03:14\n450034\tuser\tCerto\t2026-03-15 12:03:08\n450032\tuser\tOlá! Gostaria de acompanhar meu pedido *PED76130484*\t2026-03-15 12:02:27\n450030\tuser\tAh não, tá certo então. Outra coisa, eu queria agendar um pedido de delivery, como que eu faço?\t2026-03-15 11:45:15\n450028\tuser\tAh não, tá certo então. Outra coisa, eu queria agendar um pedido de delivery, como que eu faço?\t2026-03-15 11:45:08\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

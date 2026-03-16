@@ -1,0 +1,157 @@
+{
+  "query": "SELECT id, role, SUBSTRING(content, 1, 120) as content, createdAt FROM messages ORDER BY createdAt DESC LIMIT 30",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, role, SUBSTRING(content, 1, 120) as content, createdAt FROM messages ORDER BY createdAt DESC LIMIT 30",
+  "rows": [
+    {
+      "id": "510020",
+      "role": "assistant",
+      "content": "Olá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje? Quer saber sobre no",
+      "createdAt": "2026-03-16 16:22:53"
+    },
+    {
+      "id": "510019",
+      "role": "user",
+      "content": "teste",
+      "createdAt": "2026-03-16 16:22:45"
+    },
+    {
+      "id": "510018",
+      "role": "assistant",
+      "content": "Olá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje? Quer saber sobre no",
+      "createdAt": "2026-03-16 16:22:36"
+    },
+    {
+      "id": "510017",
+      "role": "user",
+      "content": "teste de log",
+      "createdAt": "2026-03-16 16:22:34"
+    },
+    {
+      "id": "510015",
+      "role": "user",
+      "content": "Não sei, na verdade vou pedir uma marmita pra entrega",
+      "createdAt": "2026-03-16 16:20:09"
+    },
+    {
+      "id": "510013",
+      "role": "user",
+      "content": "Queria agendar uma reserva",
+      "createdAt": "2026-03-16 16:19:50"
+    },
+    {
+      "id": "510011",
+      "role": "user",
+      "content": "Você abre hoje?",
+      "createdAt": "2026-03-16 16:19:22"
+    },
+    {
+      "id": "510009",
+      "role": "user",
+      "content": "Delivery",
+      "createdAt": "2026-03-16 16:19:17"
+    },
+    {
+      "id": "510007",
+      "role": "user",
+      "content": "Quero fazer pedido",
+      "createdAt": "2026-03-16 16:19:10"
+    },
+    {
+      "id": "510006",
+      "role": "assistant",
+      "content": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 16:19:05"
+    },
+    {
+      "id": "510005",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-16 16:19:05"
+    },
+    {
+      "id": "510003",
+      "role": "user",
+      "content": "Quero fazer um pedido",
+      "createdAt": "2026-03-16 16:18:20"
+    },
+    {
+      "id": "510002",
+      "role": "assistant",
+      "content": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 16:18:09"
+    },
+    {
+      "id": "510001",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-16 16:18:09"
+    },
+    {
+      "id": "480006",
+      "role": "assistant",
+      "content": "Oi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?",
+      "createdAt": "2026-03-15 16:30:32"
+    },
+    {
+      "id": "480005",
+      "role": "assistant",
+      "content": "Oi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?",
+      "createdAt": "2026-03-15 16:30:16"
+    },
+    {
+      "id": "480003",
+      "role": "user",
+      "content": "Queria falar com um atendente",
+      "createdAt": "2026-03-15 16:28:36"
+    },
+    {
+      "id": "480002",
+      "role": "assistant",
+      "content": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-15 16:28:36"
+    },
+    {
+      "id": "480001",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-15 16:28:36"
+    },
+    {
+      "id": "450042",
+      "role": "user",
+      "content": "Certo, que horas você acha que chega?",
+      "createdAt": "2026-03-15 12:04:23"
+    },
+    {
+      "id": "450040",
+      "role": "user",
+      "content": "Verifique de novo",
+      "createdAt": "2026-03-15 12:04:04"
+    }
+  ],
+  "messages": [
+    "510016\tassistant\tAh, entendi! Sem problemas! 😊",
+    "Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso \t2026-03-16 16:20:12",
+    "510014\tassistant\tClaro! Pra agendar sua reserva, preciso de algumas informações. 😊",
+    "Pra qual dia e horário você gostaria de reservar?\t2026-03-16 16:19:52",
+    "510012\tassistant\tBah, sim! Hoje, segunda-feira, estamos abertos para o almoço até as 14h30. 😊",
+    "No jantar, fechamos às segundas-feiras.",
+    "Q\t2026-03-16 16:19:24",
+    "510010\tassistant\tIsso mesmo, temos delivery! 🛵",
+    "Pra fazer seu pedido, o melhor é acessar nosso cardápio digital, que tem tudo com fotos e\t2026-03-16 16:19:20",
+    "510008\tassistant\tBah, que bom! Pra fazer seu pedido rapidinho, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesn\t2026-03-16 16:19:16",
+    "510004\tassistant\tÓtimo! Para fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space\t2026-03-16 16:18:30",
+    "480004\tassistant\tCerto! Vou te conectar com um atendente humano agora mesmo para que você possa conversar. 😊",
+    "Por favor, aguarde um momen\t2026-03-15 16:28:39",
+    "450043\tassistant\tCerto! Com a previsão de entrega de 59 a 109 minutos restantes, seu pedido deve chegar entre 10h03 e 11h13. ⏳",
+    "A equipe \t2026-03-15 12:04:26",
+    "450041\tassistant\tCerto! Deixa eu verificar o status do seu pedido novamente! 🔍",
+    "📦 *Pedido PED76130484*",
+    "Status: ✅ Pedido confirmado — em p\t2026-03-15 12:04:06"
+  ],
+  "stdout": "id\trole\tcontent\tcreatedAt\n510020\tassistant\tOlá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje? Quer saber sobre no\t2026-03-16 16:22:53\n510019\tuser\tteste\t2026-03-16 16:22:45\n510018\tassistant\tOlá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje? Quer saber sobre no\t2026-03-16 16:22:36\n510017\tuser\tteste de log\t2026-03-16 16:22:34\n510016\tassistant\tAh, entendi! Sem problemas! 😊\n\nPra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso \t2026-03-16 16:20:12\n510015\tuser\tNão sei, na verdade vou pedir uma marmita pra entrega\t2026-03-16 16:20:09\n510014\tassistant\tClaro! Pra agendar sua reserva, preciso de algumas informações. 😊\n\nPra qual dia e horário você gostaria de reservar?\t2026-03-16 16:19:52\n510013\tuser\tQueria agendar uma reserva\t2026-03-16 16:19:50\n510012\tassistant\tBah, sim! Hoje, segunda-feira, estamos abertos para o almoço até as 14h30. 😊\n\nNo jantar, fechamos às segundas-feiras.\n\nQ\t2026-03-16 16:19:24\n510011\tuser\tVocê abre hoje?\t2026-03-16 16:19:22\n510010\tassistant\tIsso mesmo, temos delivery! 🛵\n\nPra fazer seu pedido, o melhor é acessar nosso cardápio digital, que tem tudo com fotos e\t2026-03-16 16:19:20\n510009\tuser\tDelivery\t2026-03-16 16:19:17\n510008\tassistant\tBah, que bom! Pra fazer seu pedido rapidinho, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesn\t2026-03-16 16:19:16\n510007\tuser\tQuero fazer pedido\t2026-03-16 16:19:10\n510006\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 16:19:05\n510005\tuser\tOi\t2026-03-16 16:19:05\n510004\tassistant\tÓtimo! Para fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space\t2026-03-16 16:18:30\n510003\tuser\tQuero fazer um pedido\t2026-03-16 16:18:20\n510002\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 16:18:09\n510001\tuser\tOi\t2026-03-16 16:18:09\n480006\tassistant\tOi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?\t2026-03-15 16:30:32\n480005\tassistant\tOi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?\t2026-03-15 16:30:16\n480004\tassistant\tCerto! Vou te conectar com um atendente humano agora mesmo para que você possa conversar. 😊\n\nPor favor, aguarde um momen\t2026-03-15 16:28:39\n480003\tuser\tQueria falar com um atendente\t2026-03-15 16:28:36\n480002\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-15 16:28:36\n480001\tuser\tOi\t2026-03-15 16:28:36\n450043\tassistant\tCerto! Com a previsão de entrega de 59 a 109 minutos restantes, seu pedido deve chegar entre 10h03 e 11h13. ⏳\n\nA equipe \t2026-03-15 12:04:26\n450042\tuser\tCerto, que horas você acha que chega?\t2026-03-15 12:04:23\n450041\tassistant\tCerto! Deixa eu verificar o status do seu pedido novamente! 🔍\n\n📦 *Pedido PED76130484*\nStatus: ✅ Pedido confirmado — em p\t2026-03-15 12:04:06\n450040\tuser\tVerifique de novo\t2026-03-15 12:04:04\n",
+  "stderr": "",
+  "execution_time_ms": 136
+}

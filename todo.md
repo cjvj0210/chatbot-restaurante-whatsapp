@@ -1328,7 +1328,17 @@
 - [x] Atualizar orderNotification, maintenance, reservationReminder para usar whatsappService
 - [x] Desativar polling/keepAlive quando provider=cloud_api
 - [x] Escrever testes vitest para o adapter da Cloud API (17 testes passando)
-- [ ] Configurar webhook na Meta (URL + verify token)
-- [ ] Testar envio de mensagem via Cloud API
-- [ ] Testar recebimento de mensagem via webhook Cloud API
-- [ ] Testar fluxo completo do chatbot com número de teste
+- [x] Configurar webhook na Meta (URL + verify token)
+- [x] Testar envio de mensagem via Cloud API
+- [x] Testar recebimento de mensagem via webhook Cloud API
+- [x] Testar fluxo completo do chatbot com número de teste
+- [ ] BUG: Bot via Cloud API responde saudações mas não responde a mensagens subsequentes (pedidos, delivery, perguntas)
+
+## Token de Longa Duração e Renovação Automática (16/03/2026)
+- [x] Gerar token de longa duração (60 dias) a partir do token temporário + App Secret
+- [x] Atualizar META_CLOUD_API_TOKEN com token de longa duração
+- [x] Implementar renovação automática do token antes de expirar (~50 dias)
+- [x] Armazenar App Secret como variável de ambiente (META_APP_SECRET)
+- [x] Escrever teste vitest para validação do token (16 testes passando)
+- [x] Testar envio de mensagem com link (que falhava com token temporário) - FUNCIONANDO
+- [x] Marcar webhook e testes como concluídos no todo
