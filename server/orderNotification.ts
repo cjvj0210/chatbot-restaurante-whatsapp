@@ -1,22 +1,17 @@
 import { getDb } from "./db";
 import { botMessages, orders, orderItems, menuItems, orderSessions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { sendTextMessage } from "./whatsapp";
-import { sendTextMessageEvolution } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
 import { checkBusinessHours, getNowBRT } from "../shared/businessHours";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { logger } from "./utils/logger";
 
 /**
- * Envia mensagem de texto via Evolution API (principal) com fallback para WhatsApp Cloud API
+ * Envia mensagem de texto via provider ativo (Cloud API ou Evolution API)
  */
 async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
   const normalizedPhone = phoneNormalizer.withCountryCode(phone);
-  // Tentar primeiro via Evolution API (número de teste configurado)
-  const sentEvolution = await sendTextMessageEvolution(normalizedPhone, message);
-  if (sentEvolution) return true;
-  // Fallback para WhatsApp Cloud API
-  return await sendTextMessage(phone, message);
+  return whatsappService.sendText(normalizedPhone, message);
 }
 
 /**

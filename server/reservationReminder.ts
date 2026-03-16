@@ -1,7 +1,7 @@
 import { getDb } from "./db";
 import { reservations } from "../drizzle/schema";
 import { eq, and, gte, lte } from "drizzle-orm";
-import { sendTextMessageEvolution } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
 
 /**
  * Verifica reservas que estão a ~12h de acontecer e envia lembrete via WhatsApp.
@@ -56,7 +56,7 @@ export async function sendReservationReminders(): Promise<void> {
         `_Qualquer dúvida, entre em contato: 📞 Telefone fixo: (17) 3325-8628_\n\n` +
         `_Churrascaria Estrela do Sul 🌟_`;
 
-      const sent = await sendTextMessageEvolution(normalizedPhone, msg).catch(() => false);
+      const sent = await whatsappService.sendText(normalizedPhone, msg).catch(() => false);
 
       if (sent) {
         // Marcar lembrete como enviado

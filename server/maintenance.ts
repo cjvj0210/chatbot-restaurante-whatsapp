@@ -1,7 +1,8 @@
 import { getDb } from "./db";
 import { orderSessions, testSessions, testMessages, conversations, messages, botMessages } from "../drizzle/schema";
 import { lt, and, eq, lte, or, desc } from "drizzle-orm";
-import { checkInstanceStatus, sendTextMessageEvolution } from "./evolutionApi";
+import { checkInstanceStatus } from "./evolutionApi";
+import { whatsappService } from "./services/whatsappService";
 import { notifyOwner } from "./_core/notification";
 import { logger } from "./utils/logger";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
@@ -119,7 +120,7 @@ export async function retryFailedMessages(): Promise<void> {
 
       // Normalizar telefone para formato 55XXXXXXXXXXX
       const normalizedPhone = phoneNormalizer.withCountryCode(msg.whatsappNumber);
-      const sent = await sendTextMessageEvolution(normalizedPhone, msg.message);
+      const sent = await whatsappService.sendText(normalizedPhone, msg.message);
 
       if (sent) {
         await db

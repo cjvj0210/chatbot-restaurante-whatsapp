@@ -12,6 +12,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
 import { handleEvolutionWebhook } from "../webhookEvolution";
+import { handleCloudApiWebhookVerification, handleCloudApiWebhookMessage } from "../webhookCloudApi";
 import { startKeepAlive } from "../keepAlive";
 import { sendReservationReminders } from "../reservationReminder";
 import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages, expireHumanModes } from "../maintenance";
@@ -138,9 +139,13 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   
-  // WhatsApp Webhook (Meta Cloud API)
+  // WhatsApp Webhook (Meta Cloud API - legacy via DB settings)
   app.get("/api/webhook/whatsapp", handleWebhookVerification);
   app.post("/api/webhook/whatsapp", handleWebhookMessage);
+  
+  // WhatsApp Cloud API Webhook (via env vars - novo adapter)
+  app.get("/api/webhook/cloud", handleCloudApiWebhookVerification);
+  app.post("/api/webhook/cloud", handleCloudApiWebhookMessage);
   
   // Evolution API Webhook
   app.post("/api/webhook/evolution", handleEvolutionWebhook);
@@ -150,6 +155,10 @@ async function startServer() {
     const { getSiteUrl } = await import("../keepAlive").then(() => import("../_core/siteUrl"));
     res.json({
       nodeEnv: process.env.NODE_ENV,
+      whatsappProvider: process.env.WHATSAPP_PROVIDER || 'evolution',
+      cloudApiToken: process.env.META_CLOUD_API_TOKEN ? 'SET (' + process.env.META_CLOUD_API_TOKEN.length + ' chars)' : 'NOT_SET',
+      cloudApiPhoneNumberId: process.env.META_PHONE_NUMBER_ID || 'NOT_SET',
+      cloudApiWabaId: process.env.META_WABA_ID || 'NOT_SET',
       evolutionUrl: process.env.EVOLUTION_API_URL ? process.env.EVOLUTION_API_URL.substring(0, 30) + '...' : 'NOT_SET',
       evolutionKey: process.env.EVOLUTION_API_KEY ? 'SET (' + process.env.EVOLUTION_API_KEY.length + ' chars)' : 'NOT_SET',
       evolutionInstance: process.env.EVOLUTION_INSTANCE_NAME || 'NOT_SET',
@@ -160,13 +169,14 @@ async function startServer() {
     });
   });
 
-  // Endpoint de teste de envio direto via Evolution API (apenas em desenvolvimento)
+  // Endpoint de teste de envio direto via provider ativo (apenas em desenvolvimento)
   if (process.env.NODE_ENV !== "production") {
     app.get("/api/diag/send-test", requireDiagAuth, async (_req, res) => {
       try {
-        const { sendTextMessageEvolution } = await import("../evolutionApi");
-        const result = await sendTextMessageEvolution("5517992253886", "[TESTE DIAG] Bot funcionando! " + new Date().toLocaleString('pt-BR'));
-        res.json({ success: result, timestamp: new Date().toISOString() });
+        const { whatsappService } = await import("../services/whatsappService");
+        const provider = whatsappService.getActiveProvider();
+        const result = await whatsappService.sendText("5517992253886", `[TESTE DIAG] Bot funcionando via ${provider}! ` + new Date().toLocaleString('pt-BR'));
+        res.json({ success: result, provider, timestamp: new Date().toISOString() });
       } catch (e: any) {
         res.json({ success: false, error: e.message, timestamp: new Date().toISOString() });
       }
@@ -226,11 +236,20 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
-    // Iniciar keep-alive para manter Evolution API acordada (Render.com free tier)
-    startKeepAlive();
-    // Polling de mensagens: ATIVO como sistema principal
-    startMessagePolling();
-    console.log('[Polling] Serviço de polling de mensagens ATIVO (sistema principal)');
+    // Verificar provider ativo
+    const whatsappProvider = (process.env.WHATSAPP_PROVIDER || 'evolution').toLowerCase();
+    
+    if (whatsappProvider === 'cloud_api') {
+      console.log('[CloudAPI] Provider: Meta Cloud API oficial');
+      console.log('[CloudAPI] Webhook endpoint: /api/webhook/cloud');
+      console.log('[CloudAPI] Polling e KeepAlive desativados (desnecessários com Cloud API)');
+    } else {
+      // Iniciar keep-alive para manter Evolution API acordada (Render.com free tier)
+      startKeepAlive();
+      // Polling de mensagens: ATIVO como sistema principal
+      startMessagePolling();
+      console.log('[Polling] Serviço de polling de mensagens ATIVO (sistema principal)');
+    }
 
     // Executar tarefas de inicialização imediata
     sendReservationReminders().catch(() => {});

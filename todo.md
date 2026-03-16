@@ -1317,3 +1317,18 @@
 - [x] Correção: backoffWindow expandido (120s normal, até 1200s após erros)
 - [x] Correção: keepAlive reduzido de 4min para 2min para minimizar cold starts
 - [ ] Testar e confirmar funcionamento
+
+## Migração para Cloud API Oficial da Meta (16/03/2026)
+- [x] Salvar credenciais da Cloud API (token, phone number ID, WABA ID)
+- [x] Criar adapter cloudApi.ts para envio de mensagens via Graph API
+- [x] Criar endpoint webhook para receber mensagens da Cloud API (webhookCloudApi.ts)
+- [x] Implementar parsing de payload da Cloud API (diferente da Evolution API)
+- [x] Criar sistema de seleção de provider (Evolution vs Cloud API) via env var WHATSAPP_PROVIDER
+- [x] Registrar rotas /api/webhook/cloud no index.ts
+- [x] Atualizar orderNotification, maintenance, reservationReminder para usar whatsappService
+- [x] Desativar polling/keepAlive quando provider=cloud_api
+- [x] Escrever testes vitest para o adapter da Cloud API (17 testes passando)
+- [ ] Configurar webhook na Meta (URL + verify token)
+- [ ] Testar envio de mensagem via Cloud API
+- [ ] Testar recebimento de mensagem via webhook Cloud API
+- [ ] Testar fluxo completo do chatbot com número de teste
