@@ -1,0 +1,76 @@
+{
+  "query": "SELECT id, conversationId, role, SUBSTRING(content, 1, 100) as content_preview, createdAt FROM messages WHERE content LIKE '%marmita%' OR content LIKE '%delivery%' ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, conversationId, role, SUBSTRING(content, 1, 100) as content_preview, createdAt FROM messages WHERE content LIKE '%marmita%' OR content LIKE '%delivery%' ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "510041",
+      "conversationId": "240003",
+      "role": "user",
+      "content_preview": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 17:02:28"
+    },
+    {
+      "id": "510040",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Bah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é ace",
+      "createdAt": "2026-03-16 16:58:24"
+    },
+    {
+      "id": "510039",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Digo, fazer um pedido delivery",
+      "createdAt": "2026-03-16 16:58:22"
+    },
+    {
+      "id": "510038",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Claro! Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso card",
+      "createdAt": "2026-03-16 16:58:02"
+    },
+    {
+      "id": "510037",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 16:58:00"
+    },
+    {
+      "id": "510028",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Perfeito! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar",
+      "createdAt": "2026-03-16 16:27:12"
+    },
+    {
+      "id": "510027",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Entendi, quero fazer um pedido delivery",
+      "createdAt": "2026-03-16 16:27:09"
+    },
+    {
+      "id": "510020",
+      "conversationId": "240002",
+      "role": "assistant",
+      "content_preview": "Olá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje?",
+      "createdAt": "2026-03-16 16:22:53"
+    },
+    {
+      "id": "510018",
+      "conversationId": "240002",
+      "role": "assistant",
+      "content_preview": "Olá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje?",
+      "createdAt": "2026-03-16 16:22:36"
+    }
+  ],
+  "messages": [
+    "510016\t240001\tassistant\tAh, entendi! Sem problemas! 😊",
+    "Pra pedir sua marmita e ver todas as opções com fotos e preços, o mel\t2026-03-16 16:20:12"
+  ],
+  "stdout": "id\tconversationId\trole\tcontent_preview\tcreatedAt\n510041\t240003\tuser\tQueria pedir uma marmita\t2026-03-16 17:02:28\n510040\t240001\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é ace\t2026-03-16 16:58:24\n510039\t240001\tuser\tDigo, fazer um pedido delivery\t2026-03-16 16:58:22\n510038\t240001\tassistant\tClaro! Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso card\t2026-03-16 16:58:02\n510037\t240001\tuser\tQueria pedir uma marmita\t2026-03-16 16:58:00\n510028\t240001\tassistant\tPerfeito! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar\t2026-03-16 16:27:12\n510027\t240001\tuser\tEntendi, quero fazer um pedido delivery\t2026-03-16 16:27:09\n510020\t240002\tassistant\tOlá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje?\t2026-03-16 16:22:53\n510018\t240002\tassistant\tOlá! Sou o Gaúchinho, atendente virtual da Churrascaria Estrela do Sul. 😊 Como posso te ajudar hoje?\t2026-03-16 16:22:36\n510016\t240001\tassistant\tAh, entendi! Sem problemas! 😊\n\nPra pedir sua marmita e ver todas as opções com fotos e preços, o mel\t2026-03-16 16:20:12\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

@@ -586,8 +586,12 @@ async function _processIncomingMessageInternal(
           const restaurantPhoneNorm = restaurantPhone.startsWith("55")
             ? restaurantPhone
             : `55${restaurantPhone}`;
-          // Enviar alerta para o JID correto (com @s.whatsapp.net)
-          const restaurantJid = `${restaurantPhoneNorm}@s.whatsapp.net`;
+          // Na Cloud API, usar apenas o número (sem @s.whatsapp.net)
+          // Na Evolution API, usar JID completo
+          const provider = whatsappService.getActiveProvider();
+          const restaurantJid = provider === "cloud_api"
+            ? restaurantPhoneNorm
+            : `${restaurantPhoneNorm}@s.whatsapp.net`;
 
           const alertMsg =
             `\u{1F6A8} *Atenção — Cliente chamando atendente!*\n\n` +
@@ -597,10 +601,27 @@ async function _processIncomingMessageInternal(
             `\u{1F449} Abra o chat deste contato e responda diretamente.\n` +
             `_O bot está pausado por 30 min. Envie #bot para reativar._`;
 
-          await whatsappService.sendText(restaurantJid, alertMsg).catch((err: unknown) => {
-            logger.warn("Chatbot", "Falha ao enviar alerta de atendente para restaurante", err);
+          const alertSent = await whatsappService.sendText(restaurantJid, alertMsg).catch((err: unknown) => {
+            logger.warn("Chatbot", `Falha ao enviar alerta WhatsApp para restaurante (${restaurantJid})`, err);
+            return false;
           });
-          logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantJid}`);
+
+          // Fallback: se o alerta via WhatsApp falhou (ex: número não na lista de teste),
+          // enviar via notificação do sistema (push notification para o owner)
+          if (!alertSent) {
+            logger.info("Chatbot", "Alerta WhatsApp falhou — enviando via notificação do sistema");
+            try {
+              const { notifyOwner } = await import("./_core/notification");
+              await notifyOwner({
+                title: "\u{1F6A8} Cliente chamando atendente!",
+                content: `Cliente: ${customer.name || phone}\nTelefone: ${phone}\nÚltima msg: "${messageText.substring(0, 100)}"\n\nO bot está pausado por 30 min.`,
+              });
+            } catch (notifyErr) {
+              logger.error("Chatbot", "Falha ao enviar notificação de fallback", notifyErr);
+            }
+          } else {
+            logger.info("Chatbot", `Alerta de atendimento humano enviado para ${restaurantJid}`);
+          }
         }
       } catch (err) {
         logger.error("Chatbot", "Erro ao ativar modo humano preventivo", err);
@@ -629,13 +650,22 @@ async function _processIncomingMessageInternal(
       const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
 
       const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
+      logger.info("Chatbot", `Enviando resposta com banner + link de pedido para ${phone}`);
       const sent = await whatsappService.sendMedia(whatsappId, bannerUrl, caption);
       if (!sent) {
         // Fallback: enviar como texto simples se a imagem falhar
-        await whatsappService.sendText(whatsappId, response.text);
+        logger.warn("Chatbot", `Envio de mídia falhou para ${phone} — tentando fallback como texto`);
+        const textSent = await whatsappService.sendText(whatsappId, response.text);
+        if (!textSent) {
+          logger.error("Chatbot", `Fallback de texto também falhou para ${phone}`, null);
+        }
       }
     } else {
-      await whatsappService.sendText(whatsappId, response.text);
+      logger.info("Chatbot", `Enviando resposta de texto para ${phone}`);
+      const sent = await whatsappService.sendText(whatsappId, response.text);
+      if (!sent) {
+        logger.error("Chatbot", `Falha ao enviar resposta de texto para ${phone}`, null);
+      }
     }
   } catch (error) {
     logger.error("Chatbot", "Error processing message", error);

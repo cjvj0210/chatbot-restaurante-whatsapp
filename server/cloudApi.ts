@@ -49,6 +49,9 @@ export async function sendTextMessageCloudApi(to: string, text: string): Promise
       .replace("@lid", "")
       .replace(/\D/g, "");
 
+    // Habilitar preview de URL quando a mensagem contém links (pedidos, cardápio, etc.)
+    const hasUrl = /https?:\/\//.test(text);
+
     const response = await withRetry(
       () =>
         axios.post(
@@ -58,7 +61,7 @@ export async function sendTextMessageCloudApi(to: string, text: string): Promise
             recipient_type: "individual",
             to: normalizedTo,
             type: "text",
-            text: { preview_url: false, body: text },
+            text: { preview_url: hasUrl, body: text },
           },
           {
             headers: {

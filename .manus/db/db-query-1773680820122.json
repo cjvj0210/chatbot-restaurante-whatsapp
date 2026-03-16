@@ -1,0 +1,33 @@
+{
+  "query": "SELECT id, conversationId, role, SUBSTRING(content, 1, 200) as content_preview, createdAt FROM messages ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, conversationId, role, SUBSTRING(content, 1, 200) as content_preview, createdAt FROM messages ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "510043",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Quero fazer um pedido delivery",
+      "createdAt": "2026-03-16 17:06:35"
+    },
+    {
+      "id": "510041",
+      "conversationId": "240003",
+      "role": "user",
+      "content_preview": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 17:02:28"
+    }
+  ],
+  "messages": [
+    "510044\t240001\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/0767b2dab634bafbdbc1c362dc5c8af1",
+    "Lá você monta seu pedido co\t2026-03-16 17:06:37",
+    "510042\t240003\tassistant\tÓtimo! Para fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/9f4177053194304614217cd9e7670e6e",
+    "Lá você monta seu pedido com calma e f\t2026-03-16 17:02:31",
+    "510040\t240001\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/8721e51341a76dfacae1ace9\t2026-03-16 16:58:24"
+  ],
+  "stdout": "id\tconversationId\trole\tcontent_preview\tcreatedAt\n510044\t240001\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/0767b2dab634bafbdbc1c362dc5c8af1\n\nLá você monta seu pedido co\t2026-03-16 17:06:37\n510043\t240001\tuser\tQuero fazer um pedido delivery\t2026-03-16 17:06:35\n510042\t240003\tassistant\tÓtimo! Para fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/9f4177053194304614217cd9e7670e6e\n\nLá você monta seu pedido com calma e f\t2026-03-16 17:02:31\n510041\t240003\tuser\tQueria pedir uma marmita\t2026-03-16 17:02:28\n510040\t240001\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/8721e51341a76dfacae1ace9\t2026-03-16 16:58:24\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

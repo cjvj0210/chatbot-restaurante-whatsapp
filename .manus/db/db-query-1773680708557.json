@@ -1,0 +1,122 @@
+{
+  "query": "SELECT id, conversationId, role, SUBSTRING(content, 1, 150) as content_preview, createdAt FROM messages WHERE conversationId = 240001 ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT id, conversationId, role, SUBSTRING(content, 1, 150) as content_preview, createdAt FROM messages WHERE conversationId = 240001 ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "510039",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Digo, fazer um pedido delivery",
+      "createdAt": "2026-03-16 16:58:22"
+    },
+    {
+      "id": "510037",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 16:58:00"
+    },
+    {
+      "id": "510035",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Vocês abrem no jantar?",
+      "createdAt": "2026-03-16 16:57:45"
+    },
+    {
+      "id": "510033",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Tá bem?",
+      "createdAt": "2026-03-16 16:57:24"
+    },
+    {
+      "id": "510032",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 16:55:05"
+    },
+    {
+      "id": "510031",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Olá, bom dia",
+      "createdAt": "2026-03-16 16:54:36"
+    },
+    {
+      "id": "510030",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 16:45:02"
+    },
+    {
+      "id": "510029",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Olá",
+      "createdAt": "2026-03-16 16:45:02"
+    },
+    {
+      "id": "510027",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Entendi, quero fazer um pedido delivery",
+      "createdAt": "2026-03-16 16:27:09"
+    },
+    {
+      "id": "510025",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Tá aberto pro almoc",
+      "createdAt": "2026-03-16 16:26:48"
+    },
+    {
+      "id": "510024",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Boa tarde",
+      "createdAt": "2026-03-16 16:26:41"
+    },
+    {
+      "id": "510023",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 16:26:41"
+    },
+    {
+      "id": "510022",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 16:26:40"
+    },
+    {
+      "id": "510021",
+      "conversationId": "240001",
+      "role": "user",
+      "content_preview": "Opa",
+      "createdAt": "2026-03-16 16:26:40"
+    }
+  ],
+  "messages": [
+    "510040\t240001\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:",
+    "https://chatbotwa-he\t2026-03-16 16:58:24",
+    "510038\t240001\tassistant\tClaro! Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:",
+    "https://chatbotwa-hesngyeo.manus.sp\t2026-03-16 16:58:02",
+    "510036\t240001\tassistant\tBah, hoje, segunda-feira, estamos fechados para o jantar. 😊",
+    "Nosso rodízio de jantar funciona de terça a domingo, das 19h às 22h45.",
+    "Posso te ajudar c\t2026-03-16 16:57:47",
+    "510034\t240001\tassistant\tTudo joia por aqui, obrigado por perguntar! 😊",
+    "Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar hoje? 🤠\t2026-03-16 16:57:29",
+    "510028\t240001\tassistant\tPerfeito! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:",
+    "https://chatbotwa-hesngy\t2026-03-16 16:27:12",
+    "510026\t240001\tassistant\tBah, sim! Hoje, segunda-feira, estamos abertos para o almoço! 😊",
+    "Nosso rodízio de almoço funciona até as 14h30. Quer saber mais sobre ele? 🥩\t2026-03-16 16:26:51"
+  ],
+  "stdout": "id\tconversationId\trole\tcontent_preview\tcreatedAt\n510040\t240001\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:\n\nhttps://chatbotwa-he\t2026-03-16 16:58:24\n510039\t240001\tuser\tDigo, fazer um pedido delivery\t2026-03-16 16:58:22\n510038\t240001\tassistant\tClaro! Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:\n\nhttps://chatbotwa-hesngyeo.manus.sp\t2026-03-16 16:58:02\n510037\t240001\tuser\tQueria pedir uma marmita\t2026-03-16 16:58:00\n510036\t240001\tassistant\tBah, hoje, segunda-feira, estamos fechados para o jantar. 😊\n\nNosso rodízio de jantar funciona de terça a domingo, das 19h às 22h45.\n\nPosso te ajudar c\t2026-03-16 16:57:47\n510035\t240001\tuser\tVocês abrem no jantar?\t2026-03-16 16:57:45\n510034\t240001\tassistant\tTudo joia por aqui, obrigado por perguntar! 😊\n\nSou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar hoje? 🤠\t2026-03-16 16:57:29\n510033\t240001\tuser\tTá bem?\t2026-03-16 16:57:24\n510032\t240001\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 16:55:05\n510031\t240001\tuser\tOlá, bom dia\t2026-03-16 16:54:36\n510030\t240001\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 16:45:02\n510029\t240001\tuser\tOlá\t2026-03-16 16:45:02\n510028\t240001\tassistant\tPerfeito! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:\n\nhttps://chatbotwa-hesngy\t2026-03-16 16:27:12\n510027\t240001\tuser\tEntendi, quero fazer um pedido delivery\t2026-03-16 16:27:09\n510026\t240001\tassistant\tBah, sim! Hoje, segunda-feira, estamos abertos para o almoço! 😊\n\nNosso rodízio de almoço funciona até as 14h30. Quer saber mais sobre ele? 🥩\t2026-03-16 16:26:51\n510025\t240001\tuser\tTá aberto pro almoc\t2026-03-16 16:26:48\n510024\t240001\tuser\tBoa tarde\t2026-03-16 16:26:41\n510023\t240001\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 16:26:41\n510022\t240001\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 16:26:40\n510021\t240001\tuser\tOpa\t2026-03-16 16:26:40\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

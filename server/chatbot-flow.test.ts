@@ -61,6 +61,7 @@ vi.mock("./services/whatsappService", () => ({
   whatsappService: {
     sendText: vi.fn().mockResolvedValue(true),
     sendMedia: vi.fn().mockResolvedValue(true),
+    getActiveProvider: vi.fn().mockReturnValue("cloud_api"),
   },
 }));
 

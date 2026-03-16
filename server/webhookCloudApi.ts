@@ -182,10 +182,12 @@ export async function handleCloudApiWebhookMessage(req: Request, res: Response):
 
           logger.info("CloudWebhook", `Processando: "${safeText.substring(0, 100)}..."`);
 
-          // Processar mensagem pelo chatbot
-          await processIncomingMessage(whatsappId, phone, safeText, messageId, pushName || undefined);
-
-          logger.info("CloudWebhook", "Mensagem processada com sucesso");
+          // Processar mensagem pelo chatbot (fire-and-forget)
+          // Não usar await aqui para não bloquear o loop de mensagens do webhook.
+          // O processamento é assíncrono e serializado pelo withClientLock.
+          processIncomingMessage(whatsappId, phone, safeText, messageId, pushName || undefined)
+            .then(() => logger.info("CloudWebhook", `Mensagem processada com sucesso: ${messageId}`))
+            .catch((err) => logger.error("CloudWebhook", `Erro ao processar mensagem ${messageId}`, err));
         }
       }
     }

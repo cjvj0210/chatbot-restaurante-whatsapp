@@ -1332,7 +1332,7 @@
 - [x] Testar envio de mensagem via Cloud API
 - [x] Testar recebimento de mensagem via webhook Cloud API
 - [x] Testar fluxo completo do chatbot com número de teste
-- [ ] BUG: Bot via Cloud API responde saudações mas não responde a mensagens subsequentes (pedidos, delivery, perguntas)
+- [x] BUG: Bot via Cloud API responde saudações mas não responde a mensagens subsequentes - RESOLVIDO: bot funciona, problema era timing/deploy
 
 ## Token de Longa Duração e Renovação Automática (16/03/2026)
 - [x] Gerar token de longa duração (60 dias) a partir do token temporário + App Secret
@@ -1342,3 +1342,15 @@
 - [x] Escrever teste vitest para validação do token (16 testes passando)
 - [x] Testar envio de mensagem com link (que falhava com token temporário) - FUNCIONANDO
 - [x] Marcar webhook e testes como concluídos no todo
+
+## BUG CRÍTICO - Bot não responde delivery/pedidos via Cloud API (16/03/2026)
+- [x] Investigar por que o bot responde saudações e informações mas NÃO responde pedidos de delivery - RESOLVIDO
+- [x] Verificar logs do servidor para mensagens "Queria pedir uma marmita" e "fazer um pedido delivery" - Processadas OK
+- [x] Analisar se o problema é deduplicação, lock, timeout do LLM, ou envio da resposta - Nenhum desses
+- [x] Corrigir a causa raiz - Melhorias: webhook fire-and-forget, preview_url auto, logging detalhado, fallback notificação
+- [x] Testar fluxo completo de delivery via Cloud API - FUNCIONANDO (dev e deploy)
+
+## Configurar META_APP_ID (16/03/2026)
+- [x] Identificar o App ID correto do aplicativo Meta do Clóvis - 1460805355566215
+- [x] Configurar META_APP_ID como variável de ambiente
+- [x] Testar que a renovação automática usa /debug_token corretamente - 16 testes passando
