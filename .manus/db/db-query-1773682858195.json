@@ -1,0 +1,64 @@
+{
+  "query": "SELECT m.id, m.role, SUBSTRING(m.content, 1, 120) as content, m.createdAt\nFROM messages m \nWHERE m.role = 'user' AND m.createdAt >= '2026-03-16 17:00:00'\nORDER BY m.createdAt ASC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT m.id, m.role, SUBSTRING(m.content, 1, 120) as content, m.createdAt\nFROM messages m \nWHERE m.role = 'user' AND m.createdAt >= '2026-03-16 17:00:00'\nORDER BY m.createdAt ASC",
+  "rows": [
+    {
+      "id": "510041",
+      "role": "user",
+      "content": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 17:02:28"
+    },
+    {
+      "id": "510043",
+      "role": "user",
+      "content": "Quero fazer um pedido delivery",
+      "createdAt": "2026-03-16 17:06:35"
+    },
+    {
+      "id": "510045",
+      "role": "user",
+      "content": "Quero pedir delivery",
+      "createdAt": "2026-03-16 17:08:14"
+    },
+    {
+      "id": "510047",
+      "role": "user",
+      "content": "Boa tarde",
+      "createdAt": "2026-03-16 17:34:59"
+    },
+    {
+      "id": "510049",
+      "role": "user",
+      "content": "Você tá bem?",
+      "createdAt": "2026-03-16 17:35:04"
+    },
+    {
+      "id": "510051",
+      "role": "user",
+      "content": "Qual valor do rodízio amanhã? Abre que horas?",
+      "createdAt": "2026-03-16 17:35:26"
+    },
+    {
+      "id": "510053",
+      "role": "user",
+      "content": "Não, te agradeço",
+      "createdAt": "2026-03-16 17:35:45"
+    },
+    {
+      "id": "510055",
+      "role": "user",
+      "content": "Posso ver o cardápio delivery?",
+      "createdAt": "2026-03-16 17:35:55"
+    },
+    {
+      "id": "510057",
+      "role": "user",
+      "content": "Queria ver o menu para fazer um pedido pra entrega amanhã!",
+      "createdAt": "2026-03-16 17:36:49"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\trole\tcontent\tcreatedAt\n510041\tuser\tQueria pedir uma marmita\t2026-03-16 17:02:28\n510043\tuser\tQuero fazer um pedido delivery\t2026-03-16 17:06:35\n510045\tuser\tQuero pedir delivery\t2026-03-16 17:08:14\n510047\tuser\tBoa tarde\t2026-03-16 17:34:59\n510049\tuser\tVocê tá bem?\t2026-03-16 17:35:04\n510051\tuser\tQual valor do rodízio amanhã? Abre que horas?\t2026-03-16 17:35:26\n510053\tuser\tNão, te agradeço\t2026-03-16 17:35:45\n510055\tuser\tPosso ver o cardápio delivery?\t2026-03-16 17:35:55\n510057\tuser\tQueria ver o menu para fazer um pedido pra entrega amanhã!\t2026-03-16 17:36:49\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

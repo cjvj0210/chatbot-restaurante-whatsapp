@@ -641,30 +641,39 @@ async function _processIncomingMessageInternal(
     // IMPORTANTE: usar o whatsappId original (pode ser @lid) para enviar mensagens,
     // pois a Evolution API precisa do JID correto para rotear a mensagem
 
-    // Se a resposta contiver um link de pedido, enviar como imagem com banner visual
+    // Verificar se a resposta contém link de pedido
     const orderLinkMatch = response.text.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
-    if (orderLinkMatch) {
+    const activeProvider = whatsappService.getActiveProvider();
+
+    if (orderLinkMatch && activeProvider === "evolution") {
+      // Evolution API: enviar como imagem com banner visual
       const orderLink = orderLinkMatch[0];
       const textBeforeLink = response.text.split(orderLink)[0].trim();
       const textAfterLink = response.text.split(orderLink)[1]?.trim() || "";
       const caption = `${textBeforeLink}\n\n${orderLink}\n\n${textAfterLink}`.trim();
 
       const bannerUrl = "https://d2xsxph8kpxj0f.cloudfront.net/310519663208695668/hEsNGYEonud5ngJEe9CdHq/banner_cardapio_digital_900x900_b8c4719c.png";
-      logger.info("Chatbot", `Enviando resposta com banner + link de pedido para ${phone}`);
+      logger.info("Chatbot", `[Evolution] Enviando resposta com banner + link de pedido para ${phone}`);
       const sent = await whatsappService.sendMedia(whatsappId, bannerUrl, caption);
       if (!sent) {
-        // Fallback: enviar como texto simples se a imagem falhar
-        logger.warn("Chatbot", `Envio de mídia falhou para ${phone} — tentando fallback como texto`);
+        logger.warn("Chatbot", `[Evolution] Envio de mídia falhou para ${phone} — tentando fallback como texto`);
         const textSent = await whatsappService.sendText(whatsappId, response.text);
         if (!textSent) {
-          logger.error("Chatbot", `Fallback de texto também falhou para ${phone}`, null);
+          logger.error("Chatbot", `[Evolution] Fallback de texto também falhou para ${phone}`, null);
         }
       }
     } else {
-      logger.info("Chatbot", `Enviando resposta de texto para ${phone}`);
+      // Cloud API ou mensagem sem link: enviar como texto
+      // Cloud API: preview_url=true é habilitado automaticamente quando há links
+      // Isso é mais confiável que enviar imagem com caption na Cloud API
+      if (orderLinkMatch) {
+        logger.info("Chatbot", `[${activeProvider}] Enviando resposta de delivery como TEXTO com preview_url para ${phone}`);
+      } else {
+        logger.info("Chatbot", `[${activeProvider}] Enviando resposta de texto para ${phone}`);
+      }
       const sent = await whatsappService.sendText(whatsappId, response.text);
       if (!sent) {
-        logger.error("Chatbot", `Falha ao enviar resposta de texto para ${phone}`, null);
+        logger.error("Chatbot", `Falha ao enviar resposta para ${phone} via ${activeProvider}`, null);
       }
     }
   } catch (error) {
@@ -924,8 +933,10 @@ export async function resumeConversationAfterBot(
       .trim();
 
     // Enviar resposta ao cliente
+    const resumeProvider = whatsappService.getActiveProvider();
     const orderLinkMatch = responseText.match(/https:\/\/[^\s]+\/pedido\/[a-f0-9]+/);
-    if (orderLinkMatch) {
+    if (orderLinkMatch && resumeProvider === "evolution") {
+      // Evolution API: enviar como imagem com banner
       const orderLink = orderLinkMatch[0];
       const textBeforeLink = responseText.split(orderLink)[0]!.trim();
       const textAfterLink = responseText.split(orderLink)[1]?.trim() || "";
@@ -936,6 +947,7 @@ export async function resumeConversationAfterBot(
         await whatsappService.sendText(remoteJid, responseText);
       }
     } else {
+      // Cloud API ou sem link: enviar como texto (preview_url habilitado automaticamente)
       await whatsappService.sendText(remoteJid, responseText);
     }
 

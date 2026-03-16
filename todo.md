@@ -1354,3 +1354,10 @@
 - [x] Identificar o App ID correto do aplicativo Meta do Clóvis - 1460805355566215
 - [x] Configurar META_APP_ID como variável de ambiente
 - [x] Testar que a renovação automática usa /debug_token corretamente - 16 testes passando
+
+## BUG PERSISTENTE - Bot não responde cardápio/delivery em produção (16/03/2026)
+- [x] Investigar por que mensagens de delivery não recebem resposta - CAUSA: sendMedia via Cloud API falha silenciosamente (aceita request mas não entrega)
+- [x] Verificar banco: respostas de delivery GERADAS corretamente (IDs 510056, 510058) mas não entregues
+- [x] Problema é no ENVIO: sendMedia (imagem+caption) falha na Cloud API, fallback não executa pois sendMedia retorna true
+- [x] CORREÇÃO: Cloud API agora envia delivery como TEXTO com preview_url=true (não como imagem). Imagem só para Evolution API
+- [ ] Aguardando teste do Clóvis em produção para confirmar

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT m.id, m.role, LEFT(m.content, 150) as content_preview, m.createdAt FROM messages m WHERE m.createdAt >= '2026-03-16 17:50:00' ORDER BY m.id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT m.id, m.role, LEFT(m.content, 150) as content_preview, m.createdAt FROM messages m WHERE m.createdAt >= '2026-03-16 17:50:00' ORDER BY m.id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "510060",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 17:59:52"
+    },
+    {
+      "id": "510059",
+      "role": "user",
+      "content_preview": "Oi",
+      "createdAt": "2026-03-16 17:59:52"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\trole\tcontent_preview\tcreatedAt\n510060\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 17:59:52\n510059\tuser\tOi\t2026-03-16 17:59:52\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

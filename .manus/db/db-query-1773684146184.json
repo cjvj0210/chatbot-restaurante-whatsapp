@@ -1,0 +1,33 @@
+{
+  "query": "SELECT * FROM messages WHERE id >= 510058 ORDER BY id ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT * FROM messages WHERE id >= 510058 ORDER BY id ASC;",
+  "rows": [
+    {
+      "id": "510059",
+      "conversationId": "240001",
+      "role": "user",
+      "content": "Oi",
+      "messageType": "text",
+      "metadata": "NULL",
+      "createdAt": "2026-03-16 17:59:52"
+    },
+    {
+      "id": "510060",
+      "conversationId": "240001",
+      "role": "assistant",
+      "content": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "messageType": "text",
+      "metadata": "{\"source\":\"faq_cache\"}",
+      "createdAt": "2026-03-16 17:59:52"
+    }
+  ],
+  "messages": [
+    "510058\t240001\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/e2b8b1927a21e00dec5a930127987684",
+    "Lá você pode escolher tudo com calma para sua entrega de amanhã! 📱✨",
+    "Qualquer dúvida, estou aqui! 😊\ttext\tNULL\t2026-03-16 17:36:53"
+  ],
+  "stdout": "id\tconversationId\trole\tcontent\tmessageType\tmetadata\tcreatedAt\n510058\t240001\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/e2b8b1927a21e00dec5a930127987684\n\nLá você pode escolher tudo com calma para sua entrega de amanhã! 📱✨\n\nQualquer dúvida, estou aqui! 😊\ttext\tNULL\t2026-03-16 17:36:53\n510059\t240001\tuser\tOi\ttext\tNULL\t2026-03-16 17:59:52\n510060\t240001\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\ttext\t{\"source\":\"faq_cache\"}\t2026-03-16 17:59:52\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

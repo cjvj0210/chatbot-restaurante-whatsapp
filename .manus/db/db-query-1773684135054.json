@@ -1,0 +1,40 @@
+{
+  "query": "SELECT m.id, m.role, m.content, m.createdAt, m.conversationId FROM messages m ORDER BY m.id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT m.id, m.role, m.content, m.createdAt, m.conversationId FROM messages m ORDER BY m.id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "510060",
+      "role": "assistant",
+      "content": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 17:59:52",
+      "conversationId": "240001"
+    },
+    {
+      "id": "510059",
+      "role": "user",
+      "content": "Oi",
+      "createdAt": "2026-03-16 17:59:52",
+      "conversationId": "240001"
+    },
+    {
+      "id": "510057",
+      "role": "user",
+      "content": "Queria ver o menu para fazer um pedido pra entrega amanhã!",
+      "createdAt": "2026-03-16 17:36:49",
+      "conversationId": "240001"
+    }
+  ],
+  "messages": [
+    "510058\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/e2b8b1927a21e00dec5a930127987684",
+    "Lá você pode escolher tudo com calma para sua entrega de amanhã! 📱✨",
+    "Qualquer dúvida, estou aqui! 😊\t2026-03-16 17:36:53\t240001",
+    "510056\tassistant\tClaro! Pra ver nosso cardápio delivery com fotos e preços, acesse o link abaixo:",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/8335ca5ba6924638662090c3215521e8",
+    "Lá você encontra todas as opções de marmitex, kits churrasco e pratos executivos! 🍖📱",
+    "Qualquer dúvida, estou aqui! 😊\t2026-03-16 17:36:04\t240001"
+  ],
+  "stdout": "id\trole\tcontent\tcreatedAt\tconversationId\n510060\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 17:59:52\t240001\n510059\tuser\tOi\t2026-03-16 17:59:52\t240001\n510058\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/e2b8b1927a21e00dec5a930127987684\n\nLá você pode escolher tudo com calma para sua entrega de amanhã! 📱✨\n\nQualquer dúvida, estou aqui! 😊\t2026-03-16 17:36:53\t240001\n510057\tuser\tQueria ver o menu para fazer um pedido pra entrega amanhã!\t2026-03-16 17:36:49\t240001\n510056\tassistant\tClaro! Pra ver nosso cardápio delivery com fotos e preços, acesse o link abaixo:\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/8335ca5ba6924638662090c3215521e8\n\nLá você encontra todas as opções de marmitex, kits churrasco e pratos executivos! 🍖📱\n\nQualquer dúvida, estou aqui! 😊\t2026-03-16 17:36:04\t240001\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

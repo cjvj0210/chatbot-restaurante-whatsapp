@@ -1,0 +1,138 @@
+{
+  "query": "SELECT m.id, m.role, LEFT(m.content, 200) as content_preview, m.createdAt, cu.phone FROM messages m JOIN conversations c ON m.conversationId = c.id JOIN customers cu ON c.customerId = cu.id ORDER BY m.id DESC LIMIT 25;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT m.id, m.role, LEFT(m.content, 200) as content_preview, m.createdAt, cu.phone FROM messages m JOIN conversations c ON m.conversationId = c.id JOIN customers cu ON c.customerId = cu.id ORDER BY m.id DESC LIMIT 25;",
+  "rows": [
+    {
+      "id": "510060",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 17:59:52",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510059",
+      "role": "user",
+      "content_preview": "Oi",
+      "createdAt": "2026-03-16 17:59:52",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510057",
+      "role": "user",
+      "content_preview": "Queria ver o menu para fazer um pedido pra entrega amanhã!",
+      "createdAt": "2026-03-16 17:36:49",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510055",
+      "role": "user",
+      "content_preview": "Posso ver o cardápio delivery?",
+      "createdAt": "2026-03-16 17:35:55",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510053",
+      "role": "user",
+      "content_preview": "Não, te agradeço",
+      "createdAt": "2026-03-16 17:35:45",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510051",
+      "role": "user",
+      "content_preview": "Qual valor do rodízio amanhã? Abre que horas?",
+      "createdAt": "2026-03-16 17:35:26",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510049",
+      "role": "user",
+      "content_preview": "Você tá bem?",
+      "createdAt": "2026-03-16 17:35:04",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510048",
+      "role": "assistant",
+      "content_preview": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 17:34:59",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510047",
+      "role": "user",
+      "content_preview": "Boa tarde",
+      "createdAt": "2026-03-16 17:34:59",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510045",
+      "role": "user",
+      "content_preview": "Quero pedir delivery",
+      "createdAt": "2026-03-16 17:08:14",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510043",
+      "role": "user",
+      "content_preview": "Quero fazer um pedido delivery",
+      "createdAt": "2026-03-16 17:06:35",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510041",
+      "role": "user",
+      "content_preview": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 17:02:28",
+      "phone": "5517999888777"
+    },
+    {
+      "id": "510039",
+      "role": "user",
+      "content_preview": "Digo, fazer um pedido delivery",
+      "createdAt": "2026-03-16 16:58:22",
+      "phone": "5517988112791"
+    },
+    {
+      "id": "510037",
+      "role": "user",
+      "content_preview": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 16:58:00",
+      "phone": "5517988112791"
+    }
+  ],
+  "messages": [
+    "510058\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/e2b8b1927a21e00dec5a93012798768\t2026-03-16 17:36:53\t5517988112791",
+    "510056\tassistant\tClaro! Pra ver nosso cardápio delivery com fotos e preços, acesse o link abaixo:",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/8335ca5ba6924638662090c3215521e8",
+    "Lá você encontra todas as opções de ma\t2026-03-16 17:36:04\t5517988112791",
+    "510054\tassistant\tDe nada! Fico à disposição se precisar de mais alguma informação. 😊",
+    "Posso te ajudar em algo mais? 🤠\t2026-03-16 17:35:50\t5517988112791",
+    "510052\tassistant\tBah, amanhã, terça-feira, temos rodízio no almoço e no jantar! 😊",
+    "No almoço, o rodízio custa R$ 119,90 por pessoa e inicia às 11h, encerrando às 14h30.",
+    "No jantar, o rodízio custa R$ 109,90 por pessoa \t2026-03-16 17:35:29\t5517988112791",
+    "510050\tassistant\tBoa tarde! Tudo joia por aqui, obrigado por perguntar! 😊",
+    "Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar hoje? 🤠\t2026-03-16 17:35:20\t5517988112791",
+    "510046\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/c2898571599fe39afe8b1a7527a55542",
+    "Lá você monta seu pedido co\t2026-03-16 17:08:16\t5517988112791",
+    "510044\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/0767b2dab634bafbdbc1c362dc5c8af1",
+    "Lá você monta seu pedido co\t2026-03-16 17:06:37\t5517988112791",
+    "510042\tassistant\tÓtimo! Para fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/9f4177053194304614217cd9e7670e6e",
+    "Lá você monta seu pedido com calma e f\t2026-03-16 17:02:31\t5517999888777",
+    "510040\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/8721e51341a76dfacae1ace9\t2026-03-16 16:58:24\t5517988112791",
+    "510038\tassistant\tClaro! Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:",
+    "https://chatbotwa-hesngyeo.manus.space/pedido/c71dc0286081a7168c81aa43ce9c9805",
+    "Lá vo\t2026-03-16 16:58:02\t5517988112791",
+    "510036\tassistant\tBah, hoje, segunda-feira, estamos fechados para o jantar. 😊",
+    "Nosso rodízio de jantar funciona de terça a domingo, das 19h às 22h45.",
+    "Posso te ajudar com alguma outra informação? 🤠\t2026-03-16 16:57:47\t5517988112791"
+  ],
+  "stdout": "id\trole\tcontent_preview\tcreatedAt\tphone\n510060\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 17:59:52\t5517988112791\n510059\tuser\tOi\t2026-03-16 17:59:52\t5517988112791\n510058\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/e2b8b1927a21e00dec5a93012798768\t2026-03-16 17:36:53\t5517988112791\n510057\tuser\tQueria ver o menu para fazer um pedido pra entrega amanhã!\t2026-03-16 17:36:49\t5517988112791\n510056\tassistant\tClaro! Pra ver nosso cardápio delivery com fotos e preços, acesse o link abaixo:\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/8335ca5ba6924638662090c3215521e8\n\nLá você encontra todas as opções de ma\t2026-03-16 17:36:04\t5517988112791\n510055\tuser\tPosso ver o cardápio delivery?\t2026-03-16 17:35:55\t5517988112791\n510054\tassistant\tDe nada! Fico à disposição se precisar de mais alguma informação. 😊\n\nPosso te ajudar em algo mais? 🤠\t2026-03-16 17:35:50\t5517988112791\n510053\tuser\tNão, te agradeço\t2026-03-16 17:35:45\t5517988112791\n510052\tassistant\tBah, amanhã, terça-feira, temos rodízio no almoço e no jantar! 😊\n\nNo almoço, o rodízio custa R$ 119,90 por pessoa e inicia às 11h, encerrando às 14h30.\nNo jantar, o rodízio custa R$ 109,90 por pessoa \t2026-03-16 17:35:29\t5517988112791\n510051\tuser\tQual valor do rodízio amanhã? Abre que horas?\t2026-03-16 17:35:26\t5517988112791\n510050\tassistant\tBoa tarde! Tudo joia por aqui, obrigado por perguntar! 😊\n\nSou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar hoje? 🤠\t2026-03-16 17:35:20\t5517988112791\n510049\tuser\tVocê tá bem?\t2026-03-16 17:35:04\t5517988112791\n510048\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 17:34:59\t5517988112791\n510047\tuser\tBoa tarde\t2026-03-16 17:34:59\t5517988112791\n510046\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/c2898571599fe39afe8b1a7527a55542\n\nLá você monta seu pedido co\t2026-03-16 17:08:16\t5517988112791\n510045\tuser\tQuero pedir delivery\t2026-03-16 17:08:14\t5517988112791\n510044\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/0767b2dab634bafbdbc1c362dc5c8af1\n\nLá você monta seu pedido co\t2026-03-16 17:06:37\t5517988112791\n510043\tuser\tQuero fazer um pedido delivery\t2026-03-16 17:06:35\t5517988112791\n510042\tassistant\tÓtimo! Para fazer seu pedido, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/9f4177053194304614217cd9e7670e6e\n\nLá você monta seu pedido com calma e f\t2026-03-16 17:02:31\t5517999888777\n510041\tuser\tQueria pedir uma marmita\t2026-03-16 17:02:28\t5517999888777\n510040\tassistant\tBah, entendi! Pra fazer seu pedido delivery e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/8721e51341a76dfacae1ace9\t2026-03-16 16:58:24\t5517988112791\n510039\tuser\tDigo, fazer um pedido delivery\t2026-03-16 16:58:22\t5517988112791\n510038\tassistant\tClaro! Pra pedir sua marmita e ver todas as opções com fotos e preços, o melhor é acessar nosso cardápio digital:\n\nhttps://chatbotwa-hesngyeo.manus.space/pedido/c71dc0286081a7168c81aa43ce9c9805\n\nLá vo\t2026-03-16 16:58:02\t5517988112791\n510037\tuser\tQueria pedir uma marmita\t2026-03-16 16:58:00\t5517988112791\n510036\tassistant\tBah, hoje, segunda-feira, estamos fechados para o jantar. 😊\n\nNosso rodízio de jantar funciona de terça a domingo, das 19h às 22h45.\n\nPosso te ajudar com alguma outra informação? 🤠\t2026-03-16 16:57:47\t5517988112791\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

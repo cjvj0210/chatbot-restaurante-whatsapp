@@ -1,0 +1,75 @@
+{
+  "query": "SELECT m.id, m.role, SUBSTRING(m.content, 1, 120) as content, m.createdAt\nFROM messages m \nWHERE m.id >= 510045\nORDER BY m.id ASC\nLIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT m.id, m.role, SUBSTRING(m.content, 1, 120) as content, m.createdAt\nFROM messages m \nWHERE m.id >= 510045\nORDER BY m.id ASC\nLIMIT 20",
+  "rows": [
+    {
+      "id": "510045",
+      "role": "user",
+      "content": "Quero pedir delivery",
+      "createdAt": "2026-03-16 17:08:14"
+    },
+    {
+      "id": "510047",
+      "role": "user",
+      "content": "Boa tarde",
+      "createdAt": "2026-03-16 17:34:59"
+    },
+    {
+      "id": "510048",
+      "role": "assistant",
+      "content": "Oi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠",
+      "createdAt": "2026-03-16 17:34:59"
+    },
+    {
+      "id": "510049",
+      "role": "user",
+      "content": "Você tá bem?",
+      "createdAt": "2026-03-16 17:35:04"
+    },
+    {
+      "id": "510051",
+      "role": "user",
+      "content": "Qual valor do rodízio amanhã? Abre que horas?",
+      "createdAt": "2026-03-16 17:35:26"
+    },
+    {
+      "id": "510053",
+      "role": "user",
+      "content": "Não, te agradeço",
+      "createdAt": "2026-03-16 17:35:45"
+    },
+    {
+      "id": "510055",
+      "role": "user",
+      "content": "Posso ver o cardápio delivery?",
+      "createdAt": "2026-03-16 17:35:55"
+    },
+    {
+      "id": "510057",
+      "role": "user",
+      "content": "Queria ver o menu para fazer um pedido pra entrega amanhã!",
+      "createdAt": "2026-03-16 17:36:49"
+    },
+    {
+      "id": "510058",
+      "role": "assistant",
+      "content": "Perfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços ",
+      "createdAt": "2026-03-16 17:36:53"
+    }
+  ],
+  "messages": [
+    "510046\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖",
+    "https://chatbotwa-hesngyeo.\t2026-03-16 17:08:16",
+    "510050\tassistant\tBoa tarde! Tudo joia por aqui, obrigado por perguntar! 😊",
+    "Sou o Gauchinho, atendente virtual da Churrascaria Estrela do \t2026-03-16 17:35:20",
+    "510052\tassistant\tBah, amanhã, terça-feira, temos rodízio no almoço e no jantar! 😊",
+    "No almoço, o rodízio custa R$ 119,90 por pessoa e inic\t2026-03-16 17:35:29",
+    "510054\tassistant\tDe nada! Fico à disposição se precisar de mais alguma informação. 😊",
+    "Posso te ajudar em algo mais? 🤠\t2026-03-16 17:35:50",
+    "510056\tassistant\tClaro! Pra ver nosso cardápio delivery com fotos e preços, acesse o link abaixo:",
+    "https://chatbotwa-hesngyeo.manus.space\t2026-03-16 17:36:04"
+  ],
+  "stdout": "id\trole\tcontent\tcreatedAt\n510045\tuser\tQuero pedir delivery\t2026-03-16 17:08:14\n510046\tassistant\tPerfeito! Pra fazer seu pedido delivery, acesse nosso cardápio digital com fotos e preços 🍖\n\nhttps://chatbotwa-hesngyeo.\t2026-03-16 17:08:16\n510047\tuser\tBoa tarde\t2026-03-16 17:34:59\n510048\tassistant\tOi! Tudo joia por aqui! 😊 Sou o Gauchinho, atendente virtual da Churrascaria Estrela do Sul. Em que posso te ajudar? 🤠\t2026-03-16 17:34:59\n510049\tuser\tVocê tá bem?\t2026-03-16 17:35:04\n510050\tassistant\tBoa tarde! Tudo joia por aqui, obrigado por perguntar! 😊\n\nSou o Gauchinho, atendente virtual da Churrascaria Estrela do \t2026-03-16 17:35:20\n510051\tuser\tQual valor do rodízio amanhã? Abre que horas?\t2026-03-16 17:35:26\n510052\tassistant\tBah, amanhã, terça-feira, temos rodízio no almoço e no jantar! 😊\n\nNo almoço, o rodízio custa R$ 119,90 por pessoa e inic\t2026-03-16 17:35:29\n510053\tuser\tNão, te agradeço\t2026-03-16 17:35:45\n510054\tassistant\tDe nada! Fico à disposição se precisar de mais alguma informação. 😊\n\nPosso te ajudar em algo mais? 🤠\t2026-03-16 17:35:50\n510055\tuser\tPosso ver o cardápio delivery?\t2026-03-16 17:35:55\n510056\tassistant\tClaro! Pra ver nosso cardápio delivery com fotos e preços, acesse o link abaixo:\n\nhttps://chatbotwa-hesngyeo.manus.space\t2026-03-16 17:36:04\n510057\tuser\tQueria ver o menu para fazer um pedido pra entrega amanhã!\t2026-03-16 17:36:49\n510058\tassistant\tPerfeito! Pra ver nosso menu completo para entrega e fazer seu pedido, acesse nosso cardápio digital com fotos e preços \t2026-03-16 17:36:53\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

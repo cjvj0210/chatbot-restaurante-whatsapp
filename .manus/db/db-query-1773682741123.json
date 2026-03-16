@@ -1,0 +1,115 @@
+{
+  "query": "SELECT m.id, m.role, SUBSTRING(m.content, 1, 200) as content, m.createdAt, c.id as conv_id\nFROM messages m \nJOIN conversations c ON m.conversationId = c.id\nWHERE m.role = 'user'\nORDER BY m.createdAt DESC \nLIMIT 15",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT m.id, m.role, SUBSTRING(m.content, 1, 200) as content, m.createdAt, c.id as conv_id\nFROM messages m \nJOIN conversations c ON m.conversationId = c.id\nWHERE m.role = 'user'\nORDER BY m.createdAt DESC \nLIMIT 15",
+  "rows": [
+    {
+      "id": "510057",
+      "role": "user",
+      "content": "Queria ver o menu para fazer um pedido pra entrega amanhã!",
+      "createdAt": "2026-03-16 17:36:49",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510055",
+      "role": "user",
+      "content": "Posso ver o cardápio delivery?",
+      "createdAt": "2026-03-16 17:35:55",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510053",
+      "role": "user",
+      "content": "Não, te agradeço",
+      "createdAt": "2026-03-16 17:35:45",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510051",
+      "role": "user",
+      "content": "Qual valor do rodízio amanhã? Abre que horas?",
+      "createdAt": "2026-03-16 17:35:26",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510049",
+      "role": "user",
+      "content": "Você tá bem?",
+      "createdAt": "2026-03-16 17:35:04",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510047",
+      "role": "user",
+      "content": "Boa tarde",
+      "createdAt": "2026-03-16 17:34:59",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510045",
+      "role": "user",
+      "content": "Quero pedir delivery",
+      "createdAt": "2026-03-16 17:08:14",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510043",
+      "role": "user",
+      "content": "Quero fazer um pedido delivery",
+      "createdAt": "2026-03-16 17:06:35",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510041",
+      "role": "user",
+      "content": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 17:02:28",
+      "conv_id": "240003"
+    },
+    {
+      "id": "510039",
+      "role": "user",
+      "content": "Digo, fazer um pedido delivery",
+      "createdAt": "2026-03-16 16:58:22",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510037",
+      "role": "user",
+      "content": "Queria pedir uma marmita",
+      "createdAt": "2026-03-16 16:58:00",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510035",
+      "role": "user",
+      "content": "Vocês abrem no jantar?",
+      "createdAt": "2026-03-16 16:57:45",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510033",
+      "role": "user",
+      "content": "Tá bem?",
+      "createdAt": "2026-03-16 16:57:24",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510031",
+      "role": "user",
+      "content": "Olá, bom dia",
+      "createdAt": "2026-03-16 16:54:36",
+      "conv_id": "240001"
+    },
+    {
+      "id": "510029",
+      "role": "user",
+      "content": "Olá",
+      "createdAt": "2026-03-16 16:45:02",
+      "conv_id": "240001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\trole\tcontent\tcreatedAt\tconv_id\n510057\tuser\tQueria ver o menu para fazer um pedido pra entrega amanhã!\t2026-03-16 17:36:49\t240001\n510055\tuser\tPosso ver o cardápio delivery?\t2026-03-16 17:35:55\t240001\n510053\tuser\tNão, te agradeço\t2026-03-16 17:35:45\t240001\n510051\tuser\tQual valor do rodízio amanhã? Abre que horas?\t2026-03-16 17:35:26\t240001\n510049\tuser\tVocê tá bem?\t2026-03-16 17:35:04\t240001\n510047\tuser\tBoa tarde\t2026-03-16 17:34:59\t240001\n510045\tuser\tQuero pedir delivery\t2026-03-16 17:08:14\t240001\n510043\tuser\tQuero fazer um pedido delivery\t2026-03-16 17:06:35\t240001\n510041\tuser\tQueria pedir uma marmita\t2026-03-16 17:02:28\t240003\n510039\tuser\tDigo, fazer um pedido delivery\t2026-03-16 16:58:22\t240001\n510037\tuser\tQueria pedir uma marmita\t2026-03-16 16:58:00\t240001\n510035\tuser\tVocês abrem no jantar?\t2026-03-16 16:57:45\t240001\n510033\tuser\tTá bem?\t2026-03-16 16:57:24\t240001\n510031\tuser\tOlá, bom dia\t2026-03-16 16:54:36\t240001\n510029\tuser\tOlá\t2026-03-16 16:45:02\t240001\n",
+  "stderr": "",
+  "execution_time_ms": 68
+}
