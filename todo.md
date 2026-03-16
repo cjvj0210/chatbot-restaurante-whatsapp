@@ -1361,3 +1361,15 @@
 - [x] Problema é no ENVIO: sendMedia (imagem+caption) falha na Cloud API, fallback não executa pois sendMedia retorna true
 - [x] CORREÇÃO: Cloud API agora envia delivery como TEXTO com preview_url=true (não como imagem). Imagem só para Evolution API
 - [ ] Aguardando teste do Clóvis em produção para confirmar
+
+## BUG - Fuso horário errado no bot (16/03/2026)
+- [x] Bot disse "estamos abertos para o almoço" às 15:19 (BRT) - CORRIGIDO: prompt atualizado com horários precisos
+- [x] Bot já usava BRT corretamente (getNowBRT), problema era no prompt do LLM que dizia "11h-15h"
+- [x] Prompt corrigido com horários exatos: almoço 11h-14h30, jantar 19h-22h45
+- [x] Testado: 206 testes passando, TypeScript sem erros
+
+## BUG - Cardápio digital aviso incorreto na segunda-feira (16/03/2026)
+- [x] Cardápio digital mostrava "jantar abre às 19h" na segunda - CORRIGIDO
+- [x] DELIVERY_HOURS[1] e PICKUP_HOURS[1] (segunda) agora têm dinner: null
+- [x] checkBusinessHours agora retorna isOpen=false na segunda à tarde (sem aviso de jantar)
+- [x] Testes atualizados: segunda fechado à noite, terça com jantar, 206 testes passando

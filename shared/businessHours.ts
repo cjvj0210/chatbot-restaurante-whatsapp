@@ -2,12 +2,14 @@
  * Módulo de Horários de Funcionamento - Churrascaria Estrela do Sul
  * 
  * DELIVERY:
- *   Seg-Sex: 11h-14h | 19h-22h
+ *   Seg: 11h-14h (SÓ ALMOÇO, sem jantar)
+ *   Ter-Sex: 11h-14h | 19h-22h
  *   Sáb: 11h-14h15 (só almoço)
  *   Dom: 11h-14h50 | 19h-22h
  * 
  * RETIRADA:
- *   Seg-Sex: 11h-14h15 | 19h-22h15
+ *   Seg: 11h-14h15 (SÓ ALMOÇO, sem jantar)
+ *   Ter-Sex: 11h-14h15 | 19h-22h15
  *   Sáb: 11h-14h30 | 19h-22h30
  *   Dom: 11h-15h15 | 19h-22h
  * 
@@ -97,9 +99,9 @@ const DELIVERY_HOURS: Record<number, DaySchedule> = {
     lunch: { startH: 11, startM: 0, endH: 14, endM: 50 },
     dinner: { startH: 19, startM: 0, endH: 22, endM: 0 },
   },
-  1: { // Segunda
+  1: { // Segunda — SEM JANTAR
     lunch: { startH: 11, startM: 0, endH: 14, endM: 0 },
-    dinner: { startH: 19, startM: 0, endH: 22, endM: 0 },
+    dinner: null, // Segunda-feira NÃO tem jantar
   },
   2: { // Terça
     lunch: { startH: 11, startM: 0, endH: 14, endM: 0 },
@@ -129,9 +131,9 @@ const PICKUP_HOURS: Record<number, DaySchedule> = {
     lunch: { startH: 11, startM: 0, endH: 15, endM: 15 },
     dinner: { startH: 19, startM: 0, endH: 22, endM: 0 },
   },
-  1: { // Segunda
+  1: { // Segunda — SEM JANTAR
     lunch: { startH: 11, startM: 0, endH: 14, endM: 15 },
-    dinner: { startH: 19, startM: 0, endH: 22, endM: 15 },
+    dinner: null, // Segunda-feira NÃO tem jantar
   },
   2: { // Terça
     lunch: { startH: 11, startM: 0, endH: 14, endM: 15 },

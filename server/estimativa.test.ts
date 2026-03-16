@@ -23,8 +23,15 @@ describe("Previsão de entrega — horário de funcionamento", () => {
     expect(status.currentShift).toBe("lunch");
   });
 
-  it("deve estar aberto durante jantar de segunda (20h)", () => {
-    const date = new Date(2026, 2, 16, 20, 0);
+  it("deve estar FECHADO durante jantar de segunda (20h) - segunda não tem jantar", () => {
+    const date = new Date(2026, 2, 16, 20, 0); // segunda-feira
+    const status = checkBusinessHours("delivery", date);
+    expect(status.isOpen).toBe(false);
+    expect(status.currentShift).toBeNull();
+  });
+
+  it("deve estar aberto durante jantar de terça (20h)", () => {
+    const date = new Date(2026, 2, 17, 20, 0); // terça-feira
     const status = checkBusinessHours("delivery", date);
     expect(status.isOpen).toBe(true);
     expect(status.isEarlyOrder).toBe(false);
@@ -41,8 +48,15 @@ describe("Previsão de entrega — horário de funcionamento", () => {
     expect(status.currentShift).toBe("lunch");
   });
 
-  it("deve marcar como pedido antecipado entre turnos (16h)", () => {
-    const date = new Date(2026, 2, 16, 16, 0);
+  it("deve estar FECHADO entre turnos na segunda (16h) - segunda não tem jantar", () => {
+    const date = new Date(2026, 2, 16, 16, 0); // segunda-feira
+    const status = checkBusinessHours("delivery", date);
+    expect(status.isOpen).toBe(false);
+    expect(status.currentShift).toBeNull();
+  });
+
+  it("deve marcar como pedido antecipado entre turnos na terça (16h)", () => {
+    const date = new Date(2026, 2, 17, 16, 0); // terça-feira
     const status = checkBusinessHours("delivery", date);
     expect(status.isOpen).toBe(true);
     expect(status.isEarlyOrder).toBe(true);
@@ -171,8 +185,16 @@ describe("Cálculo de previsão com base correta", () => {
     expect(baseTime.getHours()).toBe(12);
   });
 
-  it("pedido às 16h segunda → base deve ser 19h (entre turnos)", () => {
-    const now = new Date(2026, 2, 16, 16, 0);
+  it("pedido às 16h segunda → fechado, sem base (segunda não tem jantar)", () => {
+    const now = new Date(2026, 2, 16, 16, 0); // segunda-feira
+    const { baseTime, isEarlyOrder } = getBaseTime("delivery", now);
+    // Segunda não tem jantar, então às 16h está fechado
+    // getBaseTime deve retornar o próximo horário disponível (terça 11h) ou now
+    expect(isEarlyOrder).toBe(false);
+  });
+
+  it("pedido às 16h terça → base deve ser 19h (entre turnos)", () => {
+    const now = new Date(2026, 2, 17, 16, 0); // terça-feira
     const { baseTime, isEarlyOrder } = getBaseTime("delivery", now);
     expect(isEarlyOrder).toBe(true);
     expect(baseTime.getHours()).toBe(19);
