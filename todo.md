@@ -1373,3 +1373,26 @@
 - [x] DELIVERY_HOURS[1] e PICKUP_HOURS[1] (segunda) agora têm dinner: null
 - [x] checkBusinessHours agora retorna isOpen=false na segunda à tarde (sem aviso de jantar)
 - [x] Testes atualizados: segunda fechado à noite, terça com jantar, 206 testes passando
+
+## Ajuste taxa de entrega para R$ 8,50 (16/03/2026)
+- [x] Identificar todos os locais onde a taxa de entrega está configurada
+- [x] Taxa já estava correta em R$ 8,50 (850 centavos) em TODOS os locais:
+  - shared/constants.ts: DEFAULT_DELIVERY_FEE_CENTS = 850
+  - Pedido.tsx e Checkout.tsx: deliveryFee = 850, textos "R$ 8,50"
+  - chatbotPrompt.ts: "Taxa de entrega: R$ 8,50"
+  - orderRouter.ts: usa settings?.deliveryFee ?? 850
+  - Banco de dados (restaurant_settings): deliveryFee = 850
+- [x] Nenhuma alteração necessária - tudo consistente
+
+## Troca para número real de teste +55 17 99225 3886 (17/03/2026)
+- [ ] Atualizar META_PHONE_NUMBER_ID para 1095900883597529
+- [ ] Atualizar META_WABA_ID para 2430571627387237
+- [ ] Verificar webhook configurado para o novo número
+- [ ] Testar envio de mensagem com o novo número
+- [ ] Gerar token de longa duração para o novo WABA (se necessário)
+
+## BUG - Bot responde pelo número antigo em vez do novo (17/03/2026)
+- [ ] Webhook recebe mensagens do +55 17 99225 3886 mas bot responde pelo +1 555 173-3212
+- [x] Investigar: cloudApi.ts usa process.env.META_PHONE_NUMBER_ID - variáveis atualizadas no dev mas deploy precisa republicar
+- [ ] Salvar checkpoint e republicar para que o deploy use o novo Phone Number ID
+- [ ] Testar e confirmar
