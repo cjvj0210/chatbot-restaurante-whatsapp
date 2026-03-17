@@ -1,0 +1,9 @@
+{
+  "query": "\nUPDATE menu_addon_options SET priceExtra = 300 WHERE id IN (30016, 30037, 30058);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nUPDATE menu_addon_options SET priceExtra = 300 WHERE id IN (30016, 30037, 30058);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 66
+}

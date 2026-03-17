@@ -1,7 +1,12 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
-import { processIncomingMessage } from "./chatbot";
+import { processIncomingMessage, resumeConversationAfterBot } from "./chatbot";
 import { markMessageAsReadYCloud, transcribeAudioYCloud } from "./ycloudApi";
+import { isBotSentMessage } from "./botMessageTracker";
+import {
+  activateHumanModeForJid,
+  deactivateHumanModeForJid,
+} from "./services/humanModeService";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { CHATBOT } from "../shared/constants";
 import { logger } from "./utils/logger";
@@ -9,26 +14,20 @@ import { logger } from "./utils/logger";
 /**
  * Webhook handler para YCloud (BSP do WhatsApp)
  *
- * Formato do payload YCloud (whatsapp.inbound_message.received):
- * {
- *   id: "evt_xxx",
- *   type: "whatsapp.inbound_message.received",
- *   apiVersion: "v2",
- *   createTime: "2022-03-01T12:00:00.000Z",
- *   whatsappInboundMessage: {
- *     id: "wim123456",
- *     wabaId: "whatsapp-business-account-id",
- *     from: "+5517988112791",
- *     customerProfile: { name: "John" },
- *     to: "+5517992253886",
- *     sendTime: "2022-03-01T12:00:00.000Z",
- *     type: "text",
- *     text: { body: "Olá!" }
- *   }
- * }
+ * Eventos processados:
  *
- * Tipos suportados: text, image, audio, video, interactive, sticker, reaction
+ * 1. whatsapp.inbound_message.received — Mensagens de CLIENTES
+ *    Payload: { whatsappInboundMessage: { from: "+55...", to: "+55...", type, text, ... } }
+ *
+ * 2. whatsapp.smb.message.echoes — Mensagens enviadas pelo OPERADOR via WhatsApp Business App
+ *    Payload: { whatsappMessage: { from: "BUSINESS", to: "CUSTOMER", type, text, ... } }
+ *    Usado para detectar:
+ *    - Comando #bot → desativa modo humano e retoma bot
+ *    - Respostas manuais do operador → ativa modo humano (silencia bot)
  */
+
+/** Comandos que o operador pode enviar para reativar o bot */
+const BOT_COMMANDS = new Set(["#bot", "#ativar", "#reativar"]);
 
 /** Deduplicação de eventos no webhook */
 const recentWebhookEvents = new Map<string, number>();
@@ -42,9 +41,9 @@ setInterval(() => {
   }
 }, 60_000);
 
-function isWebhookDuplicate(messageId: string): boolean {
-  if (recentWebhookEvents.has(messageId)) return true;
-  recentWebhookEvents.set(messageId, Date.now());
+function isWebhookDuplicate(eventId: string): boolean {
+  if (recentWebhookEvents.has(eventId)) return true;
+  recentWebhookEvents.set(eventId, Date.now());
   return false;
 }
 
@@ -90,6 +89,69 @@ function verifyYCloudSignature(req: Request): boolean {
 }
 
 /**
+ * Processa evento whatsapp.smb.message.echoes — mensagens enviadas pelo operador
+ * via WhatsApp Business App.
+ *
+ * Se o operador enviar "#bot", desativa o modo humano e retoma o bot.
+ * Qualquer outra mensagem do operador ativa o modo humano (silencia o bot).
+ */
+async function handleSmbMessageEcho(body: any): Promise<void> {
+  const msg = body.whatsappMessage;
+  if (!msg) {
+    logger.warn("YCloudWebhook", "Evento smb.message.echoes sem whatsappMessage");
+    return;
+  }
+
+  const messageId = msg.wamid || msg.id || body.id;
+  const fromBusiness = msg.from || ""; // Número do negócio (restaurante)
+  const toCustomer = msg.to || ""; // Número do cliente
+  const messageType = msg.type || "unknown";
+
+  // Deduplicação
+  if (messageId && isWebhookDuplicate(`echo_${messageId}`)) {
+    logger.info("YCloudWebhook", `Echo duplicado ignorado: ${messageId}`);
+    return;
+  }
+
+  // Ignorar mensagens enviadas pelo bot via API (não são do operador humano)
+  if (messageId && await isBotSentMessage(messageId)) {
+    logger.debug("YCloudWebhook", `Echo de mensagem do bot ignorado: ${messageId}`);
+    return;
+  }
+
+  logger.info("YCloudWebhook", `📤 Echo do operador: ${fromBusiness} → ${toCustomer} | Tipo: ${messageType} | ID: ${messageId}`);
+
+  // Extrair texto da mensagem do operador
+  let messageText = "";
+  if (messageType === "text" && msg.text?.body) {
+    messageText = msg.text.body.trim();
+  }
+
+  // Normalizar o número do cliente para uso como JID
+  const customerPhone = phoneNormalizer.normalize(toCustomer);
+  const customerJid = customerPhone; // Para YCloud, usamos apenas o número normalizado
+
+  // Verificar se é um comando para reativar o bot
+  if (messageText && BOT_COMMANDS.has(messageText.toLowerCase())) {
+    logger.info("YCloudWebhook", `🤖 Comando #bot detectado! Desativando modo humano para ${customerPhone}`);
+
+    // Desativar modo humano
+    await deactivateHumanModeForJid(customerJid, customerPhone);
+
+    // Retomar conversa automaticamente (gera resposta para mensagem pendente do cliente)
+    resumeConversationAfterBot(customerJid, customerPhone)
+      .then(() => logger.info("YCloudWebhook", `✅ Bot retomado com sucesso para ${customerPhone}`))
+      .catch((err) => logger.error("YCloudWebhook", `Erro ao retomar bot para ${customerPhone}`, err));
+
+    return;
+  }
+
+  // Qualquer outra mensagem do operador → ativar modo humano (silenciar bot)
+  logger.info("YCloudWebhook", `👤 Operador respondeu manualmente para ${customerPhone} — ativando modo humano`);
+  await activateHumanModeForJid(customerJid, customerPhone);
+}
+
+/**
  * POST /api/webhook/cloud — Recebimento de mensagens via YCloud
  *
  * NOTA: Reutilizamos o endpoint /api/webhook/cloud que o Clóvis já configurou no YCloud.
@@ -108,9 +170,16 @@ export async function handleYCloudWebhookMessage(req: Request, res: Response): P
       return;
     }
 
-    // Processar apenas mensagens inbound
+    // ===== PROCESSAR ECHOES DO OPERADOR (WhatsApp Business App) =====
+    if (body.type === "whatsapp.smb.message.echoes") {
+      handleSmbMessageEcho(body)
+        .catch((err) => logger.error("YCloudWebhook", "Erro ao processar echo do operador", err));
+      return;
+    }
+
+    // ===== PROCESSAR MENSAGENS INBOUND (de clientes) =====
     if (body.type !== "whatsapp.inbound_message.received") {
-      logger.info("YCloudWebhook", `Evento não-mensagem: ${body.type}`);
+      logger.info("YCloudWebhook", `Evento não processado: ${body.type}`);
       return;
     }
 
@@ -131,7 +200,7 @@ export async function handleYCloudWebhookMessage(req: Request, res: Response): P
       return;
     }
 
-    logger.info("YCloudWebhook", `Mensagem de ${from} (${pushName}) | Tipo: ${messageType} | ID: ${messageId}`);
+    logger.info("YCloudWebhook", `📩 Mensagem de ${from} (${pushName}) | Tipo: ${messageType} | ID: ${messageId}`);
 
     let messageText = "";
 

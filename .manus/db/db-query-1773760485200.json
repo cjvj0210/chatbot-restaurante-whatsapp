@@ -1,0 +1,244 @@
+{
+  "query": "\nSELECT ao.id, ao.name, ao.priceExtra, ao.groupId, ag.name as groupName, ag.menuItemId, mi.name as itemName\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE ao.name LIKE '%Frango%' OR ao.name LIKE '%Bov%'\nORDER BY mi.name, ag.name, ao.name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT ao.id, ao.name, ao.priceExtra, ao.groupId, ag.name as groupName, ag.menuItemId, mi.name as itemName\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE ao.name LIKE '%Frango%' OR ao.name LIKE '%Bov%'\nORDER BY mi.name, ag.name, ao.name;\n",
+  "rows": [
+    {
+      "id": "47",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "18",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150001",
+      "itemName": "Cowboy individual"
+    },
+    {
+      "id": "30",
+      "name": "Iscas de frango",
+      "priceExtra": "0",
+      "groupId": "14",
+      "groupName": "Preferência",
+      "menuItemId": "150007",
+      "itemName": "Estrelinha - infantil"
+    },
+    {
+      "id": "65",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "22",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150002",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "60030",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "22",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150002",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "30001",
+      "name": "Com frango e alcatra",
+      "priceExtra": "0",
+      "groupId": "5",
+      "groupName": "Escolha as carnes",
+      "menuItemId": "150002",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "30004",
+      "name": "Só frango",
+      "priceExtra": "0",
+      "groupId": "5",
+      "groupName": "Escolha as carnes",
+      "menuItemId": "150002",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "30148",
+      "name": "Com costela bovina",
+      "priceExtra": "0",
+      "groupId": "68",
+      "groupName": "Preferências",
+      "menuItemId": "150020",
+      "itemName": "Kit de churrasco nobre"
+    },
+    {
+      "id": "30138",
+      "name": "Sem frango",
+      "priceExtra": "0",
+      "groupId": "69",
+      "groupName": "Preferências",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "83",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "26",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150003",
+      "itemName": "Laçador individual"
+    },
+    {
+      "id": "60040",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "26",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150003",
+      "itemName": "Laçador individual"
+    },
+    {
+      "id": "135",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "37",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150009",
+      "itemName": "Marmitex Completa M"
+    },
+    {
+      "id": "30038",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "349",
+      "groupId": "30005",
+      "groupName": "Alterar Variedade De Carnes",
+      "menuItemId": "150009",
+      "itemName": "Marmitex Completa M"
+    },
+    {
+      "id": "30037",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "249",
+      "groupId": "30005",
+      "groupName": "Alterar Variedade De Carnes",
+      "menuItemId": "150009",
+      "itemName": "Marmitex Completa M"
+    },
+    {
+      "id": "117",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "33",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150008",
+      "itemName": "Marmitex Completa P"
+    },
+    {
+      "id": "30017",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "349",
+      "groupId": "30003",
+      "groupName": "Alterar Variedade De Carnes",
+      "menuItemId": "150008",
+      "itemName": "Marmitex Completa P"
+    },
+    {
+      "id": "30016",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "249",
+      "groupId": "30003",
+      "groupName": "Alterar Variedade De Carnes",
+      "menuItemId": "150008",
+      "itemName": "Marmitex Completa P"
+    },
+    {
+      "id": "171",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "45",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150019",
+      "itemName": "Marmitex econômica 1 (individual)"
+    },
+    {
+      "id": "30131",
+      "name": "Com costela bovina",
+      "priceExtra": "0",
+      "groupId": "70",
+      "groupName": "Preferências",
+      "menuItemId": "150022",
+      "itemName": "Mix de churrasco nobre"
+    },
+    {
+      "id": "30120",
+      "name": "Com frango assado",
+      "priceExtra": "0",
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "25",
+      "name": "Nuggets caseiros de frango",
+      "priceExtra": "0",
+      "groupId": "12",
+      "groupName": "Guarnição 3",
+      "menuItemId": "150006",
+      "itemName": "Peãozinho - infantil"
+    },
+    {
+      "id": "60020",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "64",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150005",
+      "itemName": "Pescador individual"
+    },
+    {
+      "id": "153",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "41",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150010",
+      "itemName": "Tradicional Marmitex G"
+    },
+    {
+      "id": "30059",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "349",
+      "groupId": "30007",
+      "groupName": "Alterar Variedade De Carnes",
+      "menuItemId": "150010",
+      "itemName": "Tradicional Marmitex G"
+    },
+    {
+      "id": "30058",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "249",
+      "groupId": "30007",
+      "groupName": "Alterar Variedade De Carnes",
+      "menuItemId": "150010",
+      "itemName": "Tradicional Marmitex G"
+    },
+    {
+      "id": "99",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "29",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150004",
+      "itemName": "Tropeiro individual"
+    },
+    {
+      "id": "60050",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupId": "29",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150004",
+      "itemName": "Tropeiro individual"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgroupId\tgroupName\tmenuItemId\titemName\n47\tNuggets de frango\t1690\t18\t\"Turbine\" seu pedido!\t150001\tCowboy individual\n30\tIscas de frango\t0\t14\tPreferência\t150007\tEstrelinha - infantil\n65\tNuggets de frango\t1690\t22\t\"Turbine\" seu pedido!\t150002\tExecutivo Fit Premium\n60030\tNuggets de frango\t1690\t22\t\"Turbine\" seu pedido!\t150002\tExecutivo Fit Premium\n30001\tCom frango e alcatra\t0\t5\tEscolha as carnes\t150002\tExecutivo Fit Premium\n30004\tSó frango\t0\t5\tEscolha as carnes\t150002\tExecutivo Fit Premium\n30148\tCom costela bovina\t0\t68\tPreferências\t150020\tKit de churrasco nobre\n30138\tSem frango\t0\t69\tPreferências\t150021\tKit de churrasco tradicional\n83\tNuggets de frango\t1690\t26\t\"Turbine\" seu pedido!\t150003\tLaçador individual\n60040\tNuggets de frango\t1690\t26\t\"Turbine\" seu pedido!\t150003\tLaçador individual\n135\tNuggets de frango\t1690\t37\t\"Turbine\" seu pedido!\t150009\tMarmitex Completa M\n30038\tDesejo Apenas Carnes Bovinas\t349\t30005\tAlterar Variedade De Carnes\t150009\tMarmitex Completa M\n30037\tRetirar Frango e Linguiça\t249\t30005\tAlterar Variedade De Carnes\t150009\tMarmitex Completa M\n117\tNuggets de frango\t1690\t33\t\"Turbine\" seu pedido!\t150008\tMarmitex Completa P\n30017\tDesejo Apenas Carnes Bovinas\t349\t30003\tAlterar Variedade De Carnes\t150008\tMarmitex Completa P\n30016\tRetirar Frango e Linguiça\t249\t30003\tAlterar Variedade De Carnes\t150008\tMarmitex Completa P\n171\tNuggets de frango\t1690\t45\t\"Turbine\" seu pedido!\t150019\tMarmitex econômica 1 (individual)\n30131\tCom costela bovina\t0\t70\tPreferências\t150022\tMix de churrasco nobre\n30120\tCom frango assado\t0\t71\tPreferências\t150023\tMix de churrasco tradicional\n25\tNuggets caseiros de frango\t0\t12\tGuarnição 3\t150006\tPeãozinho - infantil\n60020\tNuggets de frango\t1690\t64\t\"Turbine\" seu pedido!\t150005\tPescador individual\n153\tNuggets de frango\t1690\t41\t\"Turbine\" seu pedido!\t150010\tTradicional Marmitex G\n30059\tDesejo Apenas Carnes Bovinas\t349\t30007\tAlterar Variedade De Carnes\t150010\tTradicional Marmitex G\n30058\tRetirar Frango e Linguiça\t249\t30007\tAlterar Variedade De Carnes\t150010\tTradicional Marmitex G\n99\tNuggets de frango\t1690\t29\t\"Turbine\" seu pedido!\t150004\tTropeiro individual\n60050\tNuggets de frango\t1690\t29\t\"Turbine\" seu pedido!\t150004\tTropeiro individual\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

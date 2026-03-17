@@ -887,3 +887,45 @@ export async function getConversationMessages(conversationId: number, limit: num
     .orderBy(desc(messages.createdAt))
     .limit(limit);
 }
+
+
+// ===== Human Mode Conversations =====
+
+/**
+ * Lista conversas ativas que estão em modo humano (operador atendendo).
+ * Retorna informações do cliente junto com a conversa.
+ */
+export async function getHumanModeConversations(): Promise<
+  Array<{
+    conversationId: number;
+    customerId: number;
+    customerName: string | null;
+    customerPhone: string;
+    humanModeUntil: Date | null;
+    updatedAt: Date;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      conversationId: conversations.id,
+      customerId: conversations.customerId,
+      customerName: customers.name,
+      customerPhone: customers.phone,
+      humanModeUntil: conversations.humanModeUntil,
+      updatedAt: conversations.updatedAt,
+    })
+    .from(conversations)
+    .innerJoin(customers, eq(conversations.customerId, customers.id))
+    .where(
+      and(
+        eq(conversations.isActive, true),
+        eq(conversations.humanMode, true)
+      )
+    )
+    .orderBy(desc(conversations.updatedAt));
+
+  return result;
+}

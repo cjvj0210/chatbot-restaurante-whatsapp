@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT ao.id, ao.name, ao.priceExtra, mi.name as itemName\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE (ao.name LIKE '%Retirar Frango%' OR ao.name LIKE '%Somente%carnes bovinas%' OR ao.name LIKE '%Somente Carnes Bovinas%')\nAND mi.name LIKE '%Marmitex Tradicional%'\nORDER BY mi.name, ao.name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT ao.id, ao.name, ao.priceExtra, mi.name as itemName\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE (ao.name LIKE '%Retirar Frango%' OR ao.name LIKE '%Somente%carnes bovinas%' OR ao.name LIKE '%Somente Carnes Bovinas%')\nAND mi.name LIKE '%Marmitex Tradicional%'\nORDER BY mi.name, ao.name;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 59
+}

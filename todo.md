@@ -1411,3 +1411,21 @@
 - [ ] Diagnosticar por que o bot não responde às mensagens recebidas via YCloud
 - [ ] Verificar logs do servidor para erros no webhook
 - [ ] Corrigir o problema e testar
+
+## Bug: Comando #bot não funciona para retornar ao modo bot (17/03/2026)
+- [x] Investigar por que #bot enviado pelo atendente não reativa o bot
+- [x] Causa raiz: YCloud envia whatsapp.smb.message.echoes (não inbound_message) para mensagens do operador
+- [x] Implementar tratamento de echoes no webhook YCloud
+- [x] Testar fluxo completo: modo humano → atendimento → retorno ao bot
+
+## Alterações de Preço no Cardápio (17/03/2026)
+- [x] Alterar "Retirar Frango e Linguiça" para R$ 3,00 nos tamanhos P, M e G (Marmitex Tradicional c/ Churrasco)
+- [x] Alterar "Somente Carnes Bovinas" para R$ 4,00 nos tamanhos P, M e G (Marmitex Tradicional c/ Churrasco)
+
+## Solução #bot via YCloud (17/03/2026)
+- [x] Implementar detecção de whatsapp.smb.message.echoes no webhook YCloud
+- [x] Detectar comando #bot nas mensagens do operador e desativar modo humano
+- [x] Adicionar endpoint API no painel admin para devolver conversa ao bot (tRPC humanMode.returnToBot)
+- [x] Ativar modo humano automaticamente quando operador responde via WhatsApp Business App
+- [x] Ignorar echoes de mensagens enviadas pelo bot via API (evita falso positivo)
+- [x] 223 testes passando incluindo novos testes para echoes

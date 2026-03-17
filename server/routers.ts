@@ -21,6 +21,9 @@ import { notifyOwner } from "./_core/notification";
 import { logAudit } from "./auditLog";
 import { sanitizeInput } from "./sanitize";
 import { cached, invalidateCachePrefix } from "./cache";
+import { resumeConversationAfterBot } from "./chatbot";
+import { deactivateHumanModeForJid } from "./services/humanModeService";
+import { phoneNormalizer } from "./utils/phoneNormalizer";
 
 export const appRouter = router({
   system: systemRouter,
@@ -420,6 +423,58 @@ export const appRouter = router({
       // Query otimizada: usa COUNT/SUM/AVG no SQL em vez de carregar tudo na memória
       return await db.getDashboardStats();
     }),
+  }),
+
+  // Gerenciamento do Modo Humano (apenas admin)
+  humanMode: router({
+    /**
+     * Lista conversas atualmente em modo humano (operador atendendo).
+     * Retorna dados do cliente e tempo restante.
+     */
+    listActive: adminProcedure.query(async () => {
+      const convs = await db.getHumanModeConversations();
+      return convs.map((c) => ({
+        ...c,
+        isExpired: c.humanModeUntil ? new Date(c.humanModeUntil) < new Date() : false,
+      }));
+    }),
+
+    /**
+     * Devolve uma conversa ao bot (desativa modo humano).
+     * Equivalente ao operador enviar "#bot" no WhatsApp.
+     */
+    returnToBot: adminProcedure
+      .input(
+        z.object({
+          conversationId: z.number(),
+          customerPhone: z.string(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const phone = phoneNormalizer.normalize(input.customerPhone);
+        const jid = phone;
+
+        // Desativar modo humano no banco e no cache
+        await deactivateHumanModeForJid(jid, phone);
+
+        // Retomar conversa automaticamente (gera resposta para mensagem pendente)
+        resumeConversationAfterBot(jid, phone).catch((err) =>
+          logger.error("Routers", `Erro ao retomar bot para ${phone}`, err)
+        );
+
+        await logAudit({
+          userId: ctx.user?.id,
+          action: "humanMode.returnToBot",
+          entityType: "conversation",
+          entityId: input.conversationId,
+          details: { customerPhone: phone },
+          ipAddress: ctx.req?.ip ?? null,
+        });
+
+        logger.info("Routers", `Admin devolveu conversa ${input.conversationId} ao bot (cliente: ${phone})`);
+
+        return { success: true, message: `Bot retomado para ${phone}` };
+      }),
   }),
 });
 

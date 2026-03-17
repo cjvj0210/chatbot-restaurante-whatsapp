@@ -1,0 +1,154 @@
+{
+  "query": "\nSELECT ao.id, ao.name, ao.priceExtra, mi.name as itemName\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE ao.name LIKE '%Frango%' OR ao.name LIKE '%bovinas%' OR ao.name LIKE '%Bovinas%'\nORDER BY mi.name, ao.name\nLIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute \nSELECT ao.id, ao.name, ao.priceExtra, mi.name as itemName\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE ao.name LIKE '%Frango%' OR ao.name LIKE '%bovinas%' OR ao.name LIKE '%Bovinas%'\nORDER BY mi.name, ao.name\nLIMIT 30;\n",
+  "rows": [
+    {
+      "id": "47",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Cowboy individual"
+    },
+    {
+      "id": "30",
+      "name": "Iscas de frango",
+      "priceExtra": "0",
+      "itemName": "Estrelinha - infantil"
+    },
+    {
+      "id": "30001",
+      "name": "Com frango e alcatra",
+      "priceExtra": "0",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "65",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "60030",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "30004",
+      "name": "Só frango",
+      "priceExtra": "0",
+      "itemName": "Executivo Fit Premium"
+    },
+    {
+      "id": "30138",
+      "name": "Sem frango",
+      "priceExtra": "0",
+      "itemName": "Kit de churrasco tradicional"
+    },
+    {
+      "id": "83",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Laçador individual"
+    },
+    {
+      "id": "60040",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Laçador individual"
+    },
+    {
+      "id": "30038",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "349",
+      "itemName": "Marmitex Completa M"
+    },
+    {
+      "id": "135",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Marmitex Completa M"
+    },
+    {
+      "id": "30037",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "249",
+      "itemName": "Marmitex Completa M"
+    },
+    {
+      "id": "30017",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "349",
+      "itemName": "Marmitex Completa P"
+    },
+    {
+      "id": "117",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Marmitex Completa P"
+    },
+    {
+      "id": "30016",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "249",
+      "itemName": "Marmitex Completa P"
+    },
+    {
+      "id": "171",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Marmitex econômica 1 (individual)"
+    },
+    {
+      "id": "30120",
+      "name": "Com frango assado",
+      "priceExtra": "0",
+      "itemName": "Mix de churrasco tradicional"
+    },
+    {
+      "id": "25",
+      "name": "Nuggets caseiros de frango",
+      "priceExtra": "0",
+      "itemName": "Peãozinho - infantil"
+    },
+    {
+      "id": "60020",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Pescador individual"
+    },
+    {
+      "id": "30059",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "349",
+      "itemName": "Tradicional Marmitex G"
+    },
+    {
+      "id": "153",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Tradicional Marmitex G"
+    },
+    {
+      "id": "30058",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "249",
+      "itemName": "Tradicional Marmitex G"
+    },
+    {
+      "id": "99",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Tropeiro individual"
+    },
+    {
+      "id": "60050",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "itemName": "Tropeiro individual"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\titemName\n47\tNuggets de frango\t1690\tCowboy individual\n30\tIscas de frango\t0\tEstrelinha - infantil\n30001\tCom frango e alcatra\t0\tExecutivo Fit Premium\n65\tNuggets de frango\t1690\tExecutivo Fit Premium\n60030\tNuggets de frango\t1690\tExecutivo Fit Premium\n30004\tSó frango\t0\tExecutivo Fit Premium\n30138\tSem frango\t0\tKit de churrasco tradicional\n83\tNuggets de frango\t1690\tLaçador individual\n60040\tNuggets de frango\t1690\tLaçador individual\n30038\tDesejo Apenas Carnes Bovinas\t349\tMarmitex Completa M\n135\tNuggets de frango\t1690\tMarmitex Completa M\n30037\tRetirar Frango e Linguiça\t249\tMarmitex Completa M\n30017\tDesejo Apenas Carnes Bovinas\t349\tMarmitex Completa P\n117\tNuggets de frango\t1690\tMarmitex Completa P\n30016\tRetirar Frango e Linguiça\t249\tMarmitex Completa P\n171\tNuggets de frango\t1690\tMarmitex econômica 1 (individual)\n30120\tCom frango assado\t0\tMix de churrasco tradicional\n25\tNuggets caseiros de frango\t0\tPeãozinho - infantil\n60020\tNuggets de frango\t1690\tPescador individual\n30059\tDesejo Apenas Carnes Bovinas\t349\tTradicional Marmitex G\n153\tNuggets de frango\t1690\tTradicional Marmitex G\n30058\tRetirar Frango e Linguiça\t249\tTradicional Marmitex G\n99\tNuggets de frango\t1690\tTropeiro individual\n60050\tNuggets de frango\t1690\tTropeiro individual\n",
+  "stderr": "",
+  "execution_time_ms": 72
+}

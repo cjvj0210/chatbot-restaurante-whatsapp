@@ -3,18 +3,39 @@ import express from "express";
 import request from "supertest";
 import { handleYCloudWebhookMessage, isYCloudPayload } from "./webhookYCloud";
 
-// Mock processIncomingMessage to avoid actual chatbot processing
+// Mock processIncomingMessage and resumeConversationAfterBot
+const mockProcessIncomingMessage = vi.fn().mockResolvedValue(undefined);
+const mockResumeConversationAfterBot = vi.fn().mockResolvedValue(undefined);
 vi.mock("./chatbot", () => ({
-  processIncomingMessage: vi.fn().mockResolvedValue(undefined),
-  resumeConversationAfterBot: vi.fn().mockResolvedValue(undefined),
+  processIncomingMessage: (...args: any[]) => mockProcessIncomingMessage(...args),
+  resumeConversationAfterBot: (...args: any[]) => mockResumeConversationAfterBot(...args),
+  setHumanModeCache: vi.fn(),
+  clearHumanModeCache: vi.fn(),
 }));
 
-// Mock markMessageAsReadYCloud
+// Mock ycloudApi
 vi.mock("./ycloudApi", () => ({
   markMessageAsReadYCloud: vi.fn().mockResolvedValue(true),
+  transcribeAudioYCloud: vi.fn().mockResolvedValue("transcrição de teste"),
   sendTextMessageYCloud: vi.fn().mockResolvedValue(true),
   sendMediaMessageYCloud: vi.fn().mockResolvedValue(true),
   isYCloudConfigured: vi.fn().mockReturnValue(true),
+}));
+
+// Mock botMessageTracker
+const mockIsBotSentMessage = vi.fn().mockResolvedValue(false);
+vi.mock("./botMessageTracker", () => ({
+  isBotSentMessage: (...args: any[]) => mockIsBotSentMessage(...args),
+  registerBotSentMessage: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock humanModeService
+const mockActivateHumanMode = vi.fn().mockResolvedValue(undefined);
+const mockDeactivateHumanMode = vi.fn().mockResolvedValue(undefined);
+vi.mock("./services/humanModeService", () => ({
+  activateHumanModeForJid: (...args: any[]) => mockActivateHumanMode(...args),
+  deactivateHumanModeForJid: (...args: any[]) => mockDeactivateHumanMode(...args),
+  isHumanModeActiveForJid: vi.fn().mockResolvedValue(false),
 }));
 
 describe("YCloud Integration", () => {
@@ -23,6 +44,15 @@ describe("YCloud Integration", () => {
       expect(isYCloudPayload({
         id: "evt_test",
         type: "whatsapp.inbound_message.received",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+      })).toBe(true);
+    });
+
+    it("detecta payload YCloud de echo corretamente", () => {
+      expect(isYCloudPayload({
+        id: "evt_test",
+        type: "whatsapp.smb.message.echoes",
         apiVersion: "v2",
         createTime: "2025-03-17T12:00:00.000Z",
       })).toBe(true);
@@ -49,16 +79,17 @@ describe("YCloud Integration", () => {
       app = express();
       app.use(express.json());
       app.post("/api/webhook/cloud", handleYCloudWebhookMessage as any);
+      vi.clearAllMocks();
     });
 
     it("responde 200 para payload válido de mensagem de texto YCloud", async () => {
       const payload = {
-        id: "evt_djeIQXaQPQyUcRFi",
+        id: "evt_text_msg_001",
         type: "whatsapp.inbound_message.received",
         apiVersion: "v2",
         createTime: "2025-03-17T12:00:00.000Z",
         whatsappInboundMessage: {
-          id: "wim123456",
+          id: "wim_text_001",
           wabaId: "2430571627387237",
           from: "+5517988112791",
           customerProfile: {
@@ -83,7 +114,7 @@ describe("YCloud Integration", () => {
 
     it("responde 200 para evento não-mensagem (status update)", async () => {
       const payload = {
-        id: "evt_abc123",
+        id: "evt_status_001",
         type: "whatsapp.message.updated",
         apiVersion: "v2",
         createTime: "2025-03-17T12:00:00.000Z",
@@ -102,7 +133,7 @@ describe("YCloud Integration", () => {
 
     it("responde 200 para payload sem whatsappInboundMessage", async () => {
       const payload = {
-        id: "evt_abc123",
+        id: "evt_no_msg_001",
         type: "whatsapp.inbound_message.received",
         apiVersion: "v2",
         createTime: "2025-03-17T12:00:00.000Z",
@@ -114,6 +145,233 @@ describe("YCloud Integration", () => {
         .send(payload);
 
       expect(res.status).toBe(200);
+    });
+  });
+
+  describe("whatsapp.smb.message.echoes — Detecção de #bot", () => {
+    let app: express.Express;
+
+    beforeEach(() => {
+      app = express();
+      app.use(express.json());
+      app.post("/api/webhook/cloud", handleYCloudWebhookMessage as any);
+      vi.clearAllMocks();
+      mockIsBotSentMessage.mockResolvedValue(false);
+    });
+
+    it("detecta comando #bot do operador e desativa modo humano", async () => {
+      const payload = {
+        id: "evt_echo_bot_001",
+        type: "whatsapp.smb.message.echoes",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+        whatsappMessage: {
+          id: "63f5d602367ea403f8175a6c",
+          wamid: "wamid.echo_bot_001",
+          status: "sent",
+          from: "+5517992253886", // Restaurante
+          to: "+5517988112791", // Cliente
+          wabaId: "2430571627387237",
+          createTime: "2025-03-17T12:00:00.000Z",
+          sendTime: "2025-03-17T12:00:01.000Z",
+          bizType: "whatsapp",
+          type: "text",
+          text: {
+            body: "#bot",
+          },
+        },
+      };
+
+      const res = await request(app)
+        .post("/api/webhook/cloud")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+
+      // Aguardar processamento assíncrono
+      await new Promise((r) => setTimeout(r, 100));
+
+      // Deve desativar modo humano
+      expect(mockDeactivateHumanMode).toHaveBeenCalledTimes(1);
+      // O primeiro argumento deve ser o número do cliente normalizado
+      const callArgs = mockDeactivateHumanMode.mock.calls[0];
+      expect(callArgs[0]).toMatch(/5517988112791/);
+
+      // Deve retomar conversa
+      expect(mockResumeConversationAfterBot).toHaveBeenCalledTimes(1);
+
+      // NÃO deve ativar modo humano
+      expect(mockActivateHumanMode).not.toHaveBeenCalled();
+    });
+
+    it("detecta comando #ativar do operador e desativa modo humano", async () => {
+      const payload = {
+        id: "evt_echo_ativar_001",
+        type: "whatsapp.smb.message.echoes",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+        whatsappMessage: {
+          id: "63f5d602367ea403f8175a6d",
+          wamid: "wamid.echo_ativar_001",
+          status: "sent",
+          from: "+5517992253886",
+          to: "+5517988112791",
+          wabaId: "2430571627387237",
+          createTime: "2025-03-17T12:00:00.000Z",
+          sendTime: "2025-03-17T12:00:01.000Z",
+          bizType: "whatsapp",
+          type: "text",
+          text: {
+            body: "#ativar",
+          },
+        },
+      };
+
+      const res = await request(app)
+        .post("/api/webhook/cloud")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+      await new Promise((r) => setTimeout(r, 100));
+
+      expect(mockDeactivateHumanMode).toHaveBeenCalledTimes(1);
+      expect(mockResumeConversationAfterBot).toHaveBeenCalledTimes(1);
+    });
+
+    it("ativa modo humano quando operador envia mensagem normal (não #bot)", async () => {
+      const payload = {
+        id: "evt_echo_normal_001",
+        type: "whatsapp.smb.message.echoes",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+        whatsappMessage: {
+          id: "63f5d602367ea403f8175a6e",
+          wamid: "wamid.echo_normal_001",
+          status: "sent",
+          from: "+5517992253886",
+          to: "+5517988112791",
+          wabaId: "2430571627387237",
+          createTime: "2025-03-17T12:00:00.000Z",
+          sendTime: "2025-03-17T12:00:01.000Z",
+          bizType: "whatsapp",
+          type: "text",
+          text: {
+            body: "Olá, vou verificar seu pedido!",
+          },
+        },
+      };
+
+      const res = await request(app)
+        .post("/api/webhook/cloud")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+      await new Promise((r) => setTimeout(r, 100));
+
+      // Deve ativar modo humano (operador respondeu manualmente)
+      expect(mockActivateHumanMode).toHaveBeenCalledTimes(1);
+      const callArgs = mockActivateHumanMode.mock.calls[0];
+      expect(callArgs[0]).toMatch(/5517988112791/);
+
+      // NÃO deve desativar modo humano
+      expect(mockDeactivateHumanMode).not.toHaveBeenCalled();
+      // NÃO deve retomar bot
+      expect(mockResumeConversationAfterBot).not.toHaveBeenCalled();
+    });
+
+    it("ignora echo de mensagem enviada pelo bot via API", async () => {
+      // Simular que a mensagem foi enviada pelo bot
+      mockIsBotSentMessage.mockResolvedValue(true);
+
+      const payload = {
+        id: "evt_echo_botmsg_001",
+        type: "whatsapp.smb.message.echoes",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+        whatsappMessage: {
+          id: "63f5d602367ea403f8175a6f",
+          wamid: "wamid.echo_botmsg_001",
+          status: "sent",
+          from: "+5517992253886",
+          to: "+5517988112791",
+          wabaId: "2430571627387237",
+          createTime: "2025-03-17T12:00:00.000Z",
+          sendTime: "2025-03-17T12:00:01.000Z",
+          bizType: "whatsapp",
+          type: "text",
+          text: {
+            body: "Resposta automática do bot",
+          },
+        },
+      };
+
+      const res = await request(app)
+        .post("/api/webhook/cloud")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+      await new Promise((r) => setTimeout(r, 100));
+
+      // NÃO deve ativar nem desativar modo humano (mensagem do bot)
+      expect(mockActivateHumanMode).not.toHaveBeenCalled();
+      expect(mockDeactivateHumanMode).not.toHaveBeenCalled();
+    });
+
+    it("ignora echo sem whatsappMessage", async () => {
+      const payload = {
+        id: "evt_echo_empty_001",
+        type: "whatsapp.smb.message.echoes",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+        // whatsappMessage ausente
+      };
+
+      const res = await request(app)
+        .post("/api/webhook/cloud")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+      await new Promise((r) => setTimeout(r, 100));
+
+      expect(mockActivateHumanMode).not.toHaveBeenCalled();
+      expect(mockDeactivateHumanMode).not.toHaveBeenCalled();
+    });
+
+    it("ativa modo humano para echo de imagem (não texto)", async () => {
+      const payload = {
+        id: "evt_echo_image_001",
+        type: "whatsapp.smb.message.echoes",
+        apiVersion: "v2",
+        createTime: "2025-03-17T12:00:00.000Z",
+        whatsappMessage: {
+          id: "63f5d602367ea403f8175a70",
+          wamid: "wamid.echo_image_001",
+          status: "sent",
+          from: "+5517992253886",
+          to: "+5517988112791",
+          wabaId: "2430571627387237",
+          createTime: "2025-03-17T12:00:00.000Z",
+          sendTime: "2025-03-17T12:00:01.000Z",
+          bizType: "whatsapp",
+          type: "image",
+          image: {
+            link: "https://api.ycloud.com/v2/whatsapp/media/download/123",
+            id: "123",
+            sha256: "abc",
+            mime_type: "image/jpeg",
+          },
+        },
+      };
+
+      const res = await request(app)
+        .post("/api/webhook/cloud")
+        .send(payload);
+
+      expect(res.status).toBe(200);
+      await new Promise((r) => setTimeout(r, 100));
+
+      // Operador enviou imagem → ativar modo humano
+      expect(mockActivateHumanMode).toHaveBeenCalledTimes(1);
     });
   });
 
