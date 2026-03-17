@@ -236,11 +236,17 @@ async function startServer() {
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
+  // Em produção, usar a porta exata (o proxy reverso espera exatamente essa porta)
+  // Em desenvolvimento, procurar porta alternativa se a preferida estiver ocupada
+  const port = process.env.NODE_ENV === "production"
+    ? preferredPort
+    : await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  console.log(`[Boot] NODE_ENV=${process.env.NODE_ENV}, PORT env=${process.env.PORT}, binding to port=${port}`);
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
