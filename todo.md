@@ -1406,3 +1406,8 @@
 - [x] Adaptar envio de mensagens para funcionar via YCloud API
 - [x] Testar recebimento de mensagens via YCloud webhook
 - [x] Implementar transcrição de áudio via YCloud (download com X-API-Key + upload S3 + Whisper)
+
+## Bug: Bot não responde via YCloud
+- [ ] Diagnosticar por que o bot não responde às mensagens recebidas via YCloud
+- [ ] Verificar logs do servidor para erros no webhook
+- [ ] Corrigir o problema e testar
