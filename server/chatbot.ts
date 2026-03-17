@@ -827,6 +827,13 @@ function detectIntent(userMessage: string, currentContext: ChatContext): ChatCon
  * Busca o histórico da conversa, identifica a última pergunta do cliente
  * que ficou sem resposta do bot, e gera uma resposta proativa.
  *
+ * LÓGICA DE PRIORIDADE para encontrar a mensagem a responder:
+ * 1. Mensagens do cliente com metadata humanMode=true (enviadas durante modo humano)
+ *    → Pega a ÚLTIMA dessas mensagens (a mais recente)
+ * 2. Se não houver mensagens de modo humano, pega a ÚLTIMA mensagem do cliente
+ *    que NÃO tenha resposta do bot logo em seguida
+ * 3. Se todas as mensagens já foram respondidas, envia saudação genérica
+ *
  * @param remoteJid - JID do cliente (para enviar a mensagem)
  * @param realPhone - Número real do telefone (quando JID é @lid)
  */
@@ -851,27 +858,59 @@ export async function resumeConversationAfterBot(
       return;
     }
 
-    // Buscar últimas mensagens para encontrar a última pergunta do cliente sem resposta
-    const history = await getConversationMessages(conversation.id, 10);
+    // Buscar últimas 30 mensagens para ter contexto amplo
+    const history = await getConversationMessages(conversation.id, 30);
     // history vem em DESC, reverter para cronológico
     history.reverse();
 
-    // Encontrar a última mensagem do cliente (que pode ter ficado sem resposta do bot)
+    // ===== PRIORIDADE 1: Mensagens do cliente enviadas durante modo humano =====
+    // Estas são as mensagens mais relevantes porque foram enviadas enquanto o bot
+    // estava silenciado — o cliente está esperando resposta sobre ESTES assuntos.
+    const humanModeMessages = history.filter(m => {
+      if (m.role !== "user") return false;
+      try {
+        const meta = m.metadata ? JSON.parse(m.metadata as string) : null;
+        return meta?.humanMode === true;
+      } catch {
+        return false;
+      }
+    });
+
     let lastClientMessage = "";
-    let lastClientMsgIndex = -1;
-    for (let i = history.length - 1; i >= 0; i--) {
-      if (history[i]!.role === "user") {
-        lastClientMessage = history[i]!.content;
-        lastClientMsgIndex = i;
-        break;
+
+    if (humanModeMessages.length > 0) {
+      // Pegar a ÚLTIMA mensagem do modo humano (a mais recente)
+      lastClientMessage = humanModeMessages[humanModeMessages.length - 1]!.content;
+      logger.info("Chatbot", `Retomada: usando última mensagem do modo humano: "${lastClientMessage.substring(0, 80)}"`);
+    } else {
+      // ===== PRIORIDADE 2: Última mensagem do cliente sem resposta do bot =====
+      // Percorrer de trás para frente buscando a última mensagem do user
+      for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i]!.role === "user") {
+          // Verificar se há resposta do bot DEPOIS desta mensagem
+          const hasResponse = history.slice(i + 1).some(m => {
+            if (m.role !== "assistant") return false;
+            // Ignorar respostas que são apenas saudações de retomada ou confirmações do #bot
+            try {
+              const meta = m.metadata ? JSON.parse(m.metadata as string) : null;
+              if (meta?.resumeAfterBot) return false;
+            } catch {}
+            return true;
+          });
+
+          if (!hasResponse) {
+            lastClientMessage = history[i]!.content;
+            logger.info("Chatbot", `Retomada: usando última mensagem sem resposta: "${lastClientMessage.substring(0, 80)}"`);
+            break;
+          }
+        }
       }
     }
 
     if (!lastClientMessage) {
-      // Sem mensagem do cliente pendente, enviar saudação genérica de retomada
+      // Sem mensagem pendente, enviar saudação genérica de retomada
       const resumeMsg = "Oi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?";
       await whatsappService.sendText(remoteJid, resumeMsg);
-      // Salvar no histórico
       await createMessage({
         conversationId: conversation.id,
         role: "assistant",
@@ -879,39 +918,11 @@ export async function resumeConversationAfterBot(
         messageType: "text",
         metadata: JSON.stringify({ resumeAfterBot: true }),
       }).catch(() => {});
+      logger.info("Chatbot", `Retomada: saudação genérica enviada para ${phone} (sem mensagem pendente)`);
       return;
     }
 
-    // Verificar se a última mensagem do cliente já teve resposta do bot
-    const hasResponse = lastClientMsgIndex < history.length - 1 &&
-      history.slice(lastClientMsgIndex + 1).some(m => m.role === "assistant");
-
-    if (hasResponse) {
-      // A última mensagem já foi respondida, mas pode ter havido mensagens durante o modo humano
-      // Buscar mensagens do cliente que foram enviadas durante o modo humano (sem resposta do bot)
-      const humanModeMessages = history.filter(m =>
-        m.role === "user" && m.metadata && JSON.parse(m.metadata as string)?.humanMode === true
-      );
-
-      if (humanModeMessages.length > 0) {
-        // Há mensagens do cliente durante o modo humano — gerar resposta para a última
-        lastClientMessage = humanModeMessages[humanModeMessages.length - 1]!.content;
-      } else {
-        // Tudo já foi respondido, enviar saudação de retomada
-        const resumeMsg = "Oi! O Gauchinho voltou! 🤠 Posso te ajudar em mais alguma coisa?";
-        await whatsappService.sendText(remoteJid, resumeMsg);
-        await createMessage({
-          conversationId: conversation.id,
-          role: "assistant",
-          content: resumeMsg,
-          messageType: "text",
-          metadata: JSON.stringify({ resumeAfterBot: true }),
-        }).catch(() => {});
-        return;
-      }
-    }
-
-    // Gerar resposta para a última mensagem pendente do cliente
+    // Gerar resposta para a mensagem pendente do cliente
     logger.info("Chatbot", `Gerando resposta de retomada para: "${lastClientMessage.substring(0, 80)}"`);
 
     const context: ChatContext = conversation.context
@@ -951,14 +962,20 @@ export async function resumeConversationAfterBot(
       await whatsappService.sendText(remoteJid, responseText);
     }
 
-    // Salvar no histórico
-    await createMessage({
-      conversationId: conversation.id,
-      role: "user",
-      content: lastClientMessage,
-      messageType: "text",
-      metadata: JSON.stringify({ reprocessedAfterBot: true }),
-    }).catch(() => {});
+    // Salvar no histórico (NÃO duplicar a mensagem do user se ela já está no histórico)
+    // Verificar se a mensagem já existe no histórico para evitar duplicação
+    const alreadyInHistory = history.some(m =>
+      m.role === "user" && m.content === lastClientMessage
+    );
+    if (!alreadyInHistory) {
+      await createMessage({
+        conversationId: conversation.id,
+        role: "user",
+        content: lastClientMessage,
+        messageType: "text",
+        metadata: JSON.stringify({ reprocessedAfterBot: true }),
+      }).catch(() => {});
+    }
 
     await createMessage({
       conversationId: conversation.id,

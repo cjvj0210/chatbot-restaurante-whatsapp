@@ -1429,3 +1429,9 @@
 - [x] Ativar modo humano automaticamente quando operador responde via WhatsApp Business App
 - [x] Ignorar echoes de mensagens enviadas pelo bot via API (evita falso positivo)
 - [x] 223 testes passando incluindo novos testes para echoes
+
+## Bugs no fluxo #bot (17/03/2026)
+- [x] Apagar a mensagem #bot — NÃO é possível via YCloud API. Solução: enviar confirmação visual ao cliente ("✅ Gauchinho reativado!") para mascarar o #bot
+- [x] Quando bot retoma após #bot, responder à ÚLTIMA mensagem do cliente (prioridade: msgs do modo humano > msgs sem resposta)
+- [x] Enviar notificação ao operador quando modo humano é ativado pela primeira vez
+- [x] 223 testes passando

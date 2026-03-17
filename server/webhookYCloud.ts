@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { processIncomingMessage, resumeConversationAfterBot } from "./chatbot";
-import { markMessageAsReadYCloud, transcribeAudioYCloud } from "./ycloudApi";
+import { markMessageAsReadYCloud, transcribeAudioYCloud, sendTextMessageYCloud } from "./ycloudApi";
 import { isBotSentMessage } from "./botMessageTracker";
 import {
   activateHumanModeForJid,
   deactivateHumanModeForJid,
+  isHumanModeActiveForJid,
 } from "./services/humanModeService";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { CHATBOT } from "../shared/constants";
@@ -135,20 +136,49 @@ async function handleSmbMessageEcho(body: any): Promise<void> {
   if (messageText && BOT_COMMANDS.has(messageText.toLowerCase())) {
     logger.info("YCloudWebhook", `🤖 Comando #bot detectado! Desativando modo humano para ${customerPhone}`);
 
-    // Desativar modo humano
+    // 1. Desativar modo humano
     await deactivateHumanModeForJid(customerJid, customerPhone);
 
-    // Retomar conversa automaticamente (gera resposta para mensagem pendente do cliente)
-    resumeConversationAfterBot(customerJid, customerPhone)
-      .then(() => logger.info("YCloudWebhook", `✅ Bot retomado com sucesso para ${customerPhone}`))
-      .catch((err) => logger.error("YCloudWebhook", `Erro ao retomar bot para ${customerPhone}`, err));
+    // 2. Enviar confirmação ao operador (via mensagem para o próprio número do restaurante)
+    //    NOTA: Não é possível deletar mensagens via YCloud API, então enviamos uma
+    //    confirmação visual para que o cliente entenda que o bot retomou.
+    //    A confirmação vai para o CLIENTE, não para o operador.
+    sendTextMessageYCloud(
+      customerPhone,
+      "✅ *Gauchinho reativado!* 🤠\n\nO atendimento automático foi retomado. Como posso te ajudar?"
+    ).catch((err) => logger.warn("YCloudWebhook", "Falha ao enviar confirmação de retomada", err));
+
+    // 3. Retomar conversa automaticamente (gera resposta para mensagem pendente do cliente)
+    //    Aguardar 2s para a confirmação ser entregue antes de gerar a resposta
+    setTimeout(() => {
+      resumeConversationAfterBot(customerJid, customerPhone)
+        .then(() => logger.info("YCloudWebhook", `✅ Bot retomado com sucesso para ${customerPhone}`))
+        .catch((err) => logger.error("YCloudWebhook", `Erro ao retomar bot para ${customerPhone}`, err));
+    }, 2000);
 
     return;
   }
 
   // Qualquer outra mensagem do operador → ativar modo humano (silenciar bot)
-  logger.info("YCloudWebhook", `👤 Operador respondeu manualmente para ${customerPhone} — ativando modo humano`);
+  // Verificar se já está em modo humano para não enviar notificação repetida
+  const isAlreadyHuman = await isHumanModeActiveForJid(customerJid, customerPhone);
   await activateHumanModeForJid(customerJid, customerPhone);
+
+  if (!isAlreadyHuman) {
+    // Primeira mensagem do operador: enviar notificação ao operador
+    // (via mensagem para o número do restaurante)
+    const restaurantPhone = process.env.RESTAURANT_PHONE?.replace(/\D/g, "") || "";
+    if (restaurantPhone) {
+      const restaurantPhoneNorm = restaurantPhone.startsWith("55") ? restaurantPhone : `55${restaurantPhone}`;
+      sendTextMessageYCloud(
+        restaurantPhoneNorm,
+        `👤 Modo humano ativado para ${customerPhone} (30 min).\nO bot está pausado.\nEnvie *#bot* na conversa do cliente para reativar.`
+      ).catch(() => {});
+    }
+    logger.info("YCloudWebhook", `👤 Operador respondeu manualmente para ${customerPhone} — modo humano ATIVADO (primeira msg)`);
+  } else {
+    logger.info("YCloudWebhook", `👤 Operador respondeu manualmente para ${customerPhone} — modo humano já ativo`);
+  }
 }
 
 /**

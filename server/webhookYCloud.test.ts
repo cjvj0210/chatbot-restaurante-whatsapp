@@ -188,8 +188,8 @@ describe("YCloud Integration", () => {
 
       expect(res.status).toBe(200);
 
-      // Aguardar processamento assíncrono
-      await new Promise((r) => setTimeout(r, 100));
+      // Aguardar processamento assíncrono (handleSmbMessageEcho é fire-and-forget)
+      await new Promise((r) => setTimeout(r, 200));
 
       // Deve desativar modo humano
       expect(mockDeactivateHumanMode).toHaveBeenCalledTimes(1);
@@ -197,12 +197,19 @@ describe("YCloud Integration", () => {
       const callArgs = mockDeactivateHumanMode.mock.calls[0];
       expect(callArgs[0]).toMatch(/5517988112791/);
 
-      // Deve retomar conversa
+      // Deve enviar confirmação ao cliente via sendTextMessageYCloud
+      const { sendTextMessageYCloud: mockSendText } = await import("./ycloudApi");
+      expect(mockSendText).toHaveBeenCalled();
+
+      // Aguardar o setTimeout de 2s para o resumeConversationAfterBot
+      await new Promise((r) => setTimeout(r, 2500));
+
+      // Deve retomar conversa após o delay
       expect(mockResumeConversationAfterBot).toHaveBeenCalledTimes(1);
 
       // NÃO deve ativar modo humano
       expect(mockActivateHumanMode).not.toHaveBeenCalled();
-    });
+    }, 10000);
 
     it("detecta comando #ativar do operador e desativa modo humano", async () => {
       const payload = {
@@ -232,11 +239,15 @@ describe("YCloud Integration", () => {
         .send(payload);
 
       expect(res.status).toBe(200);
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 200));
 
       expect(mockDeactivateHumanMode).toHaveBeenCalledTimes(1);
+
+      // Aguardar o setTimeout de 2s para o resumeConversationAfterBot
+      await new Promise((r) => setTimeout(r, 2500));
+
       expect(mockResumeConversationAfterBot).toHaveBeenCalledTimes(1);
-    });
+    }, 10000);
 
     it("ativa modo humano quando operador envia mensagem normal (não #bot)", async () => {
       const payload = {
