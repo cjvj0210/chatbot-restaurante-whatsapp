@@ -1405,3 +1405,4 @@
 - [x] Manter compatibilidade com webhook Cloud API existente
 - [x] Adaptar envio de mensagens para funcionar via YCloud API
 - [x] Testar recebimento de mensagens via YCloud webhook
+- [x] Implementar transcrição de áudio via YCloud (download com X-API-Key + upload S3 + Whisper)

@@ -219,6 +219,74 @@ export async function markMessageAsReadYCloud(messageId: string): Promise<boolea
 }
 
 /**
+ * Baixa áudio do WhatsApp via YCloud (usando o link direto do webhook)
+ * O YCloud fornece uma URL direta para o áudio, mas requer o header X-API-Key.
+ * Retorna o buffer do arquivo para transcrição.
+ */
+export async function downloadMediaYCloud(mediaUrl: string): Promise<Buffer | null> {
+  try {
+    const { apiKey } = getYCloudConfig();
+    if (!apiKey) {
+      logger.error("YCloud", "API Key não configurada para download de mídia", null);
+      return null;
+    }
+
+    const response = await axios.get(mediaUrl, {
+      headers: { "X-API-Key": apiKey },
+      responseType: "arraybuffer",
+      timeout: 30000,
+    });
+
+    return Buffer.from(response.data);
+  } catch (error: any) {
+    logger.error("YCloud", "Erro ao baixar mídia", error?.response?.data || error?.message);
+    return null;
+  }
+}
+
+/**
+ * Transcreve áudio recebido via YCloud
+ * Baixa o áudio via URL direta do YCloud e usa Whisper para transcrever
+ */
+export async function transcribeAudioYCloud(mediaUrl: string): Promise<string | null> {
+  try {
+    const audioBuffer = await downloadMediaYCloud(mediaUrl);
+    if (!audioBuffer) return null;
+
+    const fs = await import("fs");
+    const path = await import("path");
+    const os = await import("os");
+    const { storagePut } = await import("./storage");
+    const { transcribeAudio } = await import("./_core/voiceTranscription");
+
+    // Gerar nome único para o arquivo
+    const uniqueId = `ycloud-audio-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const fileKey = `audio-transcription/${uniqueId}.ogg`;
+
+    // Upload para S3 para obter URL pública (necessário para Whisper API)
+    const { url: audioS3Url } = await storagePut(fileKey, audioBuffer, "audio/ogg");
+
+    logger.info("YCloud", `Áudio uploaded para S3: ${audioS3Url} (${audioBuffer.length} bytes)`);
+
+    // Transcrever usando Whisper
+    const result = await transcribeAudio({
+      audioUrl: audioS3Url,
+      language: "pt",
+    });
+
+    if ("error" in result) {
+      logger.error("YCloud", `Erro na transcrição: ${result.error}`, null);
+      return null;
+    }
+
+    return result?.text || null;
+  } catch (error: any) {
+    logger.error("YCloud", "Erro ao transcrever áudio", error?.message);
+    return null;
+  }
+}
+
+/**
  * deleteMessageForEveryone — NÃO SUPORTADO via YCloud.
  * Retorna false silenciosamente.
  */

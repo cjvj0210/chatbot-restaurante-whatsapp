@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { processIncomingMessage } from "./chatbot";
-import { markMessageAsReadYCloud } from "./ycloudApi";
+import { markMessageAsReadYCloud, transcribeAudioYCloud } from "./ycloudApi";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { CHATBOT } from "../shared/constants";
 import { logger } from "./utils/logger";
@@ -147,14 +147,19 @@ export async function handleYCloudWebhookMessage(req: Request, res: Response): P
     } else if (messageType === "image" && msg.image?.caption) {
       messageText = msg.image.caption;
     } else if (messageType === "audio" || messageType === "voice") {
-      // YCloud não fornece transcrição automática
-      // Podemos tentar baixar o áudio se houver URL
-      if (msg.audio?.link || msg.voice?.link) {
-        logger.info("YCloudWebhook", `Áudio recebido via YCloud, URL: ${msg.audio?.link || msg.voice?.link}`);
-        // TODO: implementar transcrição via URL direta quando disponível
-        messageText = "[Áudio recebido - transcrição via YCloud em desenvolvimento]";
+      // Transcrever áudio via YCloud (baixar pela URL direta + Whisper)
+      const audioUrl = msg.audio?.link || msg.voice?.link;
+      if (audioUrl) {
+        logger.info("YCloudWebhook", `Áudio recebido via YCloud, transcrevendo... URL: ${audioUrl.substring(0, 60)}...`);
+        const transcription = await transcribeAudioYCloud(audioUrl);
+        if (transcription) {
+          messageText = transcription;
+          logger.info("YCloudWebhook", `Áudio transcrito: "${messageText.substring(0, 80)}"`);
+        } else {
+          messageText = "[Áudio recebido - não foi possível transcrever]";
+        }
       } else {
-        messageText = "[Áudio recebido - não foi possível processar]";
+        messageText = "[Áudio recebido - sem URL para download]";
       }
     } else if (messageType === "sticker" || messageType === "reaction") {
       logger.info("YCloudWebhook", `${messageType} ignorado`);
