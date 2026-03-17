@@ -34,6 +34,7 @@ import {
   Users,
   ChevronRight,
   Flame,
+  Headset,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -59,6 +60,7 @@ const menuGroups = [
   {
     label: "Chatbot",
     items: [
+      { icon: Headset, label: "Modo Humano", path: "/modo-humano" },
       { icon: Smartphone, label: "Simulador WhatsApp", path: "/simulator" },
       { icon: Users, label: "Conversas de Teste", path: "/conversas-teste" },
     ],
@@ -77,9 +79,11 @@ const allMenuItems = menuGroups.flatMap((g) => g.items);
 function useAlertCounts() {
   const { data: orders } = trpc.order.list.useQuery(undefined, { refetchInterval: 15000 });
   const { data: reservations } = trpc.reservations.list.useQuery(undefined, { refetchInterval: 15000 });
+  const { data: humanModeConvs } = trpc.humanMode.listActive.useQuery(undefined, { refetchInterval: 15000 });
   const pendingOrders = orders?.filter((o) => o.status === "pending").length ?? 0;
   const pendingReservations = reservations?.filter((r) => r.status === "pending").length ?? 0;
-  return { pendingOrders, pendingReservations };
+  const humanModeActive = humanModeConvs?.length ?? 0;
+  return { pendingOrders, pendingReservations, humanModeActive };
 }
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -170,7 +174,7 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
-  const { pendingOrders, pendingReservations } = useAlertCounts();
+  const { pendingOrders, pendingReservations, humanModeActive } = useAlertCounts();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -276,9 +280,15 @@ function DashboardLayoutContent({
                               {pendingReservations}
                             </span>
                           )}
+                          {item.path === "/modo-humano" && humanModeActive > 0 && (
+                            <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse min-w-[18px] text-center">
+                              {humanModeActive}
+                            </span>
+                          )}
                           {isActive && !isCollapsed && !(
                             (item.path === "/orders" && pendingOrders > 0) ||
-                            (item.path === "/reservations" && pendingReservations > 0)
+                            (item.path === "/reservations" && pendingReservations > 0) ||
+                            (item.path === "/modo-humano" && humanModeActive > 0)
                           ) && (
                             <ChevronRight className="h-3 w-3 ml-auto opacity-60" />
                           )}

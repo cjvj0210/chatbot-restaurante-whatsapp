@@ -1446,3 +1446,16 @@
 - [x] Mensagens do operador marcadas com [ATENDENTE HUMANO respondeu] no histórico da LLM
 - [x] Detecção automática de preços/valores mencionados pelo atendente
 - [x] 228 testes passando
+
+## Página Modo Humano no Painel Admin (17/03/2026)
+- [x] Criar página ModoHumano.tsx com lista de conversas em atendimento humano
+- [x] Mostrar nome do cliente, telefone, tempo em modo humano, status expirado
+- [x] Botão "Devolver ao Bot" para cada conversa com dialog de confirmação
+- [x] Atualização automática da lista (polling a cada 10s)
+- [x] Registrar rota /modo-humano no App.tsx
+- [x] Adicionar item no sidebar do DashboardLayout com ícone Headset
+- [x] Badge de contagem de conversas ativas no sidebar (amarelo pulsante)
+- [x] KPIs: em atendimento, expiradas, total
+- [x] Banner informativo explicando como funciona o modo humano
+- [x] Estado vazio com mensagem amigável quando não há conversas
+- [x] Testes para os endpoints (233 testes passando)

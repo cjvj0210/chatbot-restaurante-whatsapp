@@ -26,6 +26,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Customers = lazy(() => import("./pages/Customers"));
 const Debug = lazy(() => import("./pages/Debug"));
 const TestConversations = lazy(() => import("./pages/TestConversations"));
+const HumanMode = lazy(() => import("./pages/HumanMode"));
 
 function AdminFallback() {
   return (
@@ -61,6 +62,7 @@ function Router() {
               <Route path="/customers" component={Customers} />
               <Route path="/debug" component={Debug} />
               <Route path="/conversas-teste" component={TestConversations} />
+              <Route path="/modo-humano" component={HumanMode} />
               <Route path="/404" component={NotFound} />
               <Route component={NotFound} />
             </Switch>
