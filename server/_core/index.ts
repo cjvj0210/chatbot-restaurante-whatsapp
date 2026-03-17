@@ -13,6 +13,7 @@ import { serveStatic, setupVite } from "./vite";
 import { handleWebhookVerification, handleWebhookMessage } from "../webhook";
 import { handleEvolutionWebhook } from "../webhookEvolution";
 import { handleCloudApiWebhookVerification, handleCloudApiWebhookMessage } from "../webhookCloudApi";
+import { handleYCloudWebhookMessage, isYCloudPayload } from "../webhookYCloud";
 import { startKeepAlive } from "../keepAlive";
 import { sendReservationReminders } from "../reservationReminder";
 import { runMaintenance, monitorWhatsAppInstance, retryFailedMessages, expireHumanModes } from "../maintenance";
@@ -144,9 +145,15 @@ async function startServer() {
   app.get("/api/webhook/whatsapp", handleWebhookVerification);
   app.post("/api/webhook/whatsapp", handleWebhookMessage);
   
-  // WhatsApp Cloud API Webhook (via env vars - novo adapter)
+  // WhatsApp Cloud API Webhook (via env vars - suporta Meta Cloud API e YCloud)
   app.get("/api/webhook/cloud", handleCloudApiWebhookVerification);
-  app.post("/api/webhook/cloud", handleCloudApiWebhookMessage);
+  app.post("/api/webhook/cloud", (req, res) => {
+    // Detectar automaticamente se o payload é do YCloud ou da Meta Cloud API
+    if (isYCloudPayload(req.body)) {
+      return handleYCloudWebhookMessage(req, res);
+    }
+    return handleCloudApiWebhookMessage(req, res);
+  });
   
   // Evolution API Webhook
   app.post("/api/webhook/evolution", handleEvolutionWebhook);
@@ -240,7 +247,13 @@ async function startServer() {
     // Verificar provider ativo
     const whatsappProvider = (process.env.WHATSAPP_PROVIDER || 'evolution').toLowerCase();
     
-    if (whatsappProvider === 'cloud_api') {
+    if (whatsappProvider === 'ycloud') {
+      console.log('[YCloud] Provider: YCloud BSP (coexistência App Business + API)');
+      console.log('[YCloud] Webhook endpoint: /api/webhook/cloud (detecção automática)');
+      console.log('[YCloud] API Key:', process.env.YCLOUD_API_KEY ? 'SET' : 'NOT_SET');
+      console.log('[YCloud] Webhook Secret:', process.env.YCLOUD_WEBHOOK_SECRET ? 'SET' : 'NOT_SET');
+      console.log('[YCloud] Polling e KeepAlive desativados (desnecessários com YCloud)');
+    } else if (whatsappProvider === 'cloud_api') {
       console.log('[CloudAPI] Provider: Meta Cloud API oficial');
       console.log('[CloudAPI] Webhook endpoint: /api/webhook/cloud');
       console.log('[CloudAPI] Polling e KeepAlive desativados (desnecessários com Cloud API)');

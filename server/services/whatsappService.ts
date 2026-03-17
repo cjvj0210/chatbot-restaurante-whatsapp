@@ -2,6 +2,7 @@
  * WhatsApp Service - Abstração unificada para envio de mensagens WhatsApp
  *
  * Decide qual API usar baseado na variável WHATSAPP_PROVIDER:
+ *   - "ycloud" → YCloud BSP (coexistência App Business + API)
  *   - "cloud_api" → Meta Cloud API oficial (Graph API)
  *   - "evolution" (default) → Evolution API (WhatsApp Web não oficial)
  *
@@ -15,12 +16,28 @@ import {
   sendMediaMessageCloudApi,
   isCloudApiConfigured,
 } from "../cloudApi";
+import {
+  sendTextMessageYCloud,
+  sendMediaMessageYCloud,
+  isYCloudConfigured,
+} from "../ycloudApi";
 import { logger } from "../utils/logger";
 
-type WhatsAppProvider = "evolution" | "cloud_api";
+type WhatsAppProvider = "evolution" | "cloud_api" | "ycloud";
 
 function getProvider(): WhatsAppProvider {
   const provider = (process.env.WHATSAPP_PROVIDER || "evolution").toLowerCase();
+
+  if (provider === "ycloud" && isYCloudConfigured()) {
+    return "ycloud";
+  }
+  if (provider === "ycloud" && !isYCloudConfigured()) {
+    logger.warn("WhatsAppService", "WHATSAPP_PROVIDER=ycloud mas credenciais não configuradas, tentando cloud_api como fallback");
+    // Tentar fallback para cloud_api
+    if (isCloudApiConfigured()) return "cloud_api";
+    return "evolution";
+  }
+
   if (provider === "cloud_api" && isCloudApiConfigured()) {
     return "cloud_api";
   }
@@ -41,11 +58,15 @@ export const whatsappService = {
   /**
    * Envia mensagem de texto simples.
    * @param to - JID do destinatário (ex: 5517988112791@s.whatsapp.net ou 212454869074102@lid)
-   *             Para Cloud API, normaliza para apenas dígitos.
+   *             Para Cloud API/YCloud, normaliza para apenas dígitos.
    * @param text - Texto a ser enviado
    */
   async sendText(to: string, text: string): Promise<boolean> {
     const provider = getProvider();
+
+    if (provider === "ycloud") {
+      return sendTextMessageYCloud(to, text);
+    }
 
     if (provider === "cloud_api") {
       return sendTextMessageCloudApi(to, text);
@@ -63,6 +84,10 @@ export const whatsappService = {
    */
   async sendMedia(to: string, url: string, caption: string): Promise<boolean> {
     const provider = getProvider();
+
+    if (provider === "ycloud") {
+      return sendMediaMessageYCloud(to, url, caption);
+    }
 
     if (provider === "cloud_api") {
       return sendMediaMessageCloudApi(to, url, caption);

@@ -1392,7 +1392,16 @@
 - [ ] Gerar token de longa duração para o novo WABA (se necessário)
 
 ## BUG - Bot responde pelo número antigo em vez do novo (17/03/2026)
-- [ ] Webhook recebe mensagens do +55 17 99225 3886 mas bot responde pelo +1 555 173-3212
+- [x] Webhook recebe mensagens do +55 17 99225 3886 mas bot responde pelo +1 555 173-3212 - deploy precisava republicar
 - [x] Investigar: cloudApi.ts usa process.env.META_PHONE_NUMBER_ID - variáveis atualizadas no dev mas deploy precisa republicar
-- [ ] Salvar checkpoint e republicar para que o deploy use o novo Phone Number ID
-- [ ] Testar e confirmar
+- [x] Checkpoint 4e702c9d salvo - deploy vai receber novas variáveis após republicar
+- [ ] Aguardando Clóvis republicar e testar
+
+
+## Integração YCloud (Coexistência WhatsApp)
+- [x] Criar handler de webhook para formato YCloud (whatsapp.inbound_message.received)
+- [x] Registrar rota no servidor (detecção automática no /api/webhook/cloud)
+- [x] Salvar credenciais YCloud como secrets (webhook ID, secret, API key)
+- [x] Manter compatibilidade com webhook Cloud API existente
+- [x] Adaptar envio de mensagens para funcionar via YCloud API
+- [x] Testar recebimento de mensagens via YCloud webhook
