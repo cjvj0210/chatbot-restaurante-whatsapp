@@ -710,24 +710,41 @@ async function generateResponse(
   // Buscar e construir bloco de contexto do cliente (pedidos recentes + reservas ativas)
   const customerContextBlock = await buildCustomerContextBlock(customerId);
 
-  // Obter hist\u00f3rico de mensagens (30 mensagens para contexto mais amplo)
+  // Obter histórico de mensagens (30 mensagens para contexto mais amplo)
   const history = await getConversationMessages(conversationId, 30);
-  // getConversationMessages retorna DESC, precisamos reverter para ordem cronol\u00f3gica
+  // getConversationMessages retorna DESC, precisamos reverter para ordem cronológica
   history.reverse();
 
+  // ===== DETECTAR MENSAGENS DO OPERADOR HUMANO NO HISTÓRICO =====
+  // Quando o atendente humano respondeu durante o modo humano, essas mensagens
+  // ficam salvas com metadata { humanOperator: true }. Precisamos identificar
+  // o que o humano combinou com o cliente para que a LLM respeite esses acordos.
+  const humanOperatorContext = buildHumanOperatorContext(history);
+
   const messages: LLMMessage[] = [
-    { role: "system", content: systemPrompt + customerContextBlock },
+    { role: "system", content: systemPrompt + customerContextBlock + humanOperatorContext },
   ];
 
-  // Adicionar hist\u00f3rico (\u00faltimas 30 mensagens para mais contexto e reten\u00e7\u00e3o de mem\u00f3ria)
-  // IMPORTANTE: remover links de pedido do hist\u00f3rico para for\u00e7ar a IA a sempre usar [GERAR_LINK_PEDIDO]
-  // Isso garante que cada pedido gere um link novo, mesmo que o cliente pe\u00e7a v\u00e1rias vezes
+  // Adicionar histórico (últimas 30 mensagens para mais contexto e retenção de memória)
+  // IMPORTANTE: remover links de pedido do histórico para forçar a IA a sempre usar [GERAR_LINK_PEDIDO]
+  // Isso garante que cada pedido gere um link novo, mesmo que o cliente peça várias vezes
   const recentHistory = history.slice(-30);
   for (const msg of recentHistory) {
     let content = msg.content;
     // Substituir links de pedido por [GERAR_LINK_PEDIDO] no histórico do assistente
     if (msg.role === "assistant") {
       content = content.replace(/https?:\/\/[^\s]+\/pedido\/[a-f0-9]+/g, "[GERAR_LINK_PEDIDO]");
+    }
+    // Marcar mensagens do operador humano para que a LLM saiba quem falou
+    let isHumanOperator = false;
+    try {
+      const meta = msg.metadata ? JSON.parse(msg.metadata as string) : null;
+      isHumanOperator = meta?.humanOperator === true;
+    } catch {}
+
+    if (isHumanOperator) {
+      // Prefixar mensagens do operador para que a LLM saiba que foi o atendente humano
+      content = `[ATENDENTE HUMANO respondeu]: ${content}`;
     }
     messages.push({
       role: msg.role === "user" ? "user" : "assistant",
@@ -997,4 +1014,78 @@ export async function resumeConversationAfterBot(
   } catch (err) {
     logger.error("Chatbot", `Erro ao retomar conversa após #bot para ${remoteJid}`, err);
   }
+}
+
+
+/**
+ * Constrói um bloco de contexto especial para a LLM quando há mensagens
+ * do operador humano no histórico da conversa.
+ *
+ * Isso garante que o bot:
+ * 1. Saiba que houve atendimento humano
+ * 2. Respeite TODOS os acordos feitos pelo atendente (descontos, condições, promessas)
+ * 3. Nunca contradiga o que o humano combinou com o cliente
+ * 4. Incorpore informações especiais (como preços negociados) em reservas/pedidos
+ */
+function buildHumanOperatorContext(history: Array<{ role: string; content: string; metadata: string | null }>): string {
+  // Identificar mensagens do operador humano
+  const humanMessages: Array<{ content: string; index: number }> = [];
+  const clientDuringHuman: Array<{ content: string; index: number }> = [];
+
+  for (let i = 0; i < history.length; i++) {
+    const msg = history[i]!;
+    try {
+      const meta = msg.metadata ? JSON.parse(msg.metadata as string) : null;
+      if (meta?.humanOperator === true && msg.role === "assistant") {
+        humanMessages.push({ content: msg.content, index: i });
+      }
+      if (meta?.humanMode === true && msg.role === "user") {
+        clientDuringHuman.push({ content: msg.content, index: i });
+      }
+    } catch {}
+  }
+
+  // Se não houve atendimento humano, retornar vazio
+  if (humanMessages.length === 0) return "";
+
+  // Construir resumo da conversa humana
+  let block = "\n\n⚠️⚠️⚠️ CONTEXTO CRÍTICO — ATENDIMENTO HUMANO ANTERIOR ⚠️⚠️⚠️\n\n";
+  block += "Um ATENDENTE HUMANO do restaurante conversou com este cliente ANTES de você retomar.\n";
+  block += "As mensagens marcadas com [ATENDENTE HUMANO respondeu] no histórico são do atendente real.\n\n";
+
+  block += "REGRAS ABSOLUTAS SOBRE O ATENDIMENTO HUMANO:\n";
+  block += "1. RESPEITE TUDO que o atendente humano combinou — descontos, preços especiais, condições, promessas.\n";
+  block += "2. NUNCA contradiga o que o atendente disse, mesmo que fuja das regras padrão do restaurante.\n";
+  block += "3. Se o atendente deu um desconto (ex: R$ 119,90 em vez de R$ 129,90), USE esse valor em toda a conversa.\n";
+  block += "4. Se o atendente fez uma promessa, HONRE essa promessa.\n";
+  block += "5. Ao fazer reservas ou pedidos, INCLUA nas observações qualquer condição especial combinada pelo atendente.\n";
+  block += "6. Trate as informações do atendente como VERDADE ABSOLUTA para esta conversa.\n";
+  block += "7. Se o cliente perguntar sobre algo que o atendente já respondeu, use a resposta do atendente como base.\n\n";
+
+  // Listar o que o atendente conversou (resumo)
+  block += "RESUMO DO QUE O ATENDENTE HUMANO CONVERSOU:\n";
+  for (const hm of humanMessages) {
+    block += `→ Atendente disse: "${hm.content}"\n`;
+  }
+  for (const cm of clientDuringHuman) {
+    block += `→ Cliente perguntou: "${cm.content}"\n`;
+  }
+  block += "\n";
+
+  // Detectar acordos específicos (descontos, preços)
+  const priceRegex = /R\$\s*(\d+[.,]\d{2})/g;
+  const humanPrices: string[] = [];
+  for (const hm of humanMessages) {
+    let match;
+    while ((match = priceRegex.exec(hm.content)) !== null) {
+      humanPrices.push(match[0]);
+    }
+  }
+  if (humanPrices.length > 0) {
+    block += `💰 PREÇOS/VALORES MENCIONADOS PELO ATENDENTE: ${humanPrices.join(", ")}\n`;
+    block += "→ USE esses valores (não os valores padrão) ao fazer reservas, cálculos ou informar preços ao cliente.\n";
+    block += "→ Se fizer reserva, coloque nas OBSERVAÇÕES: \"Preço especial combinado pelo atendente: " + humanPrices.join(", ") + "\"\n\n";
+  }
+
+  return block;
 }

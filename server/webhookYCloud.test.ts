@@ -38,6 +38,13 @@ vi.mock("./services/humanModeService", () => ({
   isHumanModeActiveForJid: vi.fn().mockResolvedValue(false),
 }));
 
+// Mock db (para saveOperatorMessageToHistory)
+vi.mock("./db", () => ({
+  getCustomerByWhatsappId: vi.fn().mockResolvedValue({ id: 1, whatsappId: "5517988112791" }),
+  getActiveConversationByWhatsappId: vi.fn().mockResolvedValue({ id: 240001 }),
+  createMessage: vi.fn().mockResolvedValue({ id: 1 }),
+}));
+
 describe("YCloud Integration", () => {
   describe("isYCloudPayload", () => {
     it("detecta payload YCloud corretamente", () => {

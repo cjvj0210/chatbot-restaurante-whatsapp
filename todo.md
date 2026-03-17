@@ -1435,3 +1435,14 @@
 - [x] Quando bot retoma após #bot, responder à ÚLTIMA mensagem do cliente (prioridade: msgs do modo humano > msgs sem resposta)
 - [x] Enviar notificação ao operador quando modo humano é ativado pela primeira vez
 - [x] 223 testes passando
+
+## Bot deve respeitar conversa do atendente humano ao retomar (17/03/2026)
+- [x] Ao retomar após #bot, bot deve ler TODA a conversa do atendente humano
+- [x] Bot deve respeitar acordos feitos pelo humano (descontos, condições especiais)
+- [x] Bot NUNCA deve contradizer o que o atendente prometeu ao cliente
+- [x] Incluir mensagens do operador (echoes) no histórico da conversa para contexto
+- [x] Instrução especial no prompt de retomada para priorizar o que foi acordado pelo humano
+- [x] Função buildHumanOperatorContext injeta contexto crítico no system prompt
+- [x] Mensagens do operador marcadas com [ATENDENTE HUMANO respondeu] no histórico da LLM
+- [x] Detecção automática de preços/valores mencionados pelo atendente
+- [x] 228 testes passando

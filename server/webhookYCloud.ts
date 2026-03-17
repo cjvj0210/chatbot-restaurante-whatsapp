@@ -8,6 +8,7 @@ import {
   deactivateHumanModeForJid,
   isHumanModeActiveForJid,
 } from "./services/humanModeService";
+import { createMessage, getActiveConversationByWhatsappId, getCustomerByWhatsappId } from "./db";
 import { phoneNormalizer } from "./utils/phoneNormalizer";
 import { CHATBOT } from "../shared/constants";
 import { logger } from "./utils/logger";
@@ -126,11 +127,28 @@ async function handleSmbMessageEcho(body: any): Promise<void> {
   let messageText = "";
   if (messageType === "text" && msg.text?.body) {
     messageText = msg.text.body.trim();
+  } else if (messageType === "image" && msg.image?.caption) {
+    messageText = `[Imagem enviada pelo atendente: ${msg.image.caption}]`;
+  } else if (messageType === "image") {
+    messageText = "[Imagem enviada pelo atendente]";
+  } else if (messageType === "audio" || messageType === "voice") {
+    messageText = "[Áudio enviado pelo atendente]";
+  } else if (messageType === "document") {
+    messageText = `[Documento enviado pelo atendente: ${msg.document?.filename || "arquivo"}]`;
   }
 
   // Normalizar o número do cliente para uso como JID
   const customerPhone = phoneNormalizer.normalize(toCustomer);
   const customerJid = customerPhone; // Para YCloud, usamos apenas o número normalizado
+
+  // ===== SALVAR MENSAGEM DO OPERADOR NO HISTÓRICO =====
+  // Isso permite que o bot tenha contexto do que o atendente humano conversou
+  // quando retomar a conversa após #bot.
+  // Salvamos como role "assistant" com metadata { humanOperator: true } para diferenciar.
+  if (messageText && !BOT_COMMANDS.has(messageText.toLowerCase())) {
+    await saveOperatorMessageToHistory(customerJid, customerPhone, messageText)
+      .catch((err) => logger.warn("YCloudWebhook", "Falha ao salvar mensagem do operador no histórico", err));
+  }
 
   // Verificar se é um comando para reativar o bot
   if (messageText && BOT_COMMANDS.has(messageText.toLowerCase())) {
@@ -139,10 +157,9 @@ async function handleSmbMessageEcho(body: any): Promise<void> {
     // 1. Desativar modo humano
     await deactivateHumanModeForJid(customerJid, customerPhone);
 
-    // 2. Enviar confirmação ao operador (via mensagem para o próprio número do restaurante)
+    // 2. Enviar confirmação ao cliente
     //    NOTA: Não é possível deletar mensagens via YCloud API, então enviamos uma
     //    confirmação visual para que o cliente entenda que o bot retomou.
-    //    A confirmação vai para o CLIENTE, não para o operador.
     sendTextMessageYCloud(
       customerPhone,
       "✅ *Gauchinho reativado!* 🤠\n\nO atendimento automático foi retomado. Como posso te ajudar?"
@@ -166,7 +183,6 @@ async function handleSmbMessageEcho(body: any): Promise<void> {
 
   if (!isAlreadyHuman) {
     // Primeira mensagem do operador: enviar notificação ao operador
-    // (via mensagem para o número do restaurante)
     const restaurantPhone = process.env.RESTAURANT_PHONE?.replace(/\D/g, "") || "";
     if (restaurantPhone) {
       const restaurantPhoneNorm = restaurantPhone.startsWith("55") ? restaurantPhone : `55${restaurantPhone}`;
@@ -178,6 +194,50 @@ async function handleSmbMessageEcho(body: any): Promise<void> {
     logger.info("YCloudWebhook", `👤 Operador respondeu manualmente para ${customerPhone} — modo humano ATIVADO (primeira msg)`);
   } else {
     logger.info("YCloudWebhook", `👤 Operador respondeu manualmente para ${customerPhone} — modo humano já ativo`);
+  }
+}
+
+/**
+ * Salva a mensagem do operador humano no histórico da conversa.
+ * Isso permite que o bot tenha contexto completo do que foi conversado
+ * durante o modo humano quando retomar após #bot.
+ *
+ * As mensagens são salvas como role "assistant" com metadata { humanOperator: true }
+ * para que apareçam no histórico da LLM como respostas do "assistente",
+ * mas sejam identificáveis como vindas do operador humano.
+ */
+async function saveOperatorMessageToHistory(
+  customerJid: string,
+  customerPhone: string,
+  messageText: string
+): Promise<void> {
+  try {
+    // Buscar customer pelo número do cliente
+    const customer = await getCustomerByWhatsappId(customerJid, customerPhone);
+    if (!customer) {
+      logger.debug("YCloudWebhook", `Customer não encontrado para salvar echo: ${customerPhone}`);
+      return;
+    }
+
+    // Buscar conversa ativa
+    const conversation = await getActiveConversationByWhatsappId(customerJid, customerPhone);
+    if (!conversation) {
+      logger.debug("YCloudWebhook", `Conversa ativa não encontrada para salvar echo: ${customerPhone}`);
+      return;
+    }
+
+    // Salvar como role "assistant" com metadata indicando que é do operador humano
+    await createMessage({
+      conversationId: conversation.id,
+      role: "assistant",
+      content: messageText,
+      messageType: "text",
+      metadata: JSON.stringify({ humanOperator: true, humanMode: true }),
+    });
+
+    logger.info("YCloudWebhook", `💾 Mensagem do operador salva no histórico: "${messageText.substring(0, 80)}" (conv ${conversation.id})`);
+  } catch (err) {
+    logger.warn("YCloudWebhook", `Falha ao salvar mensagem do operador no histórico para ${customerPhone}`, err);
   }
 }
 
@@ -202,7 +262,7 @@ export async function handleYCloudWebhookMessage(req: Request, res: Response): P
 
     // ===== PROCESSAR ECHOES DO OPERADOR (WhatsApp Business App) =====
     if (body.type === "whatsapp.smb.message.echoes") {
-      handleSmbMessageEcho(body)
+      await handleSmbMessageEcho(body)
         .catch((err) => logger.error("YCloudWebhook", "Erro ao processar echo do operador", err));
       return;
     }
