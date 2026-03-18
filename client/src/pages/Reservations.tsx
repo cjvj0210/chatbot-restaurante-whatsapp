@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,6 +16,8 @@ import {
   Filter,
   Eye,
   EyeOff,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, subDays, isToday, isTomorrow, isYesterday, startOfDay } from "date-fns";
@@ -39,9 +41,10 @@ function playAlertBeep() {
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.type = "square";
-    osc.frequency.setValueAtTime(660, ctx.currentTime);
-    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.5);
@@ -85,8 +88,36 @@ export default function Reservations() {
   });
 
   const pendingCount = reservations?.filter((r: any) => r.status === "pending").length ?? 0;
+  const [soundMuted, setSoundMuted] = useState(false);
+  const alertIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Detectar novas reservas pendentes e emitir alerta sonoro
+  // Som contínuo enquanto houver reservas pendentes
+  const stopAlertSound = useCallback(() => {
+    if (alertIntervalRef.current) {
+      clearInterval(alertIntervalRef.current);
+      alertIntervalRef.current = null;
+    }
+  }, []);
+
+  const startAlertSound = useCallback(() => {
+    if (alertIntervalRef.current) return; // já tocando
+    playAlertBeep();
+    alertIntervalRef.current = setInterval(() => {
+      playAlertBeep();
+    }, 4000); // toca a cada 4 segundos
+  }, []);
+
+  // Controlar som baseado em pendentes e mute
+  useEffect(() => {
+    if (pendingCount > 0 && !soundMuted) {
+      startAlertSound();
+    } else {
+      stopAlertSound();
+    }
+    return () => stopAlertSound();
+  }, [pendingCount, soundMuted, startAlertSound, stopAlertSound]);
+
+  // Detectar novas reservas pendentes e emitir toast
   useEffect(() => {
     if (!reservations) return;
     const pending = reservations.filter((r: any) => r.status === "pending");
@@ -97,8 +128,6 @@ export default function Reservations() {
     }
     const newOnes = pending.filter((r: any) => !knownIds.current.has(r.id));
     if (newOnes.length > 0) {
-      playAlertBeep();
-      setTimeout(playAlertBeep, 600);
       newOnes.forEach((r: any) => knownIds.current.add(r.id));
       toast.warning(`📅 ${newOnes.length} nova(s) reserva(s) chegaram!`, { duration: 8000 });
     }
@@ -148,6 +177,23 @@ export default function Reservations() {
           </p>
         </div>
 
+        <div className="flex items-center gap-2">
+          {/* Botão Silenciar/Ativar som */}
+          {pendingCount > 0 && (
+            <button
+              onClick={() => setSoundMuted(!soundMuted)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all border-2 ${
+                soundMuted
+                  ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                  : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+              }`}
+              title={soundMuted ? "Ativar som" : "Silenciar som"}
+            >
+              {soundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {soundMuted ? "Mudo" : "Som"}
+            </button>
+          )}
+
         {/* Botão Histórico */}
         <button
           onClick={() => setShowHistory(!showHistory)}
@@ -160,6 +206,7 @@ export default function Reservations() {
           {showHistory ? <EyeOff className="w-4 h-4" /> : <History className="w-4 h-4" />}
           {showHistory ? "Voltar às Ativas" : "Ver Histórico"}
         </button>
+        </div>
       </div>
 
       {/* Seletor de Data (só quando não está em modo histórico) */}

@@ -321,22 +321,33 @@ Quando o cliente manifestar interesse em fazer um pedido de delivery ou retirada
    Quando o cliente JÁ FEZ um pedido e quer saber o tempo, use o marcador [VERIFICAR_STATUS_PEDIDO] para buscar o pedido e informe o horário estimado de chegada (não o intervalo, mas o horário calculado).
    NUNCA diga "40-50 minutos" — esse valor está desatualizado.
 
-MARMITEX TRADICIONAL:
-- Contém: Arroz, feijão, farofa, vinagrete, batata frita, 1 frango + 1 linguiça + mix churrasco
+MARMITEX TRADICIONAL (com churrasco):
+- Contém: Arroz, feijão, farofa, vinagrete, batata frita, 1 frango + 1 linguíça + mix churrasco
 - Pequena: R$ 26,00
 - Média: R$ 30,00
 - Grande: R$ 34,00
 
+ALTERAÇÕES NA MARMITEX TRADICIONAL (P, M e G):
+- Retirar frango e linguíça (ficar só com mix churrasco): DESCONTO de R$ 3,00 no preço
+  → Pequena sem frango/linguíça: R$ 23,00
+  → Média sem frango/linguíça: R$ 27,00
+  → Grande sem frango/linguíça: R$ 31,00
+- Só carnes bovinas (sem frango, sem linguíça, mix churrasco só com carnes bovinas): ACRÉSCIMO de R$ 4,00
+  → Pequena só bovina: R$ 30,00
+  → Média só bovina: R$ 34,00
+  → Grande só bovina: R$ 38,00
+IMPORTANTE: Essas alterações se aplicam SOMENTE à marmitex tradicional (com churrasco), NÃO à econômica.
+
 MARMITEX ECONÔMICA:
-- Contém: Arroz, feijão, farofa, maionese, 2 frango + 1 linguiça (SEM mix churrasco)
+- Contém: Arroz, feijão, farofa, maionese, 2 frango + 1 linguíça (SEM mix churrasco)
 - Preço: R$ 18,90
 
 ADICIONAIS MARMITEX:
 - Queijinho bola unidade: R$ 4,00
-- Só carne bovina: R$ 4,00 (acrescenta na marmitex escolhida)
+- Só carne bovina: R$ 4,00 (acrescenta na marmitex tradicional - já incluído nos preços acima)
 - Maionese individual: R$ 3,50
 - Ovo frito unidade: R$ 2,50
-- Linguiça extra unidade: R$ 2,50
+- Linguíça extra unidade: R$ 2,50
 
 OPCIONAIS (sem custo):
 - Trocar arroz e feijão por mandioca cozida

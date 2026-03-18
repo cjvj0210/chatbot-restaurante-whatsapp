@@ -1487,3 +1487,22 @@
 - [x] Filtro por status no modo histórico
 - [x] Endpoint getReservationsFiltered no backend
 - [x] 233 testes passando
+
+## Ajuste preços marmitex tradicionais c/ churrasco (18/03/2026)
+- [x] Retirar frango/linguíça: -R$3,00 (P: R$23, M: R$27, G: R$31)
+- [x] Só carnes bovinas: +R$4,00 (P: R$30, M: R$34, G: R$38)
+- [x] Atualizado no prompt do chatbot com preços explícitos por tamanho
+
+## Som contínuo para reservas pendentes (18/03/2026)
+- [x] Implementar som contínuo tocando quando há reservas pendentes (a cada 4s)
+- [x] Som para até aceitar/confirmar a reserva
+- [x] Botão Silenciar/Ativar som no header
+- [x] Similar ao painel de pedidos
+
+## Drag & Drop no Kanban de pedidos (18/03/2026)
+- [x] Permitir arrastar pedidos entre colunas do Kanban (HTML5 Drag & Drop nativo)
+- [x] Atualizar status automaticamente ao soltar na coluna destino
+- [x] Feedback visual durante o arrasto (opacidade + ring highlight na coluna)
+- [x] Colunas com background colorido sutil (azul, indigo, verde)
+- [x] Mensagem "Solte aqui para mover" ao arrastar sobre coluna vazia
+- [x] 233 testes passando

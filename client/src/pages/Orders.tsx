@@ -416,7 +416,7 @@ function OrderCard({
   );
 }
 
-// ===== COLUNA KANBAN =====
+// ===== COLUNA KANBAN COM DRAG & DROP =====
 function KanbanColumn({
   title,
   icon: Icon,
@@ -429,6 +429,8 @@ function KanbanColumn({
   historyPhone,
   onToggleHistory,
   nextAction,
+  dropTargetStatus,
+  columnBg,
 }: {
   title: string;
   icon: React.ElementType;
@@ -441,9 +443,47 @@ function KanbanColumn({
   historyPhone: string | null;
   onToggleHistory: (phone: string) => void;
   nextAction?: { label: string; status: string; color: string };
+  dropTargetStatus?: string;
+  columnBg?: string;
 }) {
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    // Só sai se realmente saiu da coluna (não de um filho)
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (!dropTargetStatus) return;
+    try {
+      const data = JSON.parse(e.dataTransfer.getData("application/json"));
+      if (data.orderId && data.currentStatus !== dropTargetStatus) {
+        onStatusChange(data.orderId, dropTargetStatus);
+        toast.success(`Pedido #${data.orderNumber} movido para ${title}!`);
+      }
+    } catch (_) { /* ignore */ }
+  }, [dropTargetStatus, onStatusChange, title]);
+
   return (
-    <div className="flex-1 min-w-[300px]">
+    <div
+      className={`flex-1 min-w-[300px] rounded-2xl p-3 transition-all ${
+        isDragOver
+          ? "bg-primary/10 ring-2 ring-primary/40 ring-dashed"
+          : columnBg || "bg-muted/10"
+      }`}
+      onDragOver={dropTargetStatus ? handleDragOver : undefined}
+      onDragLeave={dropTargetStatus ? handleDragLeave : undefined}
+      onDrop={dropTargetStatus ? handleDrop : undefined}
+    >
       <div className={`flex items-center gap-2 mb-3 px-1`}>
         <Icon className={`w-5 h-5 ${color}`} />
         <h3 className="font-bold text-sm text-foreground">{title}</h3>
@@ -455,12 +495,33 @@ function KanbanColumn({
       </div>
       <div className="space-y-3 min-h-[200px]">
         {orders.length === 0 ? (
-          <div className="bg-muted/20 rounded-2xl border border-dashed border-border/50 py-8 text-center">
-            <p className="text-xs text-muted-foreground/60">Nenhum pedido</p>
+          <div className={`rounded-2xl border border-dashed py-8 text-center transition-colors ${
+            isDragOver ? "border-primary/50 bg-primary/5" : "border-border/50 bg-muted/20"
+          }`}>
+            <p className="text-xs text-muted-foreground/60">
+              {isDragOver ? "Solte aqui para mover" : "Nenhum pedido"}
+            </p>
           </div>
         ) : (
           orders.map((order) => (
-            <div key={order.id}>
+            <div
+              key={order.id}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData("application/json", JSON.stringify({
+                  orderId: order.id,
+                  orderNumber: order.orderNumber,
+                  currentStatus: order.status,
+                }));
+                e.dataTransfer.effectAllowed = "move";
+                // Adiciona classe visual ao arrastar
+                (e.currentTarget as HTMLElement).style.opacity = "0.5";
+              }}
+              onDragEnd={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = "1";
+              }}
+              className="cursor-grab active:cursor-grabbing"
+            >
               <OrderCard
                 order={order}
                 isExpanded={expandedId === order.id}
@@ -808,6 +869,8 @@ export default function Orders() {
                 status: "delivering",
                 color: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
               }}
+              dropTargetStatus="confirmed"
+              columnBg="bg-blue-50/30"
             />
 
             <KanbanColumn
@@ -826,6 +889,8 @@ export default function Orders() {
                 status: "delivered",
                 color: "bg-green-100 text-green-700 hover:bg-green-200",
               }}
+              dropTargetStatus="delivering"
+              columnBg="bg-indigo-50/30"
             />
 
             <KanbanColumn
@@ -839,6 +904,8 @@ export default function Orders() {
               isUpdating={updateStatus.isPending}
               historyPhone={historyPhone}
               onToggleHistory={(phone) => setHistoryPhone(historyPhone === phone ? null : phone)}
+              dropTargetStatus="delivered"
+              columnBg="bg-green-50/30"
             />
           </div>
 
