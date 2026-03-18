@@ -1509,3 +1509,19 @@
 
 ## Correção preço marmitex - retirar frango/linguíça (18/03/2026)
 - [x] Retirar frango/linguíça é ACRÉSCIMO de R$3 (não desconto) — P: R$29, M: R$33, G: R$37
+
+## Atualizar preços marmitex no cardápio digital (18/03/2026)
+- [x] Identificar opções de "retirar frango/linguíça" e "só carnes bovinas" no banco
+- [x] Preços já estão corretos: Retirar Frango/Linguíça +R$3 (300) e Só Bovinas +R$4 (400) nos 3 tamanhos
+- [x] Nenhuma alteração necessária no banco de dados
+
+## Notificações Push no navegador (18/03/2026)
+- [x] Implementar hook useNotifications com API de Notifications do browser
+- [x] Solicitar permissão de notificação automaticamente ao admin
+- [x] Notificar sobre novos pedidos pendentes (detecta aumento na contagem)
+- [x] Notificar sobre novas reservas pendentes
+- [x] Notificar sobre novas conversas em modo humano
+- [x] Funcionar mesmo quando a aba não está em foco (requireInteraction: true)
+- [x] Clicar na notificação navega para a página correspondente
+- [x] Integrado no DashboardLayout para funcionar em todas as páginas
+- [x] 233 testes passando

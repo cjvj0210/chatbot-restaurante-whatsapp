@@ -37,6 +37,7 @@ import {
   Headset,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
+import { useAdminNotifications } from "@/hooks/useNotifications";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
@@ -175,6 +176,7 @@ function DashboardLayoutContent({
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { pendingOrders, pendingReservations, humanModeActive } = useAlertCounts();
+  useAdminNotifications(pendingOrders, pendingReservations, humanModeActive);
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);

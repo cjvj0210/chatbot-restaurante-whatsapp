@@ -1,0 +1,8 @@
+{
+  "query": "SELECT mo.id, mo.name, mo.price, mo.menuItemId, mi.name as itemName, mi.categoryId, c.name as categoryName\nFROM menu_options mo\nJOIN menu_items mi ON mo.menuItemId = mi.id\nJOIN categories c ON mi.categoryId = c.id\nWHERE mi.name LIKE '%Tradicional%' OR mi.name LIKE '%Marmitex%' OR c.name LIKE '%Marmitex%'\nORDER BY mi.name, mo.name\nLIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT mo.id, mo.name, mo.price, mo.menuItemId, mi.name as itemName, mi.categoryId, c.name as categoryName\nFROM menu_options mo\nJOIN menu_items mi ON mo.menuItemId = mi.id\nJOIN categories c ON mi.categoryId = c.id\nWHERE mi.name LIKE '%Tradicional%' OR mi.name LIKE '%Marmitex%' OR c.name LIKE '%Marmitex%'\nORDER BY mi.name, mo.name\nLIMIT 50;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'hesngyeonud5ngjee9cdhq.menu_options' doesn't exist"
+  ]
+}

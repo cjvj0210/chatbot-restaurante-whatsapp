@@ -1,0 +1,250 @@
+{
+  "query": "SELECT ao.id, ao.name, ao.priceExtra, ag.name as groupName, mi.name as itemName, mi.id as itemId\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE (ao.name LIKE '%frango%' OR ao.name LIKE '%lingu%' OR ao.name LIKE '%bovina%' OR ao.name LIKE '%retirar%' OR ag.name LIKE '%churrasco%' OR ag.name LIKE '%carne%')\nAND (mi.name LIKE '%armitex%' OR mi.name LIKE '%radicional%')\nORDER BY mi.name, ao.name\nLIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT ao.id, ao.name, ao.priceExtra, ag.name as groupName, mi.name as itemName, mi.id as itemId\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE (ao.name LIKE '%frango%' OR ao.name LIKE '%lingu%' OR ao.name LIKE '%bovina%' OR ao.name LIKE '%retirar%' OR ag.name LIKE '%churrasco%' OR ag.name LIKE '%carne%')\nAND (mi.name LIKE '%armitex%' OR mi.name LIKE '%radicional%')\nORDER BY mi.name, ao.name\nLIMIT 30;",
+  "rows": [
+    {
+      "id": "198",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "60009",
+      "name": "Ao ponto da casa",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "193",
+      "name": "Bem passado",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "197",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "194",
+      "name": "Mal passado",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "196",
+      "name": "Molho barbecue",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "195",
+      "name": "Molho chimichurri",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "30138",
+      "name": "Sem frango",
+      "priceExtra": "0",
+      "groupName": "Preferências",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "30141",
+      "name": "Sem linguiça cuiabana",
+      "priceExtra": "0",
+      "groupName": "Preferências",
+      "itemName": "Kit de churrasco tradicional",
+      "itemId": "150021"
+    },
+    {
+      "id": "126",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "60005",
+      "name": "Ao ponto da casa",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "121",
+      "name": "Bem passado",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "30038",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "400",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "125",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "122",
+      "name": "Mal passado",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "124",
+      "name": "Molho barbecue",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "123",
+      "name": "Molho chimichurri",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "30036",
+      "name": "Não desejo alterar o mix de carnes",
+      "priceExtra": "0",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "135",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupName": "\"Turbine\" seu pedido!",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "30037",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "300",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "108",
+      "name": "Alho frito",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "60004",
+      "name": "Ao ponto da casa",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "103",
+      "name": "Bem passado",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "30017",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "400",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "107",
+      "name": "Limão para espremer",
+      "priceExtra": "299",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "104",
+      "name": "Mal passado",
+      "priceExtra": "0",
+      "groupName": "Escolha o ponto da carne",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "106",
+      "name": "Molho barbecue",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "105",
+      "name": "Molho chimichurri",
+      "priceExtra": "449",
+      "groupName": "Molho para o churrasco?",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "30015",
+      "name": "Não desejo alterar o mix de carnes",
+      "priceExtra": "0",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "117",
+      "name": "Nuggets de frango",
+      "priceExtra": "1690",
+      "groupName": "\"Turbine\" seu pedido!",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgroupName\titemName\titemId\n198\tAlho frito\t449\tMolho para o churrasco?\tKit de churrasco tradicional\t150021\n60009\tAo ponto da casa\t0\tEscolha o ponto da carne\tKit de churrasco tradicional\t150021\n193\tBem passado\t0\tEscolha o ponto da carne\tKit de churrasco tradicional\t150021\n197\tLimão para espremer\t299\tMolho para o churrasco?\tKit de churrasco tradicional\t150021\n194\tMal passado\t0\tEscolha o ponto da carne\tKit de churrasco tradicional\t150021\n196\tMolho barbecue\t449\tMolho para o churrasco?\tKit de churrasco tradicional\t150021\n195\tMolho chimichurri\t449\tMolho para o churrasco?\tKit de churrasco tradicional\t150021\n30138\tSem frango\t0\tPreferências\tKit de churrasco tradicional\t150021\n30141\tSem linguiça cuiabana\t0\tPreferências\tKit de churrasco tradicional\t150021\n126\tAlho frito\t449\tMolho para o churrasco?\tMarmitex Completa M\t150009\n60005\tAo ponto da casa\t0\tEscolha o ponto da carne\tMarmitex Completa M\t150009\n121\tBem passado\t0\tEscolha o ponto da carne\tMarmitex Completa M\t150009\n30038\tDesejo Apenas Carnes Bovinas\t400\tAlterar Variedade De Carnes\tMarmitex Completa M\t150009\n125\tLimão para espremer\t299\tMolho para o churrasco?\tMarmitex Completa M\t150009\n122\tMal passado\t0\tEscolha o ponto da carne\tMarmitex Completa M\t150009\n124\tMolho barbecue\t449\tMolho para o churrasco?\tMarmitex Completa M\t150009\n123\tMolho chimichurri\t449\tMolho para o churrasco?\tMarmitex Completa M\t150009\n30036\tNão desejo alterar o mix de carnes\t0\tAlterar Variedade De Carnes\tMarmitex Completa M\t150009\n135\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\tMarmitex Completa M\t150009\n30037\tRetirar Frango e Linguiça\t300\tAlterar Variedade De Carnes\tMarmitex Completa M\t150009\n108\tAlho frito\t449\tMolho para o churrasco?\tMarmitex Completa P\t150008\n60004\tAo ponto da casa\t0\tEscolha o ponto da carne\tMarmitex Completa P\t150008\n103\tBem passado\t0\tEscolha o ponto da carne\tMarmitex Completa P\t150008\n30017\tDesejo Apenas Carnes Bovinas\t400\tAlterar Variedade De Carnes\tMarmitex Completa P\t150008\n107\tLimão para espremer\t299\tMolho para o churrasco?\tMarmitex Completa P\t150008\n104\tMal passado\t0\tEscolha o ponto da carne\tMarmitex Completa P\t150008\n106\tMolho barbecue\t449\tMolho para o churrasco?\tMarmitex Completa P\t150008\n105\tMolho chimichurri\t449\tMolho para o churrasco?\tMarmitex Completa P\t150008\n30015\tNão desejo alterar o mix de carnes\t0\tAlterar Variedade De Carnes\tMarmitex Completa P\t150008\n117\tNuggets de frango\t1690\t\"Turbine\" seu pedido!\tMarmitex Completa P\t150008\n",
+  "stderr": "",
+  "execution_time_ms": 68
+}

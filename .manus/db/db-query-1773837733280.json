@@ -1,0 +1,460 @@
+{
+  "query": "SELECT ag.id as groupId, ag.name as groupName, ag.menuItemId, mi.name as itemName, ao.id as optionId, ao.name as optionName, ao.priceExtra\nFROM menu_addon_groups ag\nJOIN menu_items mi ON ag.menuItemId = mi.id\nJOIN menu_addon_options ao ON ao.groupId = ag.id\nWHERE mi.name LIKE '%radicional%'\nORDER BY mi.name, ag.name, ao.name\nLIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT ag.id as groupId, ag.name as groupName, ag.menuItemId, mi.name as itemName, ao.id as optionId, ao.name as optionName, ao.priceExtra\nFROM menu_addon_groups ag\nJOIN menu_items mi ON ag.menuItemId = mi.id\nJOIN menu_addon_options ao ON ao.groupId = ag.id\nWHERE mi.name LIKE '%radicional%'\nORDER BY mi.name, ag.name, ao.name\nLIMIT 50;",
+  "rows": [
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30160",
+      "optionName": "Alho frito extra individual",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30153",
+      "optionName": "Bananas empanadas extra 2 unidades",
+      "priceExtra": "1699"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30163",
+      "optionName": "Farofa extra individual",
+      "priceExtra": "499"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30151",
+      "optionName": "Kit para 5 pessoas",
+      "priceExtra": "7000"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30162",
+      "optionName": "Limão para espremer",
+      "priceExtra": "299"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30158",
+      "optionName": "Maionese de ovos extra individual",
+      "priceExtra": "599"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30156",
+      "optionName": "Mandioca cozida extra individual",
+      "priceExtra": "999"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30157",
+      "optionName": "Mandioca frita extra individual",
+      "priceExtra": "999"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30161",
+      "optionName": "Molho barbecue extra individual",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30159",
+      "optionName": "Molho chimichurri extra individual",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30154",
+      "optionName": "Porção de chips extra individual",
+      "priceExtra": "999"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30155",
+      "optionName": "Porção de fritas extra individual",
+      "priceExtra": "1199"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30152",
+      "optionName": "Queijinho assado extra 1 unidade",
+      "priceExtra": "699"
+    },
+    {
+      "groupId": "53",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30164",
+      "optionName": "Vinagrete extra individual",
+      "priceExtra": "399"
+    },
+    {
+      "groupId": "51",
+      "groupName": "Escolha o ponto da carne",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "60009",
+      "optionName": "Ao ponto da casa",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "51",
+      "groupName": "Escolha o ponto da carne",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "193",
+      "optionName": "Bem passado",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "51",
+      "groupName": "Escolha o ponto da carne",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "194",
+      "optionName": "Mal passado",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "52",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "198",
+      "optionName": "Alho frito",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "52",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "197",
+      "optionName": "Limão para espremer",
+      "priceExtra": "299"
+    },
+    {
+      "groupId": "52",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "196",
+      "optionName": "Molho barbecue",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "52",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "195",
+      "optionName": "Molho chimichurri",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "54",
+      "groupName": "Precisa de talheres?",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "209",
+      "optionName": "Com talher",
+      "priceExtra": "149"
+    },
+    {
+      "groupId": "54",
+      "groupName": "Precisa de talheres?",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "210",
+      "optionName": "Sem talher",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "69",
+      "groupName": "Preferências",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30142",
+      "optionName": "Com carne suína",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "69",
+      "groupName": "Preferências",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30140",
+      "optionName": "Com queijinho bola",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "69",
+      "groupName": "Preferências",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30139",
+      "optionName": "Sem coração",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "69",
+      "groupName": "Preferências",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30138",
+      "optionName": "Sem frango",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "69",
+      "groupName": "Preferências",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30141",
+      "optionName": "Sem linguiça cuiabana",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "30018",
+      "groupName": "Quer adaptar seu kit? :)",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30144",
+      "optionName": "Trocar: mandioca cozida por arroz branco",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "30018",
+      "groupName": "Quer adaptar seu kit? :)",
+      "menuItemId": "150021",
+      "itemName": "Kit de churrasco tradicional",
+      "optionId": "30143",
+      "optionName": "Trocar: vinagrete por maionese de ovos",
+      "priceExtra": "399"
+    },
+    {
+      "groupId": "61",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30188",
+      "optionName": "Bananas empanadas 2 unidades",
+      "priceExtra": "949"
+    },
+    {
+      "groupId": "61",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30190",
+      "optionName": "Farofa extra individual",
+      "priceExtra": "349"
+    },
+    {
+      "groupId": "61",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30189",
+      "optionName": "Maionese de ovos extra individual",
+      "priceExtra": "599"
+    },
+    {
+      "groupId": "61",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30187",
+      "optionName": "Mandioca cozida extra individual",
+      "priceExtra": "549"
+    },
+    {
+      "groupId": "61",
+      "groupName": "\"Turbine\" seu pedido!",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30191",
+      "optionName": "Vinagrete extra individual",
+      "priceExtra": "399"
+    },
+    {
+      "groupId": "59",
+      "groupName": "Escolha o ponto da carne",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "60011",
+      "optionName": "Ao ponto da casa",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "59",
+      "groupName": "Escolha o ponto da carne",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "229",
+      "optionName": "Bem passado",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "59",
+      "groupName": "Escolha o ponto da carne",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "230",
+      "optionName": "Mal passado",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "60",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "234",
+      "optionName": "Alho frito",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "60",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "233",
+      "optionName": "Limão para espremer",
+      "priceExtra": "299"
+    },
+    {
+      "groupId": "60",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "232",
+      "optionName": "Molho barbecue",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "60",
+      "groupName": "Molho para o churrasco?",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "231",
+      "optionName": "Molho chimichurri",
+      "priceExtra": "449"
+    },
+    {
+      "groupId": "62",
+      "groupName": "Precisa de talheres?",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "245",
+      "optionName": "Com talher",
+      "priceExtra": "149"
+    },
+    {
+      "groupId": "62",
+      "groupName": "Precisa de talheres?",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "246",
+      "optionName": "Sem talher",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30119",
+      "optionName": "Com cupim",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30118",
+      "optionName": "Com fraldinha",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30120",
+      "optionName": "Com frango assado",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30124",
+      "optionName": "Com linguiça cuiabana",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30123",
+      "optionName": "Com linguiça toscana",
+      "priceExtra": "0"
+    },
+    {
+      "groupId": "71",
+      "groupName": "Preferências",
+      "menuItemId": "150023",
+      "itemName": "Mix de churrasco tradicional",
+      "optionId": "30121",
+      "optionName": "Com lombo suíno",
+      "priceExtra": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "groupId\tgroupName\tmenuItemId\titemName\toptionId\toptionName\tpriceExtra\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30160\tAlho frito extra individual\t449\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30153\tBananas empanadas extra 2 unidades\t1699\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30163\tFarofa extra individual\t499\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30151\tKit para 5 pessoas\t7000\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30162\tLimão para espremer\t299\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30158\tMaionese de ovos extra individual\t599\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30156\tMandioca cozida extra individual\t999\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30157\tMandioca frita extra individual\t999\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30161\tMolho barbecue extra individual\t449\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30159\tMolho chimichurri extra individual\t449\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30154\tPorção de chips extra individual\t999\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30155\tPorção de fritas extra individual\t1199\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30152\tQueijinho assado extra 1 unidade\t699\n53\t\"Turbine\" seu pedido!\t150021\tKit de churrasco tradicional\t30164\tVinagrete extra individual\t399\n51\tEscolha o ponto da carne\t150021\tKit de churrasco tradicional\t60009\tAo ponto da casa\t0\n51\tEscolha o ponto da carne\t150021\tKit de churrasco tradicional\t193\tBem passado\t0\n51\tEscolha o ponto da carne\t150021\tKit de churrasco tradicional\t194\tMal passado\t0\n52\tMolho para o churrasco?\t150021\tKit de churrasco tradicional\t198\tAlho frito\t449\n52\tMolho para o churrasco?\t150021\tKit de churrasco tradicional\t197\tLimão para espremer\t299\n52\tMolho para o churrasco?\t150021\tKit de churrasco tradicional\t196\tMolho barbecue\t449\n52\tMolho para o churrasco?\t150021\tKit de churrasco tradicional\t195\tMolho chimichurri\t449\n54\tPrecisa de talheres?\t150021\tKit de churrasco tradicional\t209\tCom talher\t149\n54\tPrecisa de talheres?\t150021\tKit de churrasco tradicional\t210\tSem talher\t0\n69\tPreferências\t150021\tKit de churrasco tradicional\t30142\tCom carne suína\t0\n69\tPreferências\t150021\tKit de churrasco tradicional\t30140\tCom queijinho bola\t0\n69\tPreferências\t150021\tKit de churrasco tradicional\t30139\tSem coração\t0\n69\tPreferências\t150021\tKit de churrasco tradicional\t30138\tSem frango\t0\n69\tPreferências\t150021\tKit de churrasco tradicional\t30141\tSem linguiça cuiabana\t0\n30018\tQuer adaptar seu kit? :)\t150021\tKit de churrasco tradicional\t30144\tTrocar: mandioca cozida por arroz branco\t0\n30018\tQuer adaptar seu kit? :)\t150021\tKit de churrasco tradicional\t30143\tTrocar: vinagrete por maionese de ovos\t399\n61\t\"Turbine\" seu pedido!\t150023\tMix de churrasco tradicional\t30188\tBananas empanadas 2 unidades\t949\n61\t\"Turbine\" seu pedido!\t150023\tMix de churrasco tradicional\t30190\tFarofa extra individual\t349\n61\t\"Turbine\" seu pedido!\t150023\tMix de churrasco tradicional\t30189\tMaionese de ovos extra individual\t599\n61\t\"Turbine\" seu pedido!\t150023\tMix de churrasco tradicional\t30187\tMandioca cozida extra individual\t549\n61\t\"Turbine\" seu pedido!\t150023\tMix de churrasco tradicional\t30191\tVinagrete extra individual\t399\n59\tEscolha o ponto da carne\t150023\tMix de churrasco tradicional\t60011\tAo ponto da casa\t0\n59\tEscolha o ponto da carne\t150023\tMix de churrasco tradicional\t229\tBem passado\t0\n59\tEscolha o ponto da carne\t150023\tMix de churrasco tradicional\t230\tMal passado\t0\n60\tMolho para o churrasco?\t150023\tMix de churrasco tradicional\t234\tAlho frito\t449\n60\tMolho para o churrasco?\t150023\tMix de churrasco tradicional\t233\tLimão para espremer\t299\n60\tMolho para o churrasco?\t150023\tMix de churrasco tradicional\t232\tMolho barbecue\t449\n60\tMolho para o churrasco?\t150023\tMix de churrasco tradicional\t231\tMolho chimichurri\t449\n62\tPrecisa de talheres?\t150023\tMix de churrasco tradicional\t245\tCom talher\t149\n62\tPrecisa de talheres?\t150023\tMix de churrasco tradicional\t246\tSem talher\t0\n71\tPreferências\t150023\tMix de churrasco tradicional\t30119\tCom cupim\t0\n71\tPreferências\t150023\tMix de churrasco tradicional\t30118\tCom fraldinha\t0\n71\tPreferências\t150023\tMix de churrasco tradicional\t30120\tCom frango assado\t0\n71\tPreferências\t150023\tMix de churrasco tradicional\t30124\tCom linguiça cuiabana\t0\n71\tPreferências\t150023\tMix de churrasco tradicional\t30123\tCom linguiça toscana\t0\n71\tPreferências\t150023\tMix de churrasco tradicional\t30121\tCom lombo suíno\t0\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

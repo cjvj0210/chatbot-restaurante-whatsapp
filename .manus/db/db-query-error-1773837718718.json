@@ -1,0 +1,8 @@
+{
+  "query": "SELECT ag.id as groupId, ag.name as groupName, ag.menuItemId, mi.name as itemName, ao.id as optionId, ao.name as optionName, ao.price\nFROM menu_addon_groups ag\nJOIN menu_items mi ON ag.menuItemId = mi.id\nJOIN menu_addon_options ao ON ao.addonGroupId = ag.id\nWHERE mi.name LIKE '%Tradicional%' OR mi.name LIKE '%radicional%'\nORDER BY mi.name, ag.name, ao.name\nLIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT ag.id as groupId, ag.name as groupName, ag.menuItemId, mi.name as itemName, ao.id as optionId, ao.name as optionName, ao.price\nFROM menu_addon_groups ag\nJOIN menu_items mi ON ag.menuItemId = mi.id\nJOIN menu_addon_options ao ON ao.addonGroupId = ag.id\nWHERE mi.name LIKE '%Tradicional%' OR mi.name LIKE '%radicional%'\nORDER BY mi.name, ag.name, ao.name\nLIMIT 50;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'ao.addongroupid' in 'on clause'"
+  ]
+}

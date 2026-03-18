@@ -1,0 +1,82 @@
+{
+  "query": "SELECT ao.id, ao.name, ao.priceExtra, ag.name as groupName, mi.name as itemName, mi.id as itemId\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE ag.name LIKE '%Alterar Variedade%' OR ag.name LIKE '%ariedade%'\nORDER BY mi.name, ao.name\nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2DPRZMbFg2pLCxP.d66dc093df58 --database hEsNGYEonud5ngJEe9CdHq --execute SELECT ao.id, ao.name, ao.priceExtra, ag.name as groupName, mi.name as itemName, mi.id as itemId\nFROM menu_addon_options ao\nJOIN menu_addon_groups ag ON ao.groupId = ag.id\nJOIN menu_items mi ON ag.menuItemId = mi.id\nWHERE ag.name LIKE '%Alterar Variedade%' OR ag.name LIKE '%ariedade%'\nORDER BY mi.name, ao.name\nLIMIT 20;",
+  "rows": [
+    {
+      "id": "30038",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "400",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "30036",
+      "name": "Não desejo alterar o mix de carnes",
+      "priceExtra": "0",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "30037",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "300",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa M",
+      "itemId": "150009"
+    },
+    {
+      "id": "30017",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "400",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "30015",
+      "name": "Não desejo alterar o mix de carnes",
+      "priceExtra": "0",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "30016",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "300",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Marmitex Completa P",
+      "itemId": "150008"
+    },
+    {
+      "id": "30059",
+      "name": "Desejo Apenas Carnes Bovinas",
+      "priceExtra": "400",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Tradicional Marmitex G",
+      "itemId": "150010"
+    },
+    {
+      "id": "30057",
+      "name": "Não desejo alterar o mix de carnes",
+      "priceExtra": "0",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Tradicional Marmitex G",
+      "itemId": "150010"
+    },
+    {
+      "id": "30058",
+      "name": "Retirar Frango e Linguiça",
+      "priceExtra": "300",
+      "groupName": "Alterar Variedade De Carnes",
+      "itemName": "Tradicional Marmitex G",
+      "itemId": "150010"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpriceExtra\tgroupName\titemName\titemId\n30038\tDesejo Apenas Carnes Bovinas\t400\tAlterar Variedade De Carnes\tMarmitex Completa M\t150009\n30036\tNão desejo alterar o mix de carnes\t0\tAlterar Variedade De Carnes\tMarmitex Completa M\t150009\n30037\tRetirar Frango e Linguiça\t300\tAlterar Variedade De Carnes\tMarmitex Completa M\t150009\n30017\tDesejo Apenas Carnes Bovinas\t400\tAlterar Variedade De Carnes\tMarmitex Completa P\t150008\n30015\tNão desejo alterar o mix de carnes\t0\tAlterar Variedade De Carnes\tMarmitex Completa P\t150008\n30016\tRetirar Frango e Linguiça\t300\tAlterar Variedade De Carnes\tMarmitex Completa P\t150008\n30059\tDesejo Apenas Carnes Bovinas\t400\tAlterar Variedade De Carnes\tTradicional Marmitex G\t150010\n30057\tNão desejo alterar o mix de carnes\t0\tAlterar Variedade De Carnes\tTradicional Marmitex G\t150010\n30058\tRetirar Frango e Linguiça\t300\tAlterar Variedade De Carnes\tTradicional Marmitex G\t150010\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}
