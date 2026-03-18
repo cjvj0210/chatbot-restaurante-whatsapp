@@ -266,9 +266,21 @@ export const appRouter = router({
 
   // Reservas (apenas admin)
   reservations: router({
-    list: adminProcedure.query(async () => {
-      return await db.getAllReservations();
-    }),
+    list: adminProcedure
+      .input(
+        z.object({
+          date: z.string().optional(), // YYYY-MM-DD
+          status: z.enum(["pending", "confirmed", "cancelled", "completed"]).optional(),
+          showHistory: z.boolean().optional(), // true = mostra tudo, false = só ativas
+        }).optional()
+      )
+      .query(async ({ input }) => {
+        return await db.getReservationsFiltered({
+          date: input?.date,
+          status: input?.status,
+          showHistory: input?.showHistory ?? false,
+        });
+      }),
     getById: adminProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
       return await db.getReservationById(input.id);
     }),

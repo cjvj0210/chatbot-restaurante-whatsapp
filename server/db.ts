@@ -1,4 +1,4 @@
-import { eq, and, desc, count, sum, avg, sql, or, like, gte, inArray } from "drizzle-orm";
+import { eq, and, desc, count, sum, avg, sql, or, like, gte, lte, lt, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import {
@@ -928,4 +928,48 @@ export async function getHumanModeConversations(): Promise<
     .orderBy(desc(conversations.updatedAt));
 
   return result;
+}
+
+// ===== Reservas com filtros =====
+export async function getReservationsFiltered(filters: {
+  date?: string;
+  status?: Reservation["status"];
+  showHistory?: boolean;
+}): Promise<Reservation[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions: any[] = [];
+
+  // Filtro por data específica (YYYY-MM-DD)
+  if (filters.date) {
+    const startOfDay = new Date(`${filters.date}T00:00:00-03:00`);
+    const endOfDay = new Date(`${filters.date}T23:59:59-03:00`);
+    conditions.push(gte(reservations.date, startOfDay));
+    conditions.push(lte(reservations.date, endOfDay));
+  }
+
+  // Filtro por status
+  if (filters.status) {
+    conditions.push(eq(reservations.status, filters.status));
+  }
+
+  // Se não é histórico, mostrar apenas reservas ativas (pendentes/confirmadas) e do dia atual em diante
+  if (!filters.showHistory && !filters.date) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    // Mostrar reservas de hoje em diante OU pendentes/confirmadas de qualquer data
+    conditions.push(
+      or(
+        gte(reservations.date, todayStart),
+        inArray(reservations.status, ["pending", "confirmed"])
+      )!
+    );
+  }
+
+  if (conditions.length > 0) {
+    return await db.select().from(reservations).where(and(...conditions)).orderBy(desc(reservations.date));
+  }
+
+  return await db.select().from(reservations).orderBy(desc(reservations.date));
 }

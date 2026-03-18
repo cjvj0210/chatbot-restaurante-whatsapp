@@ -1459,3 +1459,31 @@
 - [x] Banner informativo explicando como funciona o modo humano
 - [x] Estado vazio com mensagem amigável quando não há conversas
 - [x] Testes para os endpoints (233 testes passando)
+
+## Regras detalhadas de horários de reserva no prompt (18/03/2026)
+- [x] Incorporar horários de reserva por dia da semana (almoço e jantar) no chatbotPrompt
+- [x] Almoço: seg-qui até 12h, sex-sáb até 11:45, domingo NÃO faz reserva
+- [x] Jantar: ter-qui até 20h, sex até 19:30, sábado NÃO faz reserva, domingo até 20h
+- [x] Horários de atendimento: almoço a partir das 11h, jantar a partir das 19h
+- [x] Atualizar GitHub com as mudanças
+
+## Painel de Pedidos Kanban com Som (18/03/2026)
+- [x] Som de notificação tocando continuamente quando chega novo pedido pendente
+- [x] Som para quando aceite automático estiver ligado (não toca)
+- [x] Visualização Kanban em 3 colunas: Aceitos | Expedidos | Concluídos
+- [x] Mover pedido entre colunas ao mudar status (botão rápido)
+- [x] Filtrar apenas pedidos do dia atual
+- [x] Cards com info resumida do pedido (nome, itens, valor, hora)
+- [x] Toggle entre visão Kanban e Lista
+- [x] Botão silenciar/ativar som
+- [x] Pedidos pendentes em destaque no topo com aceite rápido
+
+## Reservas Filtradas com Histórico (18/03/2026)
+- [x] Mostrar apenas reservas ativas (pendentes/confirmadas) do dia selecionado por padrão
+- [x] Ocultar reservas canceladas, excluídas e que já passaram do dia
+- [x] Seletor de dia com navegação (setas, input date, botão Hoje)
+- [x] Botão "Ver Histórico" para mostrar todas as reservas com filtros
+- [x] Manter funcionalidades existentes de aceitar/cancelar reservas
+- [x] Filtro por status no modo histórico
+- [x] Endpoint getReservationsFiltered no backend
+- [x] 233 testes passando
