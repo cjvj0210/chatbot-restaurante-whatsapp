@@ -35,6 +35,8 @@ import {
   ChevronRight,
   Flame,
   Headset,
+  Bot,
+  Power,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useAdminNotifications } from "@/hooks/useNotifications";
@@ -351,26 +353,77 @@ function DashboardLayoutContent({
       </div>
 
       <SidebarInset className="bg-background">
-        {/* Header mobile */}
-        {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="h-9 w-9 rounded-xl" />
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
-                  <Flame className="w-3.5 h-3.5 text-white" />
+        {/* Header com toggle do chatbot */}
+        <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            {isMobile && (
+              <>
+                <SidebarTrigger className="h-9 w-9 rounded-xl" />
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
+                    <Flame className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="font-semibold text-foreground text-sm">
+                    {activeMenuItem?.label ?? "Estrela do Sul"}
+                  </span>
                 </div>
-                <span className="font-semibold text-foreground text-sm">
-                  {activeMenuItem?.label ?? "Estrela do Sul"}
-                </span>
-              </div>
-            </div>
+              </>
+            )}
+            {!isMobile && (
+              <span className="font-semibold text-foreground text-sm">
+                {activeMenuItem?.label ?? "Dashboard"}
+              </span>
+            )}
           </div>
-        )}
+          <ChatbotToggle />
+        </div>
 
         {/* Conteúdo principal */}
         <main className="flex-1 p-6">{children}</main>
       </SidebarInset>
     </>
+  );
+}
+
+/** Toggle para ligar/desligar o chatbot — exibido no header de todas as páginas */
+function ChatbotToggle() {
+  const { data, isLoading } = trpc.restaurant.getChatbotStatus.useQuery(undefined, {
+    refetchInterval: 15_000,
+  });
+  const utils = trpc.useUtils();
+  const toggle = trpc.restaurant.toggleChatbot.useMutation({
+    onMutate: async ({ enabled }) => {
+      await utils.restaurant.getChatbotStatus.cancel();
+      const prev = utils.restaurant.getChatbotStatus.getData();
+      utils.restaurant.getChatbotStatus.setData(undefined, { enabled });
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) utils.restaurant.getChatbotStatus.setData(undefined, ctx.prev);
+    },
+    onSettled: () => {
+      utils.restaurant.getChatbotStatus.invalidate();
+    },
+  });
+
+  const enabled = data?.enabled ?? true;
+
+  if (isLoading) return null;
+
+  return (
+    <button
+      onClick={() => toggle.mutate({ enabled: !enabled })}
+      disabled={toggle.isPending}
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+        enabled
+          ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border border-emerald-500/30"
+          : "bg-red-500/15 text-red-500 hover:bg-red-500/25 border border-red-500/30"
+      } ${toggle.isPending ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+      title={enabled ? "Chatbot está LIGADO — clique para desligar" : "Chatbot está DESLIGADO — clique para ligar"}
+    >
+      <Bot className="w-3.5 h-3.5" />
+      <span>{enabled ? "Bot Ligado" : "Bot Desligado"}</span>
+      <Power className={`w-3 h-3 ${enabled ? "text-emerald-500" : "text-red-400"}`} />
+    </button>
   );
 }

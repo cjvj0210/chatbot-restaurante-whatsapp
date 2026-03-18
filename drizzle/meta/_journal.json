@@ -127,6 +127,13 @@
       "when": 1773483111423,
       "tag": "0017_chief_fallen_one",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1773838043098,
+      "tag": "0018_bright_jackal",
+      "breakpoints": true
     }
   ]
 }

@@ -973,3 +973,26 @@ export async function getReservationsFiltered(filters: {
 
   return await db.select().from(reservations).orderBy(desc(reservations.date));
 }
+
+// ===== CHATBOT TOGGLE =====
+
+export async function isChatbotEnabled(): Promise<boolean> {
+  const settings = await getRestaurantSettings();
+  // Se não há configurações, assume que está habilitado (padrão)
+  if (!settings) return true;
+  return settings.chatbotEnabled;
+}
+
+export async function setChatbotEnabled(enabled: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getRestaurantSettings();
+  if (existing) {
+    await db
+      .update(restaurantSettings)
+      .set({ chatbotEnabled: enabled })
+      .where(eq(restaurantSettings.id, existing.id));
+    invalidateCache("restaurant_settings");
+  }
+}

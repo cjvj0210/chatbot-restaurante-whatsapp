@@ -38,8 +38,10 @@ vi.mock("./db", () => ({
   createMessage: vi.fn().mockResolvedValue({}),
   updateConversation: vi.fn().mockResolvedValue({}),
   getConversationMessages: vi.fn().mockResolvedValue([]),
-  getRestaurantSettings: vi.fn().mockResolvedValue({ phone: "5517988112791", name: "Churrascaria Estrela do Sul" }),
+  getRestaurantSettings: vi.fn().mockResolvedValue({ phone: "5517988112791", name: "Churrascaria Estrela do Sul", chatbotEnabled: true }),
   getDb: vi.fn().mockResolvedValue({}),
+  isChatbotEnabled: vi.fn().mockResolvedValue(true),
+  setChatbotEnabled: vi.fn().mockResolvedValue(undefined),
   getActiveConversationByWhatsappId: vi.fn().mockResolvedValue({
     id: 10,
     customerId: 1,

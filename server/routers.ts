@@ -92,6 +92,18 @@ export const appRouter = router({
         await db.upsertRestaurantSettings(input);
         return { success: true };
       }),
+    // Toggle do chatbot (ligar/desligar)
+    getChatbotStatus: adminProcedure.query(async () => {
+      const enabled = await db.isChatbotEnabled();
+      return { enabled };
+    }),
+    toggleChatbot: adminProcedure
+      .input(z.object({ enabled: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await db.setChatbotEnabled(input.enabled);
+        logAudit({ action: "chatbot.toggle", entityType: "settings", details: { enabled: input.enabled } });
+        return { success: true, enabled: input.enabled };
+      }),
   }),
 
   // Configurações do WhatsApp (apenas admin — contém accessToken sensível)

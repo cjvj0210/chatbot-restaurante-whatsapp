@@ -32,6 +32,7 @@ export const restaurantSettings = mysqlTable("restaurant_settings", {
   deliveryFee: int("deliveryFee").default(0).notNull(), // em centavos
   minimumOrder: int("minimumOrder").default(0).notNull(), // em centavos
   paymentMethods: text("paymentMethods").notNull(), // JSON array
+  chatbotEnabled: boolean("chatbotEnabled").default(true).notNull(), // Liga/desliga o chatbot
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

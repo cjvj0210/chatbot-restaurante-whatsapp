@@ -341,6 +341,16 @@ async function _processIncomingMessageInternal(
     const db = await getDb();
     const dbAvailable = db !== null;
 
+    // ===== VERIFICAÇÃO SE O CHATBOT ESTÁ LIGADO =====
+    if (dbAvailable) {
+      const { isChatbotEnabled } = await import("./db");
+      const enabled = await isChatbotEnabled();
+      if (!enabled) {
+        logger.info("Chatbot", `Chatbot DESLIGADO — ignorando mensagem de ${phone}`);
+        return;
+      }
+    }
+
     // Guardrail: rate limit por whatsappId (máx 30 msgs/hora)
     // Pular se banco indisponível — não bloquear clientes por instabilidade do DB
     if (dbAvailable && !(await checkChatbotRateLimit(whatsappId))) {

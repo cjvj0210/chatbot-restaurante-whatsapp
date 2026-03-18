@@ -1,0 +1,1 @@
+ALTER TABLE `restaurant_settings` ADD `chatbotEnabled` boolean DEFAULT true NOT NULL;

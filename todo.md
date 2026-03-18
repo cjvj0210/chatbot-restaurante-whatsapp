@@ -1525,3 +1525,13 @@
 - [x] Clicar na notificação navega para a página correspondente
 - [x] Integrado no DashboardLayout para funcionar em todas as páginas
 - [x] 233 testes passando
+
+## Botão ligar/desligar chatbot no painel admin (18/03/2026)
+- [x] Adicionar campo chatbotEnabled no schema de restaurantSettings
+- [x] Criar endpoints tRPC getChatbotStatus e toggleChatbot
+- [x] Verificar chatbotEnabled no início do processamento de mensagens (ignora se desligado)
+- [x] Toggle visual no header do DashboardLayout (visível em todas as páginas)
+- [x] Botão com feedback visual: verde "Bot Ligado" / vermelho "Bot Desligado"
+- [x] Atualização otimista + polling a cada 15s
+- [x] Audit log registra liga/desliga
+- [x] 233 testes passando
