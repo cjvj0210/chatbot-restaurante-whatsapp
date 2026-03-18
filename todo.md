@@ -1506,3 +1506,6 @@
 - [x] Colunas com background colorido sutil (azul, indigo, verde)
 - [x] Mensagem "Solte aqui para mover" ao arrastar sobre coluna vazia
 - [x] 233 testes passando
+
+## Correção preço marmitex - retirar frango/linguíça (18/03/2026)
+- [x] Retirar frango/linguíça é ACRÉSCIMO de R$3 (não desconto) — P: R$29, M: R$33, G: R$37

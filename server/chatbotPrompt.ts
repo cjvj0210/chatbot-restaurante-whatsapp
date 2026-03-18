@@ -328,10 +328,10 @@ MARMITEX TRADICIONAL (com churrasco):
 - Grande: R$ 34,00
 
 ALTERAÇÕES NA MARMITEX TRADICIONAL (P, M e G):
-- Retirar frango e linguíça (ficar só com mix churrasco): DESCONTO de R$ 3,00 no preço
-  → Pequena sem frango/linguíça: R$ 23,00
-  → Média sem frango/linguíça: R$ 27,00
-  → Grande sem frango/linguíça: R$ 31,00
+- Retirar frango e linguíça (ficar só com mix churrasco bovino): ACRÉSCIMO de R$ 3,00 no preço
+  → Pequena sem frango/linguíça: R$ 29,00
+  → Média sem frango/linguíça: R$ 33,00
+  → Grande sem frango/linguíça: R$ 37,00
 - Só carnes bovinas (sem frango, sem linguíça, mix churrasco só com carnes bovinas): ACRÉSCIMO de R$ 4,00
   → Pequena só bovina: R$ 30,00
   → Média só bovina: R$ 34,00
